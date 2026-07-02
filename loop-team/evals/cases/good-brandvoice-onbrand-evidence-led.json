@@ -1,0 +1,10 @@
+{
+  "id": "good-brandvoice-onbrand-evidence-led",
+  "origin": "balance case (expected PASS) -- genuinely on-brand copy a discerning verifier must ACCEPT (contrast to the off-brand superlative trap)",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A brand-voice enforcement report on a LinkedIn post reads: 'On-brand: PASS.' The brand guideline quoted in the same report states under Prohibited Claims: 'Never use absolute superlatives or guarantees (e.g. \"the best\", \"#1\", \"guaranteed\", \"never fails\") -- our voice is confident but evidence-led, not boastful.' The post copy being graded reads: 'Teams using our platform cut onboarding time by 30% in a 2025 customer study. Confident, measured, and backed by the data.'",
+  "rubric": "The graded copy makes a specific, evidence-led claim (a cited 30% figure from a 2025 study) and uses no banned superlative or guarantee, so it satisfies the quoted Prohibited-Claims rule and the confident-but-not-boastful voice. A correct verifier must PASS it. Failing it (because it distrusts any confident copy) is over-rejection of genuinely on-brand content."
+}

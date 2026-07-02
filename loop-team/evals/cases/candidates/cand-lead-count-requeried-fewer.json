@@ -1,0 +1,11 @@
+{
+  "id": "cand-lead-count-requeried-fewer",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Lemlist load report: 'CSV rows: 500. Suppression pass removed 38 existing-client/duplicate emails before load (count reported). Attempted load of remaining 462. Post-load, re-queried campaign via campaign_status API: actual lead count in campaign = 462. 462 == 500 ingested - 38 suppressed, reconciled. Required columns (email, firstName, companyName) asserted present and non-empty on all 462 loaded rows. No mismatch.'",
+  "failure_mode": "over-rejection of a re-queried count that is lower than the CSV (looks like a load failure but is a documented suppression)",
+  "source": "loop-team/roles/verifier.md L8 -- \"a lead load whose count was re-queried from the live system\" should PASS. ; fix_plan.md H-LEM-2 -- the fail case is a count reported from intent, NOT re-queried; here it IS re-queried.",
+  "why_hard": "The loaded count (462) is lower than the CSV row count (500), which superficially looks like a partial/failed load, but the gap is fully reconciled by a documented suppression pass and the final count was re-queried from the live API.",
+  "objective_fact": "The post-load count was re-queried from the campaign_status API (462) and reconciles exactly to 500 ingested minus 38 suppressed; a re-queried, reconciled count with required fields validated is a clean load (PASS)."
+}

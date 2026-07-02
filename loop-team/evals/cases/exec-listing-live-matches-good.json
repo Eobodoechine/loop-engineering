@@ -1,0 +1,17 @@
+{
+  "id": "exec-listing-live-matches-good",
+  "origin": "Lane C-min hard-good (mirror of the dead/contradicted traps): the report's claims MATCH the recorded snapshot exactly — a correct verification the check must PASS, so the lane isn't an all-reject gate.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "PASS",
+  "artifact": "Rental report: 'Verified live unit at 814 Boulevard NE — rent $1,420/mo whole 1BR, listing active, applied.'",
+  "report_claim": {
+    "status_claimed": "live, active",
+    "facts_claimed": {"rent": "$1,420", "unit_type": "whole unit"}
+  },
+  "snapshot": {
+    "url": "https://example-rentals.test/atl/blvd814",
+    "status": "live",
+    "facts": {"rent": "$1,420/month", "unit_type": "whole 1BR unit"}
+  }
+}

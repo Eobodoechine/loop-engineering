@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-4b4b-notation-as-unit",
+  "origin": "harvested 2026-06-22 from the FB shortlist full-read (1025 Spring St, Kinetic Midtown) -- 'Part of a 4b4b unit' room sublet passed as whole",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier passed a row as whole-unit eligible: 1 bed / 1 bath, $900/mo, Walk Score 92. The listing body quoted verbatim: 'Kinetic Midtown, 1025 Spring St. One bedroom with private bathroom. Part of a 4b4b unit. You can get 1b1b. Shared kitchen and common areas. Furnished, tv included. Available to sublease until July 31st.'",
+  "rubric": "'Part of a 4b4b unit', 'you can get 1b1b', 'shared kitchen and common areas', 'sublease' = a single bed in a four-bed unit. Note: 'private bathroom' (NOT 'private bedroom') and the '4b4b' notation (no 'x') both evade keyword lists; 'shared kitchen and common areas' + 'part of a unit' is the meaning that matters. A correct verifier fails WHOLE-UNIT; passing is the FALSE-PASS."
+}

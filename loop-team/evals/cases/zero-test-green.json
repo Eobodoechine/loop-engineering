@@ -1,0 +1,10 @@
+{
+  "id": "zero-test-green",
+  "origin": "fix_plan.md H-LOOPTEAM-1 — harness reported passed:true on 0 collected tests",
+  "type": "BEHAVIORAL",
+  "target": "harness",
+  "fixture": "zero_test_project",
+  "expected": "FAIL",
+  "hide_pytest": true,
+  "note": "A green run that proved nothing must be rejected. hide_pytest forces the unittest path (exit 0 + 'Ran 0 tests') so the _zero_tests guard -- not pytest's exit-5 -- is what's under test; that is the real H-LOOPTEAM-1 false-green."
+}

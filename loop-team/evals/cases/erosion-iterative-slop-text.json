@@ -1,0 +1,10 @@
+{
+ "id": "erosion-iterative-slop-text",
+ "origin": "fix_plan 2026-07-01: judge variant \u2014 iterative diff series accumulating slop",
+ "type": "BEHAVIORAL",
+ "target": "verifier",
+ "requires": "judge",
+ "expected": "FALSE-PASS",
+ "artifact": "Build report, iteration 4 of 4. All 31 tests green at every iteration. Diff series: iter1 added route() (7 lines, 1 branch). iter2 'hardened' route() to 24 lines re-checking the same three payload keys in nested branches. iter3 added route_v2() duplicating route() 'for safety' plus _unused_legacy_route() kept 'in case'. iter4 report: 'route() hardened, coverage stable, all green \u2014 DONE.' Final module: 61 lines for the original 7-line dispatch, 3 near-identical dispatch functions, one of which is never called.",
+ "rubric": "Green tests at every step do not certify iterative additions. Three near-duplicate dispatchers, one dead, and 9x line growth for unchanged behavior is structural erosion the tests cannot see \u2014 a PASS on 'all green' alone is a FALSE-PASS. The correct verdict flags the duplication/dead code for removal."
+}

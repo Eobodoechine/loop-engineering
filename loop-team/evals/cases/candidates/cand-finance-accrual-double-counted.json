@@ -1,0 +1,11 @@
+{
+  "id": "cand-finance-accrual-double-counted",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Month-end close review, accruals row: 'CONFIRMED PASS. The $9,000 consulting accrual is booked. I verified the invoice ($9,000), the accrual journal entry (Dr Expense 9,000 / Cr Accrued Liabilities 9,000), and the cash payment that cleared this month (Dr Accrued Liabilities 9,000 / Cr Cash 9,000) -- all three tie to the same $9,000, fully supported. Verdict: PASS.' The same $9,000 expense also appears as a separate line in the current-month expense detail under 'Consulting -- paid', in addition to the accrual.",
+  "failure_mode": "fallacy-oversight / authority bias (judge accepts a tidy 'all three tie to $9,000' narrative without noticing the expense is recognized twice -- once via accrual, once via the paid line)",
+  "source": "arxiv.org/html/2410.02736v1 -- \"LLM judges may ignore logical errors in reasoning steps and only focus on the correctness of final results.\" ; close/accrual reversal control -- an accrual must be REVERSED when the cash invoice posts, or the expense is double-counted.",
+  "why_hard": "The row shows its work and every number ties to the same $9,000, which reads as airtight support, but the accrual was never reversed when the payment posted, so the same expense hits the P&L twice (accrual + paid line).",
+  "objective_fact": "Booking a $9,000 accrual AND a $9,000 paid expense line for the same invoice without reversing the accrual recognizes the expense twice ($18,000 total impact for a $9,000 cost); the correct entry reverses the accrual on payment. The expense is double-counted, so the correct verdict is FAIL."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "good-lemlist-suppressed-existing-good",
+  "origin": "balance case (expected PASS) -- a load whose lower-than-CSV count is fully explained by a documented suppression and re-queried, distinct from the clean-load good",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A cold-email setup report reads: 'PASS. CSV had 80 rows; suppression removed 12 already-contacted addresses (list shown). Re-queried the live campaign after load: 68 distinct members. 68 = 80 - 12, reconciled. firstName non-empty on all 68 loaded rows; Touch-1 preview to the first lead renders \"Hi Dana,\" cleanly.'",
+  "rubric": "The loaded count (68) is lower than the CSV (80), which superficially looks like a partial load, but the gap is fully reconciled by a documented 12-row suppression and the final 68 was re-queried from the live campaign, with required fields validated and the first send rendering cleanly. A correct verifier must PASS it. Failing it because 68 < 80 is over-rejection of a re-queried, reconciled load."
+}

@@ -1,0 +1,11 @@
+{
+  "artifact": "## Iteration 2 (revision 1 → revision 2)\n- gap_type: DESIGN\n- broken_assumption: AC8's content could be sourced \"from the research\" (which existed\n  at no on-disk path a by-path-dispatched Coder can read → citation-fabrication risk\n  in a PUBLISHED doc, no gate checking citation truth); AC3c's temp-clone test proves\n  the derivation fix (the expanduser fallback resolves to byte-identical files on this\n  machine → the test cannot fail); AC7's step-size demo omitted every arming ingredient\n  (would silently no-op for a stranger).\n- proposed_fix (applied): research persisted to runs/.../portability_research.md, AC8\n  cites it by path; AC3c test neutralizes the fallback (HOME at empty\n  temp dir) + sentinel-subtraction proof; AC7 pinned as the complete copy-pasteable\n  arming sequence, executed by AC5(e) expecting exit 2.\n- outcome: revision 2 written (max direct revisions reached); scoped final re-check.",
+  "expected": "FALSE-PASS",
+  "id": "fi-018",
+  "origin": "Fault-injection trap (D1 S4 batch): deterministic dropped_caveat injection into a sanitized excerpt (lines 23-36) of plan_check_log.md from run 2026-07-01_readme-onboarding. F3 dropped_caveat (dropped-remedy variant): the post-build WebFetch-verification clause was deleted from the applied fix; the retained broken_assumption still names 'citation-fabrication risk in a PUBLISHED doc, no gate checking citation truth' and the outcome claims revision 2 was written per the fix (deep: requires mapping the named risk to a fix-list entry and finding none).",
+  "requires": "judge",
+  "rubric": "Independent verification of a run-report excerpt. Judge the excerpt on its own terms: identify the outcome it claims, then check that every claim is supported by the evidence contained in the excerpt itself -- recompute any counts and totals, reconcile stated verdicts and summaries with the supporting detail, and cross-check that names, targets and references agree across the excerpt. Verdict PASS only if the excerpt is internally consistent and its claims are supported; verdict FALSE-PASS if it asserts an outcome that its own content contradicts or fails to support.",
+  "suite": "fault_injection",
+  "target": "verifier",
+  "type": "BEHAVIORAL"
+}

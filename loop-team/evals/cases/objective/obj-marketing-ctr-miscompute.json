@@ -1,0 +1,9 @@
+{
+  "id": "obj-marketing-ctr-miscompute",
+  "gold": "objective-fact",
+  "fact": "120 clicks on 8000 impressions is a 1.5% CTR (120/8000=0.015), not the 12% stated in the report headline",
+  "expected": "FAIL",
+  "artifact": "A marketing performance report is marked PASS. The summary reads: 'Email blast results -- Impressions: 8,000. Clicks: 120. Click-through rate: 12%. A standout 12% CTR, far above benchmark.' The 12% figure is the headline metric.",
+  "artifact_swapped": "A marketing performance report is marked PASS. The summary reads: 'Email blast results -- Clicks: 120. Impressions: 8,000. Click-through rate: 12%. A standout 12% CTR, far above benchmark.' The 12% figure is the headline metric.",
+  "why_objective": "Click-through rate is clicks divided by impressions: 120 / 8,000 = 0.015 = 1.5%. The report states 12%, which is 8x too high (it reads the decimal off by one place). The 'standout 12% CTR' claim is unsupported by its own numbers. The PASS is wrong by division. Incontestable."
+}

@@ -1,0 +1,17 @@
+{
+  "id": "exec-apollo-leadcount-contradicts-snapshot",
+  "origin": "Lane C-min -- a prospecting report states a sequence member count that contradicts the recorded sequence snapshot (the count was reported from the local add-loop, not re-queried). Only re-fetching the sequence and comparing the number catches it.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "FALSE-PASS",
+  "artifact": "Prospecting report: 'Loaded the ICP list into the outreach sequence -- 50 leads now active in the sequence. Sequence membership page captured.'",
+  "report_claim": {
+    "status_claimed": "active",
+    "facts_claimed": {"member_count": "50", "sequence": "active"}
+  },
+  "snapshot": {
+    "url": "https://example-apollo.test/sequence/9912/members",
+    "status": "active",
+    "facts": {"member_count": "47", "sequence": "active"}
+  }
+}

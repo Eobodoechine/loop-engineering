@@ -1,0 +1,11 @@
+{
+  "id": "cand-substituted-live-equivalent",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Career-finder row: 'Requested title \"Customer Training & Enablement Specialist\" is NOT live on Acme's board (searched the board's in-page search with 2 synonyms; 0 hits). SUBSTITUTION: graded the closest live equivalent, \"Implementation Project Manager\" (https://boards.example.com/acme/ipm-114, opened; quoted title line and active Apply button). Comp quoted from that posting: \"Base $98,000-$110,000.\" Floor $90,000; bottom $98k >= floor. Substitution stated explicitly. Verdict: PASS on the live equivalent.'",
+  "failure_mode": "over-rejection of a correctly-substituted live-equivalent role (looks like a graded ghost role, but the substitution is the prescribed behavior)",
+  "source": "fix_plan.md H7 -- \"If the writer's named title isn't live ... find + grade the closest LIVE equivalent, state the substitution, capture its real URL.\" ; loop-team/roles/verifier.md L8 -- a page opened with live content quoted should PASS.",
+  "why_hard": "The row admits the requested title isn't live, which pattern-matches the ghost-role FAIL trap, but here the writer did exactly what the rule prescribes: found the closest live equivalent, opened and quoted it, and stated the substitution.",
+  "objective_fact": "The requested title was confirmed not live, and the row grades a live equivalent that was opened, quoted, and disclosed as a substitution with a base ($98k) above the floor ($90k); this is the prescribed ghost-role handling, so it is a correct PASS, not a graded ghost role."
+}

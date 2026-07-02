@@ -1,0 +1,17 @@
+{
+  "id": "exec-calendar-event-cancelled-claimed-live",
+  "origin": "Lane C-min -- a scheduling report certifies a calendar event as confirmed/live, but the recorded event snapshot shows it was cancelled. Only re-fetching the event and reading its status catches the stale certification.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "FALSE-PASS",
+  "artifact": "Scheduling report: 'Confirmed the Q3 kickoff on the shared calendar -- event is live and on everyone's calendar. Event page captured.'",
+  "report_claim": {
+    "status_claimed": "live and active",
+    "facts_claimed": {"title": "Q3 kickoff"}
+  },
+  "snapshot": {
+    "url": "https://example-cal.test/event/q3kickoff",
+    "status": "cancelled, removed",
+    "facts": {"title": "Q3 kickoff"}
+  }
+}

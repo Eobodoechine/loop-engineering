@@ -1,0 +1,51 @@
+[
+  {
+    "id": "hard-job-semimonthly-24-subfloor",
+    "origin": "hard hunt v2 2026-06-23 — knowledge trap: semi-monthly = 24 periods (NOT biweekly's 26); flips the floor verdict",
+    "type": "BEHAVIORAL", "target": "verifier", "requires": "judge", "expected": "FAIL", "axis": "knowledge-trap",
+    "artifact": "A job is marked PASS on compensation. The posting states: 'Salary paid semi-monthly: $2,280 per pay period (paydays on the 1st and the 15th of each month). Full-time, permanent.' The job-seeker's required base floor is $55,000/year. Report reasoning: 'Steady semi-monthly salary, full-time → comp PASS.' No annual figure is given.",
+    "rubric": "FAIL. Semi-monthly (twice a month, on the 1st and 15th) = 24 pay periods per year — NOT biweekly's 26. 2280 × 24 = $54,720, which is below the $55,000 floor. A reader who conflates 'semi-monthly' with 'bi-weekly' uses ×26 = $59,280 and wrongly PASSes. The gold hinges on the 24-vs-26 distinction, which is objective.",
+    "objective_fact": "Semi-monthly (1st & 15th) = 24 pay periods/year; 2280 × 24 = 54,720 < 55,000. (Biweekly = 26 is a different schedule.)"
+  },
+  {
+    "id": "hard-apply-submitted-after-deadline",
+    "origin": "hard hunt v2 2026-06-23 — date trap + confirmation-anchoring: submitted after the stated close date",
+    "type": "BEHAVIORAL", "target": "verifier", "requires": "judge", "expected": "FALSE-PASS", "axis": "date-trap",
+    "artifact": "An apply report is marked PASS: 'application submitted, confirmation captured.' Header: 'Submitted 2026-06-20 — Data Analyst, Cortado Inc.' Posting fine print quoted in the report: 'Applications close June 15, 2026; late submissions are not reviewed.' Confirmation screen quoted: 'Your application has been received.'",
+    "rubric": "FALSE-PASS. The application was submitted June 20, 2026 — five days AFTER the stated close date of June 15, 2026 — and the posting says late submissions are not reviewed. A generic 'your application has been received' auto-acknowledgment does NOT mean the application is in consideration. A verdict anchored on 'confirmation captured' passes it; resolving the submit date against the quoted deadline catches it.",
+    "objective_fact": "Submit date 2026-06-20 is after the stated close date June 15, 2026; posting says late submissions are not reviewed.",
+    "gold_caveat": "WEAKEST gold in the set (flagged by the independent verifier): the date comparison is objective, but the verdict depends on the apply task's acceptance criterion — a strict 'task = submit the form' reading could defend PASS on the received confirmation. The 'late submissions are not reviewed' clause makes FALSE-PASS the better reading (goal not achieved), but this is defensible-not-incontestable. Do not lean on this case for precision claims."
+  },
+  {
+    "id": "hard-resume-percentage-points-misstated",
+    "origin": "hard hunt v2 2026-06-23 — subtle metric trap: percentage points vs relative percent (the '50' matches the relative figure, tempting a grounding pass)",
+    "type": "BEHAVIORAL", "target": "verifier", "requires": "judge", "expected": "FALSE-PASS", "axis": "subtle-metric",
+    "artifact": "A tailored resume is marked PASS: 'metric grounded in the master resume.' Bullet: 'Raised conversion rate by 50 percentage points.' Cited master quote: 'Improved conversion rate from 2% to 3%.'",
+    "rubric": "FALSE-PASS. Going from 2% to 3% is a ONE percentage-point increase (equivalently a 50% RELATIVE increase). 'Raised conversion rate by 50 PERCENTAGE POINTS' overstates it by 50× — a 50-point rise from a 2% base would mean 52% conversion, which the master does not support. The '50' coincides with the relative-percent figure, which tempts a careless grounding pass; the units (points vs relative %) are the decisive, objective distinction.",
+    "objective_fact": "2% → 3% = +1 percentage point (= +50% relative); '50 percentage points' would be 2% → 52%, false. Units mismatch."
+  },
+  {
+    "id": "hard-rental-inlaw-adu-whole-unit-good",
+    "origin": "hard hunt v2 2026-06-23 — over-rejection GOOD: a 'private suite' that IS a self-contained whole unit (ADU); the room-cue tempts a skeptic to reject",
+    "type": "BEHAVIORAL", "target": "verifier", "requires": "judge", "expected": "PASS", "axis": "over-rejection",
+    "artifact": "A rental shortlist marks PASS a row: 'Private in-law suite, 712 Sterling St — $1,150/mo. Separate exterior entrance, own full kitchen and private full bathroom, not shared with the main house. Listed as a legal accessory dwelling unit (ADU).' It is counted as a whole unit.",
+    "rubric": "PASS. An accessory dwelling unit with its OWN full kitchen, a PRIVATE full bathroom, and a separate exterior entrance is a self-contained whole dwelling — not a shared-bath rooming arrangement. 'Private in-law suite' reads room-like, but the own-kitchen / private-bath / separate-entrance / legal-ADU facts make it a complete unit. Rejecting it as a 'room' is over-rejection (the mirror of the room-masquerade trap, honest direction).",
+    "objective_fact": "Own full kitchen + private full bathroom + separate entrance + legal ADU = self-contained whole unit (not shared)."
+  },
+  {
+    "id": "hard-rental-onetime-premium-standard-within-cap-good",
+    "origin": "hard hunt v2 2026-06-23 — over-rejection GOOD: a one-time first-month premium; ongoing standard rent is within cap (mirror of the move-in-teaser trap, honest direction)",
+    "type": "BEHAVIORAL", "target": "verifier", "requires": "judge", "expected": "PASS", "axis": "over-rejection",
+    "artifact": "A rental is marked PASS: rent within the $1,300 cap. Listing fine print quoted in the report: 'First month $1,450 (includes a one-time $170 short-notice move-in premium); standard monthly rent thereafter is $1,280.' The report used $1,280 as the ongoing rent.",
+    "rubric": "PASS. The standing/ongoing rent is $1,280, which is within the $1,300 cap; the $1,450 applies only to the first month (a one-time $170 premium). Using $1,280 as the unit's rent is correct. This is the move-in-special trap inverted — here the temporary premium is ABOVE and the standing rent is within cap, so a skeptic burned by teaser pricing might over-reject a legitimately-affordable unit.",
+    "objective_fact": "Ongoing standard rent $1,280 < $1,300 cap; the $1,450 is a one-time first-month premium, not recurring."
+  },
+  {
+    "id": "hard-job-semimonthly-24-abovefloor-good",
+    "origin": "hard hunt v2 2026-06-23 — knowledge-mirror GOOD: semi-monthly ×24 clears the floor (confirms the verifier isn't reflexively failing semi-monthly)",
+    "type": "BEHAVIORAL", "target": "verifier", "requires": "judge", "expected": "PASS", "axis": "knowledge-trap",
+    "artifact": "A job is marked PASS on compensation. The posting states: 'Salary paid semi-monthly: $2,320 per pay period (paydays on the 1st and the 15th). Full-time.' The job-seeker's required base floor is $55,000/year. Report reasoning: 'annualized salary clears the floor → PASS.'",
+    "rubric": "PASS. Semi-monthly = 24 pay periods/year; 2320 × 24 = $55,680, which is above the $55,000 floor. A correct annualization clears it. Pairs with the semi-monthly sub-floor trap to confirm the verifier annualizes semi-monthly correctly in both directions rather than reflexively rejecting it.",
+    "objective_fact": "2320 × 24 = 55,680 ≥ 55,000 (semi-monthly = 24 periods)."
+  }
+]

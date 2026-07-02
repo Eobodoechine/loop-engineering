@@ -1,0 +1,9 @@
+{
+  "id": "no-runner-detected",
+  "origin": "fix_plan.md — 'No tests detected' must not be a silent pass",
+  "type": "BEHAVIORAL",
+  "target": "harness",
+  "fixture": "no_tests_project",
+  "expected": "FAIL",
+  "note": "No tests + no package.json -> verify.py returns passed:false. Absence of a runner is not success."
+}

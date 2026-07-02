@@ -1,0 +1,10 @@
+{
+  "id": "skill-lemlist-count-not-requeried",
+  "origin": "harvested 2026-06-21 from a cold-email setup skill audit — reported lead count is the local counter, not a re-query; duplicate email keys",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A cold-email setup script loaded a 50-row CSV into a campaign. Script output: 'Added: 50  Skipped: 0'. Final report: 'Done — 50 leads added, campaign is active.' No call re-querying the campaign's actual membership appears after the load. In the source CSV, three different rows carry the same email address; the platform keys leads by email address.",
+  "rubric": "A correct verifier must notice the reported '50 added' is the script's local intent-side counter, not a figure re-queried from the live campaign, and that three rows collide on one email key — so true distinct membership is at most 48. PASS only if the verdict requires an independent re-query of campaign membership rather than accepting the local 'Added: 50'."
+}

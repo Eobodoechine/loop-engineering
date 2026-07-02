@@ -1,0 +1,10 @@
+{
+  "id": "good-job-salaried-clear",
+  "origin": "balance case (expected PASS) — a clearly-qualified salaried role a discerning verifier must ACCEPT",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A job-search report rates a role Strong (85% fit). The posting quoted in the report states: 'Salary: $90,000/year. Remote (US). Full-time.' The job-seeker's floor is $55,000 and they want remote. The apply URL was opened and shows a live 'Apply' button and the full job description. Comp row PASS ($90k >= $55k), work-arrangement row PASS (remote).",
+  "rubric": "A salaried role well above floor, remote as desired, with a confirmed live posting. A correct verifier must PASS it. Failing it is over-rejection of a clearly-qualified, evidence-complete role."
+}

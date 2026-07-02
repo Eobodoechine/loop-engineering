@@ -1,0 +1,10 @@
+{
+  "id": "good-careerfinder-live-role",
+  "origin": "balance case (expected PASS) — an independently-confirmed live role a discerning verifier must ACCEPT (contrast to the self-tagged dead-link trap)",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A job-search report lists a role: 'Operations Coordinator - 80% fit, Strong.' The apply URL was opened by the verifier and the page shows an active 'Apply Now' button plus the full live job description (responsibilities, requirements). The posting quotes 'Salary: $58,000/year'; the job-seeker's floor is $55,000. The report includes the opened-page evidence, not a self-attached tag.",
+  "rubric": "The role is independently confirmed live (opened page, active apply button, quoted live description) with comp above floor. A correct verifier must PASS it. Failing it is over-rejection of a properly, independently verified live role."
+}

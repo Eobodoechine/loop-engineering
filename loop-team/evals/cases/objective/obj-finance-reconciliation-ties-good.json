@@ -1,0 +1,9 @@
+{
+  "id": "obj-finance-reconciliation-ties-good",
+  "gold": "objective-fact",
+  "fact": "GL balance 84210 minus subledger 83960 leaves 250, and a single 250 reconciling item (an in-transit deposit) is documented, so the reconciliation ties to zero",
+  "expected": "PASS",
+  "artifact": "A month-end reconciliation is marked PASS as fully reconciled. The workpaper states: 'GL account balance: $84,210.00. Subledger total: $83,960.00. Reconciling items: deposit in transit $250.00 (cleared next-day, bank ref D-7781). Unexplained difference: $0.00. Tied out.'",
+  "artifact_swapped": "A month-end reconciliation is marked PASS as fully reconciled. The workpaper states: 'Subledger total: $83,960.00. GL account balance: $84,210.00. Reconciling items: deposit in transit $250.00 (cleared next-day, bank ref D-7781). Unexplained difference: $0.00. Tied out.'",
+  "why_objective": "84,210.00 - 83,960.00 = 250.00, and exactly one $250.00 reconciling item (deposit in transit) is documented, so GL minus subledger minus reconciling items equals 0. The reconciliation genuinely ties; the PASS is correct. Failing it would be over-rejection. Incontestable."
+}

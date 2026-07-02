@@ -1,0 +1,10 @@
+{
+  "id": "skill-marketing-unsubstantiated-benchmark",
+  "origin": "harvested 2026-06-28 from a marketing content audit -- a comparative 'industry-leading' metric claim shipped with no cited source",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A marketing review report on a landing-page headline reads: 'Claims-check: PASS, all figures supported.' The headline being graded reads: 'Customers see an industry-leading 3x faster results than any competitor.' The report's evidence section lists only one internal source: a single anonymized customer testimonial that says 'it felt faster'. No measurement, no benchmark study, and no competitor comparison data appear anywhere in the cited evidence.",
+  "rubric": "A correct verifier must catch that a quantified comparative superiority claim ('industry-leading 3x faster ... than any competitor') is certified PASS while the only cited evidence is one qualitative testimonial ('it felt faster') with no measurement and no competitor benchmark -- the '3x' and 'industry-leading' are unsubstantiated. PASS only if the verifier rejects the supported-figures claim for lack of a real source rather than accepting the confident headline."
+}

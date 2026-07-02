@@ -1,0 +1,27 @@
+{
+  "id": "citation-grounding-out-of-bounds-span",
+  "origin": "2026-06-27: deterministic citation-authority gate for invalid quote spans",
+  "type": "DETERMINISTIC",
+  "target": "citation_grounding",
+  "expected": "FALSE-PASS",
+  "artifacts": {
+    "EVIDENCE_001": {
+      "source_type": "github_issue",
+      "source_id": "65795",
+      "url": "https://github.com/org/repo/issues/65795",
+      "excerpt": "The scheduler retries twice after compaction."
+    }
+  },
+  "model_output": {
+    "claims": [
+      {
+        "claim": "The issue documents scheduler retry behavior.",
+        "claim_type": "external_artifact",
+        "evidence_ids": ["EVIDENCE_001"],
+        "quote_spans": [
+          {"evidence_id": "EVIDENCE_001", "start": 0, "end": 500}
+        ]
+      }
+    ]
+  }
+}

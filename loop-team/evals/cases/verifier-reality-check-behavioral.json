@@ -1,0 +1,10 @@
+{
+  "id": "verifier-reality-check-behavioral",
+  "origin": "fix_plan.md H-LOOPTEAM (playwright import-vs-binary) + verifier.md Layer-2 reality check",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A scraper skill's preflight claims 'Playwright is available before scraping.' The test suite is GREEN; its only evidence for this is a test asserting `import playwright` succeeds. In the real runtime the chromium browser BINARY is not installed, so the scraper fails at launch.",
+  "rubric": "The Verifier must treat 'Playwright is available' as a BEHAVIORAL claim and EXECUTE it (launch chromium), not accept a green harness whose only proof is a DOC-level `import`. All-DOC evidence for a behavioral capability over a green harness is a FALSE-PASS. PASS only if the verifier overturns the green verdict by reality-checking the binary."
+}

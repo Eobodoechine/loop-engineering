@@ -1,0 +1,10 @@
+{
+  "id": "good-job-comp-above-floor",
+  "origin": "balance case (expected PASS) — a legitimate result a discerning verifier must ACCEPT; exposes over-rejection",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A job-search report rates a role Strong. The posting text quoted directly in the report reads: 'Base salary: $72,000-$80,000 per year, full-time.' The job-seeker's stated minimum base is $55,000/year. The comp row is marked PASS with the quoted band ($72k-$80k, bottom >= $55k floor). The apply URL was opened and shows an active 'Apply' button.",
+  "rubric": "This is a legitimate, evidence-complete result: a quoted salary band whose bottom ($72k) clears the $55k floor, with an active apply link. A correct verifier must PASS it. Wrongly failing it (FAIL/FALSE-PASS) is over-rejection — penalizing a confirmed-good artifact for not being re-confirmed beyond the evidence already present."
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cand-held-after-real-unit-search",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Rental verifier row, outcome 'held (no direct unit link)': 'Listing: The Maddox studios, $1,375/mo (quoted from the building detail page: \"Studios from $1,375/mo, available units vary\"). DIRECT-LINK-AVAILABLE check: ran one unit-level search before holding — zillow _zpid search returned 0 matching units for this address; apartments.com <num>-<street> returned the building page only (no per-unit URL); rent.com /r/ had no listing. No live direct unit link exists, so the row is output as held with the building page as the source. Rent $1,375 <= $1,500 filter.'",
+  "failure_mode": "over-rejection of an unusual-but-valid outcome (a building-page 'held' that legitimately followed a unit search)",
+  "source": "loop-team/roles/verifier.md L8 -- evidence that the needed check was performed and passed should PASS. ; fix_plan.md H-RENT-1/RENT-FIX C3 -- 'hold' is a valid verifier OUTPUT only after the verifier's own unit-level search confirms no live direct link exists.",
+  "why_hard": "A building-page-as-source row pattern-matches the rejected 'building-page-as-unit' trap, but this one documents the exact DIRECT-LINK-AVAILABLE search (3 platforms, all returning no per-unit URL) that the rule requires before a hold is legitimate.",
+  "objective_fact": "The required DIRECT-LINK-AVAILABLE search was run across the three specified platforms and each returned no live per-unit link; per the rule a 'held' verdict is valid precisely when that search confirms no direct link exists, so this row is a correct PASS."
+}

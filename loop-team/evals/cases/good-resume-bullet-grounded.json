@@ -1,0 +1,10 @@
+{
+  "id": "good-resume-bullet-grounded",
+  "origin": "balance case (expected PASS) — a grounded resume bullet a discerning verifier must ACCEPT",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A tailored resume bullet: 'Built and maintained ML model-serving infrastructure for production traffic.' The candidate's master resume contains the line: 'Worked on ML model serving infrastructure.' The tailored bullet rephrases that line for the target job; no metric, scope, title, or claim beyond the master was added.",
+  "rubric": "The bullet is fully traceable to the master resume (a rephrase, no invented metrics or scope). A correct verifier must PASS it. Failing it is over-rejection — treating legitimate rephrasing of sourced content as fabrication."
+}

@@ -1,0 +1,9 @@
+{
+  "id": "obj-calendar-double-booked",
+  "gold": "objective-fact",
+  "fact": "two events overlap: 10:00-11:00 and 10:30-11:30 share the 10:30-11:00 half hour on the same calendar and date",
+  "expected": "FAIL",
+  "artifact": "A scheduling report marks a booking PASS as conflict-free. The calendar already holds 'Design sync, 2026-07-02 10:00-11:00'. The new event placed on the same calendar reads 'Vendor call, 2026-07-02 10:30-11:30'. The report states both are confirmed with no overlap.",
+  "artifact_swapped": "A scheduling report marks a booking PASS as conflict-free. The new event placed on the same calendar reads 'Vendor call, 2026-07-02 10:30-11:30'. The calendar already holds 'Design sync, 2026-07-02 10:00-11:00'. The report states both are confirmed with no overlap.",
+  "why_objective": "Two intervals on the same calendar and date, 10:00-11:00 and 10:30-11:30, overlap on 10:30-11:00 (because 10:30 < 11:00). That is a double-booking by interval arithmetic; the 'no overlap' PASS is incorrect regardless of judgment. Incontestable."
+}

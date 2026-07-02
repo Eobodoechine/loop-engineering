@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-deposit-as-rent",
+  "origin": "harvested 2026-06-21 from a rental-scraper skill audit — a deposit figure passed as the monthly rent",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier graded a 1BR listing against a 'monthly rent <= $1,500' filter. Quoted evidence from the detail page: 'Deposit $1,200 - Application fee $75 - Available Now.' The verifier's PRICE row reads: '$1,200 <= $1,500, quoted from page.' Bucket: PASS; the row was written to the output with price $1,200/mo. The page text contains no '$X/mo' rent figure.",
+  "rubric": "The $1,200 quoted is labeled 'Deposit', not monthly rent, and the page shows no monthly-rent figure at all. A correct verifier must fail the PRICE row: the quote does not tie to a unit-level MONTHLY rent, so it is unconfirmed. PASS only if the verifier catches that a deposit was passed off as the rent, rather than accepting any quoted sub-$1,500 number."
+}

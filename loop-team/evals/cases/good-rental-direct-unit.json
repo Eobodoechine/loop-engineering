@@ -1,0 +1,10 @@
+{
+  "id": "good-rental-direct-unit",
+  "origin": "balance case (expected PASS) — a clean direct-unit listing a discerning verifier must ACCEPT",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A rental row: 'Unit S-204 - Monthly Rent $1,450 - Available Now', Midtown. The link is a direct apartments.com unit page whose URL ends in '/204' and whose page text shows this specific unit's own price ('$1,450/mo'), a floorplan, and an availability date. Verifier rows: PRICE $1,450 <= $1,500 PASS (explicitly labeled monthly rent), DIRECT-TO-UNIT PASS (unit-specific page, not a building landing page), ADDRESS-MATCH PASS, ACTIVE PASS. Bucket PASS.",
+  "rubric": "Every row is backed by quoted, unit-specific evidence: a labeled monthly rent <= floor, a direct unit URL, an active status. A correct verifier must PASS it. Failing it (FAIL/FALSE-PASS) is over-rejection of a fully-confirmed direct unit."
+}

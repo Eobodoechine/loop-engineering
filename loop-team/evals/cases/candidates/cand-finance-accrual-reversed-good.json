@@ -1,0 +1,11 @@
+{
+  "id": "cand-finance-accrual-reversed-good",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Month-end close review, accruals row: 'PASS. The $9,000 consulting accrual was booked last month (Dr Expense 9,000 / Cr Accrued Liabilities 9,000) and REVERSED this month when the invoice was paid (Dr Accrued Liabilities 9,000 / Cr Cash 9,000). The current-month P&L shows the $9,000 expense exactly once (in the prior period via the accrual); the paid line clears the liability, it does not re-hit expense. Net expense impact: $9,000, recognized once. Verdict: PASS.'",
+  "failure_mode": "over-rejection of a correctly reversed accrual (the paid entry pattern-matches the double-count trap, but here the accrual was properly reversed against the liability, not re-expensed)",
+  "source": "close/accrual reversal control -- an accrual reversed against Accrued Liabilities on payment recognizes the expense exactly once; this is the prescribed, correct handling.",
+  "why_hard": "The row contains both an accrual entry and a paid entry for the same $9,000, which superficially matches the double-count trap, but the paid entry debits Accrued Liabilities (clearing the liability), not Expense, so the cost is recognized exactly once.",
+  "objective_fact": "The accrual (Cr Accrued Liabilities) and the payment (Dr Accrued Liabilities / Cr Cash) net the liability to zero and the expense is recognized exactly once at $9,000; this is the correct reversal, so the PASS is correct and failing it would be over-rejection."
+}

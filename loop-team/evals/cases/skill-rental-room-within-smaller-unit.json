@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-room-within-smaller-unit",
+  "origin": "harvested 2026-06-22 from the FB shortlist full-read (930 Spring St NW) -- a single bedroom WITHIN a 2bed/2bath passed as a whole unit",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier passed a row as whole-unit eligible: 1 bed / 1 bath apartment, $1,300/mo, Walk Score 89 verified, address 930 Spring St NW. The listing body quoted verbatim: '1 Bed / 1 Bath in a 2bed/2bath - Apartment. A furnished one-bedroom, one-bathroom space within a two-bedroom, two-bathroom apartment is available for $1,300 per month.'",
+  "rubric": "The body says the space is one bedroom WITHIN a two-bedroom/two-bath apartment -- a room/sublet, not a whole unit. There is no '4x4'/'student'/'roommate' keyword; the only signal is the plain English 'within a two-bedroom apartment'. A correct verifier reads that and fails WHOLE-UNIT. Passing it (as the original loop did) is the FALSE-PASS. This is the category a keyword regex cannot catch -- it requires reading meaning."
+}

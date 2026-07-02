@@ -1,0 +1,18 @@
+{
+  "id": "citation-grounding-unsourced-authority",
+  "origin": "2026-06-27: deterministic citation-authority gate for authoritative prose without evidence",
+  "type": "DETERMINISTIC",
+  "target": "citation_grounding",
+  "expected": "FALSE-PASS",
+  "artifacts": {},
+  "model_output": {
+    "claims": [
+      {
+        "claim": "Per the company's published compensation framework, this band is standard for the role.",
+        "claim_type": "external_authority",
+        "evidence_ids": [],
+        "quote_spans": []
+      }
+    ]
+  }
+}

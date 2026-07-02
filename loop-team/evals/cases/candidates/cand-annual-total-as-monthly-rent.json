@@ -1,0 +1,11 @@
+{
+  "id": "cand-annual-total-as-monthly-rent",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Rental verifier PRICE row for a studio against a 'monthly rent <= $1,500' filter. Quoted from the detail page: 'Lease terms: $16,800 total for a 12-month lease. Available now.' The verifier's row reads: 'Rent quoted from page: $1,400/mo (derived from lease total). $1,400 <= $1,500. PASS.' No standalone '$X/month' figure appears in the quoted page text.",
+  "failure_mode": "right-shaped-but-wrong number (a derived/total figure standing in for the quoted monthly rent)",
+  "source": "loop-team/roles/verifier.md L10 -- \"a deposit / 'starting at' / total-derived number standing in for the real one\" is a genuine gap. ; fix_plan.md skill-rental-deposit-as-rent -- a non-rent figure passed off as the monthly rent.",
+  "why_hard": "The arithmetic is internally correct ($16,800/12 = $1,400) and the result clears the filter, so the row looks both sourced and compliant; the defect is that a derived number was substituted for a directly-quoted monthly rent.",
+  "objective_fact": "The page quote gives only a 12-month lease TOTAL ($16,800), not a quoted monthly rent; per verifier.md a total-derived number standing in for the real monthly figure is an unconfirmed price, so the PASS is unsupported."
+}

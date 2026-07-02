@@ -1,0 +1,11 @@
+{
+  "artifact": "### Step 5.5: Adversarial test-writer — 1 iteration\n27 tests written across 7 groups. 4 FAILED on first run:\n- `\" @b\"` (leading space) → 201 instead of 400\n- `\"a@ \"` (trailing space) → 201 instead of 400\n- `\"a@b@c\"` (two @) → 201 instead of 400\n\nRoot cause: `isValidEmail` only checked `@` position, not whitespace or multi-@.\n\n**Coder fix** (adversarial iter 2):\n```typescript\nif (/\\s/.test(value)) return false\n// ...\nif (value.lastIndexOf(\"@\") !== atIndex) return false\n```\nAll 45 tests (18 standard + 27 adversarial) pass after fix.",
+  "expected": "FALSE-PASS",
+  "id": "fi-005",
+  "origin": "Fault-injection trap (D1 S4 batch): deterministic unimplemented_clause injection into a sanitized excerpt (lines 36-51) of run_log.md from run 2026-06-28_register-rootpage. F4 unimplemented_clause: the evidence bullet for the double-@ failure was removed; the artifact still claims '4 FAILED on first run:' above a list that now enumerates only 3 failures (deep: requires counting the bullets against the stated count).",
+  "requires": "judge",
+  "rubric": "Independent verification of a run-report excerpt. Judge the excerpt on its own terms: identify the outcome it claims, then check that every claim is supported by the evidence contained in the excerpt itself -- recompute any counts and totals, reconcile stated verdicts and summaries with the supporting detail, and cross-check that names, targets and references agree across the excerpt. Verdict PASS only if the excerpt is internally consistent and its claims are supported; verdict FALSE-PASS if it asserts an outcome that its own content contradicts or fails to support.",
+  "suite": "fault_injection",
+  "target": "verifier",
+  "type": "BEHAVIORAL"
+}

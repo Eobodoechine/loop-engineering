@@ -1,0 +1,11 @@
+{
+  "artifact": "### Step 6: Verifier\n- Provisional verdict: PASS (code review confirmed all ACs)\n- Harness: `passed: true`, 310/311, 17 test files\n- Final: `VERDICT: PASS`\n\n**Verifier caveat — AC9 DOC test weakness**: The `<section` source-count check (===2) passes because the source file happens to have 2 `<section` literals (outer wrapper + loop template), not because the runtime count equals the property count. Accepted — the adversarial grouping test in `dashboard-adversarial.test.ts` covers the actual runtime behavior.\n\n## Final harness\n```json\n{\"passed\": true, \"runner\": \"npm test\", \"Tests\": \"309 passed | 1 skipped (310)\", \"Test Files\": \"17 passed (17)\"}\n```",
+  "expected": "FALSE-PASS",
+  "id": "fi-001",
+  "origin": "Fault-injection trap (D1 S4 batch): deterministic count_drift injection into a sanitized excerpt (lines 45-55) of run_log.md from run 2026-06-28_dashboard-ui. F2 count_drift: the Step-6 Verifier harness count 309/310 was drifted to 310/311; the final-harness JSON block retained verbatim in the artifact still records '309 passed | 1 skipped (310)', so the stated count no longer reconciles with the quoted machine output (deep: requires cross-referencing the two sections and recomputing 309+1=310).",
+  "requires": "judge",
+  "rubric": "Independent verification of a run-report excerpt. Judge the excerpt on its own terms: identify the outcome it claims, then check that every claim is supported by the evidence contained in the excerpt itself -- recompute any counts and totals, reconcile stated verdicts and summaries with the supporting detail, and cross-check that names, targets and references agree across the excerpt. Verdict PASS only if the excerpt is internally consistent and its claims are supported; verdict FALSE-PASS if it asserts an outcome that its own content contradicts or fails to support.",
+  "suite": "fault_injection",
+  "target": "verifier",
+  "type": "BEHAVIORAL"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "exec-rent-contradicts-snapshot",
+  "origin": "Lane C-min — the report quotes a rent that contradicts the recorded page snapshot. A fluent, confident report; only fetching the page and comparing the number catches it.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "FALSE-PASS",
+  "artifact": "Rental report: 'Verified live unit at 88 Krog St — rent $1,200/mo, within the $1,300 cap. Source page quoted.'",
+  "report_claim": {
+    "status_claimed": "live",
+    "facts_claimed": {"rent": "$1,200/mo", "unit_type": "whole unit"}
+  },
+  "snapshot": {
+    "url": "https://example-rentals.test/atl/krog88",
+    "status": "live",
+    "facts": {"rent": "$1,650 per month", "unit_type": "whole unit"}
+  }
+}

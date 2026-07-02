@@ -1,0 +1,3 @@
+# Files exercised only via subprocess (invisible to testmon coverage).
+# One glob per line. Justification: hook tests drive hooks as subprocesses.
+hooks/*.py

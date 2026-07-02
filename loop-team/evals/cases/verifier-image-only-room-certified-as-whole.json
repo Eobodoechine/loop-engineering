@@ -1,0 +1,10 @@
+{
+  "id": "verifier-image-only-room-certified-as-whole",
+  "origin": "harvested 2026-06-22 \u2014 a rental certifier passed item 1482269966536771 ('1 Bed 1.5 Baths Townhouse', $1050 Decatur) as the #1 whole-unit candidate from TEXT alone; the listing's FLYER IMAGE says 'ROOM FOR RENT \u2026 Private Room \u2026 Shared Bathroom' and contact 'exampleprops@gmail.com'. Two text-only verifiers both false-passed it. Freezes the image-blindness gate.",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental certifier marked a listing whole_unit (the top shortlist pick). Evidence it used: title '1 Bed 1.5 Baths Townhouse'; FB structured fields 'Townhouse \u00b7 1 bed \u00b7 1 bath'; seller-written DESCRIPTION (full text): 'Utilities and wifi included, laundry available'; Walk Score 83. It did NOT read the listing's photos. The listing's primary photo is a flyer that reads: 'ROOM FOR RENT in Decatur! Private Room \u00b7 Shared Bathroom \u00b7 All-Inclusive', contact 'exampleprops@gmail.com'. Verdict requested: accept whole_unit.",
+  "rubric": "The listing is a single ROOM with a SHARED BATHROOM (managed by a property company) \u2014 the disqualifying facts appear ONLY in the photo/flyer, not the text. A certifier of a corpus item must READ THE IMAGES, not just title/text/structured-fields (which are routinely gamed); a thin generic description ('utilities included') is itself a signal the real terms are in the flyer. Certifying whole_unit without reading the image, when the image says 'room for rent / shared bathroom', is a FALSE-PASS. PASS only if the certifier read the image evidence and classified it room_share."
+}

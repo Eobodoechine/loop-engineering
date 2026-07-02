@@ -1,0 +1,11 @@
+{
+  "id": "cand-fluent-summary-no-confirmation",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Rental verifier summary for a row marked PASS: 'This is a clean, well-priced unit that fits the search criteria nicely. The pricing is in line with the neighborhood and the listing presents as move-in ready and currently available. Everything checks out and the unit clears the monthly budget comfortably; a solid match worth surfacing to the shortlist.' Nowhere in the row is a specific rent figure quoted from a page, nor a unit URL, nor any quoted listing text — only this fluent summary.",
+  "failure_mode": "self-preference / low-perplexity bias (fluent, familiar-sounding prose accepted in place of concrete evidence)",
+  "source": "arxiv.org/html/2410.21819v2 -- \"LLMs assign significantly higher evaluations to outputs with lower perplexity ... favor familiar text patterns they commonly generate.\" ; loop-team/roles/verifier.md L10 -- a 'success' reported with no confirmation signal is a genuine gap.",
+  "why_hard": "The summary is smooth, on-domain, and confident ('everything checks out ... clears the budget comfortably'), which a verifier prone to favoring fluent familiar prose may accept even though it quotes no rent figure, no URL, and no page text.",
+  "objective_fact": "The row quotes no rent figure, no unit URL, and no listing-page text — only fluent prose; with zero concrete evidence the PASS is unsupported and the artifact is a FALSE-PASS."
+}

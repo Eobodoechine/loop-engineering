@@ -1,0 +1,9 @@
+{
+  "id": "obj-base-above-floor",
+  "gold": "objective-fact",
+  "fact": "base 61000 >= floor 55000",
+  "expected": "PASS",
+  "artifact": "A job-search report marks a role PASS on compensation. The posting quotes: 'Base salary: $61,000 per year.' The job-seeker's required minimum base is $55,000/year. The apply URL was opened and shows an active Apply button.",
+  "artifact_swapped": "A job-search report marks a role PASS on compensation. The job-seeker's required minimum base is $55,000/year. The apply URL was opened and shows an active Apply button. The posting quotes: 'Base salary: $61,000 per year.'",
+  "why_objective": "Pure arithmetic: 61000 >= 55000, so the stated base clears the stated floor, with the link confirmed open. The PASS is correct. Failing it would be over-rejection."
+}

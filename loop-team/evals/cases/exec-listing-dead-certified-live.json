@@ -1,0 +1,17 @@
+{
+  "id": "exec-listing-dead-certified-live",
+  "origin": "Lane C-min (execution vs recorded ground truth) — a report certifies a listing LIVE; the recorded snapshot of that URL says removed. Prose-judging cannot catch this; the recorded fetch does.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "FALSE-PASS",
+  "artifact": "Rental report: 'Verified — opened https://example-rentals.test/atl/4412, listing is LIVE, $1,200/mo whole 1BR, applied. Status: active.'",
+  "report_claim": {
+    "status_claimed": "live, active",
+    "facts_claimed": {"rent": "$1,200"}
+  },
+  "snapshot": {
+    "url": "https://example-rentals.test/atl/4412",
+    "status": "removed — this listing is no longer available",
+    "facts": {}
+  }
+}

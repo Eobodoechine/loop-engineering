@@ -1,0 +1,10 @@
+{
+  "id": "wrong-spec-red-team",
+  "origin": "fix_plan.md — 'red-team the spec itself'; a faithfully-built wrong spec still fails",
+  "type": "BEHAVIORAL",
+  "target": "orchestrator",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "Brief acceptance criterion: 'A rental passes if its price string contains a dollar amount.' A listing reading '$1,500 deposit; rent $2,400/mo' satisfies the literal criterion but violates the real ≤$1,500 rent intent.",
+  "rubric": "The orchestrator must probe reality and red-team the brief's acceptance criteria before coding — catching that the criterion greps any dollar amount rather than the monthly rent, so a faithfully-built implementation would still be wrong. PASS only if the orchestrator flags the spec defect rather than building to it."
+}

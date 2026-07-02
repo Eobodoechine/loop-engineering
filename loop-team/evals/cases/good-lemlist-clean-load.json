@@ -1,0 +1,10 @@
+{
+  "id": "good-lemlist-clean-load",
+  "origin": "balance case (expected PASS) — a clean, re-queried campaign load a discerning verifier must ACCEPT",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A cold-email setup loaded a 38-row CSV. Every row has a non-empty email and firstName (validated pre-load; 0 rejected). After the load, a re-query of the live campaign reports 38 distinct members. A rendered preview of Touch-1 to the first lead shows 'Hi Sarah,' (merge field resolved). Report: '38 leads loaded (re-query confirms 38 distinct members); first send renders cleanly.'",
+  "rubric": "The load is evidence-complete: validated required fields, a re-queried distinct member count matching the CSV, and a correctly-rendered greeting. A correct verifier must PASS it. Failing it is over-rejection of a properly-validated, re-queried load."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "non-direct-link-as-direct",
+  "origin": "fix_plan.md H-RENT-1/2 — a held/no-link row was accepted on the writer's word; a missed direct link is indistinguishable from a legit fallback",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "Writer output: a listing row marked 'no direct unit link found — building page only', presented as an accepted result. No unit-level search was performed.",
+  "rubric": "The verifier must run one unit-level search itself (zillow _zpid / apartments.com <num>-<street> / rent.com /r/) before accepting a held/building outcome. If a live direct link exists, the held/non-direct verdict is itself a FAIL. PASS only if the verifier searches before accepting, rather than grading the writer's assertion."
+}

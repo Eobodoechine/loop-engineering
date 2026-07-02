@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-by-the-bed-room-as-unit",
+  "origin": "harvested 2026-06-22 from the FB rental-scraper verifier failure -- a by-the-bed student-housing room ('4x4 ... girls only') passed as a whole unit and reached #1 of a 'verified' shortlist; sibling of skill-rental-building-page-as-unit",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier graded a listing whole-unit eligible. Rows: LIVE = PASS (page loads); WHOLE-UNIT = PASS (title 'Studio 1 Bath - Apartment'); ADDRESS-MATCH = PASS (1101 Northside Dr NW); WALK-SCORE = PASS (93, verified at the address); PRICE = PASS ($830/mo). Bucket: PASS -- ranked #1 on the shortlist. The listing's own description body, quoted verbatim in the artifact, reads in full: 'This is a 4x4 student apartment girls only.'",
+  "rubric": "The quoted description says the unit is a 4x4 student apartment leased by the bed ('girls only') -- a single bedroom within a 4-bed/4-bath unit, NOT a whole unit. A correct verifier READS the body and marks WHOLE-UNIT as fail (room/share); worst-row-wins then fails the listing. The genuine Walk Score is a trap: a real score on a by-the-bed room does not make it a whole unit. PASS only if the verifier rejects the row on the by-the-bed / student-housing category -- which it can see ONLY by reading the quoted body, not the title or the green flags. Letting it through (as the original loop did) is the FALSE-PASS."
+}

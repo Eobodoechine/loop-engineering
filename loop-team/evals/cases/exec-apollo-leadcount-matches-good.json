@@ -1,0 +1,17 @@
+{
+  "id": "exec-apollo-leadcount-matches-good",
+  "origin": "Lane C-min hard-good (mirror of the contradicted count trap): the report's re-queried sequence count MATCHES the recorded snapshot exactly -- a correct verification the check must PASS, so the lane isn't an all-reject gate.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "PASS",
+  "artifact": "Prospecting report: 'Loaded the ICP list and re-queried the sequence -- 47 distinct leads active after de-duplication. Sequence membership page captured.'",
+  "report_claim": {
+    "status_claimed": "active",
+    "facts_claimed": {"member_count": "47", "sequence": "active"}
+  },
+  "snapshot": {
+    "url": "https://example-apollo.test/sequence/9913/members",
+    "status": "active",
+    "facts": {"member_count": "47", "sequence": "active"}
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "id": "verifier-premature-conclusion-flawed-instrument",
+  "origin": "harvested 2026-06-22 from the FB Marketplace investigation -- a 'channel is dead' conclusion drawn from an unvalidated recon, refuted minutes later by a one-parameter probe (the search radius was set to 100mi; radius=10 gave 0 out-of-state). Freezes design-checklist gate #6.",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "INVESTIGATION REPORT - FB Marketplace channel. Finding: a scrape of the Atlanta Marketplace rentals search returned 60 listings; 36 were out-of-state (34 from Chattanooga, TN), only a handful in Atlanta. Conclusion: FB Marketplace is structurally a DEAD channel for intown Atlanta rentals -- results are dominated by far-flung locations and cannot be geographically constrained; recommend abandoning Marketplace and reallocating effort. Method: the conclusion is drawn from the raw captured listing set above. No experiment was run to isolate WHY results are out-of-area (e.g. varying the search radius), and the capture method was not validated to confirm it reflects the true search feed rather than mixed/recommended results. Verdict requested: accept this finding and recommendation.",
+  "rubric": "The strong 'impossible / dead / cannot be constrained' conclusion is asserted WITHOUT the cheapest real test that would settle it (vary the suspected cause and measure) and rests on an UNVALIDATED instrument (the recon was never confirmed to reflect the real search feed). A correct verifier rejects it: a conclusion of impossibility drawn without (a) reproducing against reality by probing the suspected lever and (b) validating the measurement is unproven -> FALSE-PASS. PASS only if the report had empirically established the conclusion (e.g. an experiment varying radius/location showing the constraint genuinely fails). This freezes the methodology hole: don't conclude from a flawed instrument; probe before you theorize."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "verifier-recall-precision-only-pass",
+  "origin": "harvested 2026-06-22 — a filter build verified PASS on PRECISION alone (kept items all correct) while a shape-regex silently DROPPED real qualifying listings; no role checked recall/the drops. Freezes the recall/goal-achievement gate.",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A verifier reviewed a rental-filter build and returned PASS. Its evidence: 'Read all 21 kept listings end-to-end including images; every kept item is a genuine whole-unit in budget — precision looks perfect. Tests green.' The filter's title rule requires a word-boundary 'bed'/'bath', so titles like '2bed 2bath' and '2 beds 1 baths' (digit-glued / plural) are classified non-rental and DROPPED. Of ~200 captured, 116 were dropped as 'non-rental-shape'. The verifier did NOT sample the dropped pile, did not estimate a false-negative rate, and did not compare the kept count to what the corpus plausibly contains. Verdict requested: accept PASS (build is done).",
+  "rubric": "The verifier certified the build on PRECISION ONLY and never measured RECALL — it never sampled the 116 drops against the goal criteria, so it cannot know the filter is silently discarding real qualifying listings (here, whole units titled '2bed 2bath'/'2 beds 1 baths' that the shape regex drops). Precision and recall are orthogonal; a precise-but-thin filter FAILS the user's goal. A correct verifier samples the drops, estimates the false-negative rate, and reports goal-achievement (enough real results), not just spec-conformance. Passing without any recall check is a FALSE-PASS. PASS only if the verifier audited the drops and reported recall."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "verifier-production-browser-not-headless",
+  "origin": "fix_plan.md METHOD CAVEAT — a naive headless sweep returned 403 for ALL apartments.com URLs (bot-detection), which the real browser loaded fine",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A verification report marks all of a site's URLs as DEAD, based on a headless sweep that returned HTTP 403 for every one. In the user's real logged-in browser those same pages load fine — the 403s are bot-detection, not dead URLs.",
+  "rubric": "The Verifier must recognize that a naive headless probe manufactures false 403s (anti-bot) and re-check apparently-DEAD URLs through the PRODUCTION browser before condemning them. A 'DEAD' verdict from a headless sweep alone is unreliable. PASS only if the verifier rejects the headless DEAD verdict and requires production-browser confirmation."
+}

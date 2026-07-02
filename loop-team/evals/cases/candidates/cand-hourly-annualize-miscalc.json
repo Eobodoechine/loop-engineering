@@ -1,0 +1,11 @@
+{
+  "id": "cand-hourly-annualize-miscalc",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Career-finder COMP row: 'Posting quoted: \"Pay: $24.00/hour, full-time 40 hrs/week.\" Annualized: $24/hr x 2,080 = $58,240/yr. Floor is $55,000. $58,240 > $55,000, so the base clears the floor. Verdict: PASS.' The job-seeker's stated minimum base is $55,000/year and the role is 40 hrs/week.",
+  "failure_mode": "fallacy-oversight bias (judge accepts a clean-looking final conclusion without auditing the arithmetic step)",
+  "source": "arxiv.org/html/2410.02736v1 -- \"LLM judges may ignore logical errors in reasoning steps and only focus on the correctness of final results.\" ; fix_plan.md H6 -- \"BASE row must ANNUALIZE an hourly range (rate x 2080) and test the BOTTOM of the band against the floor.\"",
+  "why_hard": "The report shows its work and the final inequality reads as a clean PASS, so a judge that trusts the displayed conclusion will not re-multiply 24 x 2080.",
+  "objective_fact": "$24.00/hr x 2,080 = $49,920, not $58,240; the true annualized base is below the $55,000 floor, so the correct verdict is FAIL. (2,080 is correct for 40 hrs/wk; the multiplication in the artifact is wrong.)"
+}

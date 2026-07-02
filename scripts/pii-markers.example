@@ -1,0 +1,16 @@
+# Pre-push guard — personal marker list TEMPLATE.
+#
+# Copy this file to `.pii-markers.local` (which is gitignored and never
+# published) and fill in YOUR personal strings — one regex alternative per
+# line. '#' comments and blank lines are ignored. The guard always ALSO checks
+# the generic API-key prefixes (sk-ant / sk-proj), so you don't list those.
+#
+#     cp scripts/pii-markers.example scripts/.pii-markers.local
+#     # then edit .pii-markers.local with your own values
+#
+# Examples (REPLACE with your own — do NOT commit real values in this template):
+# your-first-name
+# your-last-name
+# your absolute home directory path (e.g. slash-Users-slash-your-username on macOS)
+# your-org-or-llc-slug
+# your-private-project-folder

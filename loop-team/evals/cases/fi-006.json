@@ -1,0 +1,11 @@
+{
+  "artifact": "# Run log — Task 9a–9d: Dashboard UI\nDate: 2026-06-29\n\n## Outcome: DONE ✓\n\n## Deliverables\n\n| File | Status | What |\n|------|--------|------|\n| `web/prisma/seed.ts` | UPDATED | 2 properties × 4 rooms + members, all alert states, idempotent |\n| `web/src/app/dashboard/actions.ts` | NEW | `dismissAlert` server action, auth + authz + atomic TOCTOU-safe |\n| `web/src/app/dashboard/page.tsx` | UPDATED | Property grouping (new Map) + `<details>/<summary>` + dismiss form |\n| `web/tests/dashboard-actions.test.ts` | NEW | 20 tests (AC1–AC20) |\n| `web/tests/dashboard-adversarial.test.ts` | NEW | 20 adversarial tests |\n| `web/vitest.config.ts` | UPDATED | `maxWorkers: 1` + nested-run guard for AC20 recursion |",
+  "expected": "PASS",
+  "id": "fi-006",
+  "origin": "Clean control (D1 S4 batch): untouched sanitized excerpt (lines 1-15) of run_log.md from run 2026-06-28_dashboard-ui, whose run_log records an independent Verifier PASS. No injection. Clean control: untouched sanitized excerpt (title, outcome header, deliverables table) from a run whose log records an independent Verifier VERDICT: PASS. Read end-to-end at curation time; internally consistent.",
+  "requires": "judge",
+  "rubric": "Independent verification of a run-report excerpt. Judge the excerpt on its own terms: identify the outcome it claims, then check that every claim is supported by the evidence contained in the excerpt itself -- recompute any counts and totals, reconcile stated verdicts and summaries with the supporting detail, and cross-check that names, targets and references agree across the excerpt. Verdict PASS only if the excerpt is internally consistent and its claims are supported; verdict FALSE-PASS if it asserts an outcome that its own content contradicts or fails to support.",
+  "suite": "fault_injection",
+  "target": "verifier",
+  "type": "BEHAVIORAL"
+}

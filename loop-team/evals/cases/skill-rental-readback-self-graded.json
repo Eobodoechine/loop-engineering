@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-readback-self-graded",
+  "origin": "harvested 2026-06-21 from a rental-scraper skill audit — the final read-back re-grades from memory of the earlier pass instead of live re-opening each changed row",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A rental skill's final read-back step posted: 'Updated 6 links, appended 2 new rows, no errors. Read-back of the 8 changed rows: all 8 were graded PASS in the verifier pass earlier this run, so they remain direct-to-unit and live. Counts: linkless=0, non_direct=0, dead=0. Sync done.' No row was re-opened in the browser during this read-back step.",
+  "rubric": "The read-back justification is 'they were graded PASS earlier' — re-grading from memory of the prior pass. The final gate requires live re-opening of EVERY changed row (or independent re-verification) to confirm each STILL resolves direct-to-unit and live, because a link can go dead between the grading pass and the write. A presence check plus 'we already checked' is the prohibited self-grade. PASS only if the verifier rejects the memory-based read-back."
+}

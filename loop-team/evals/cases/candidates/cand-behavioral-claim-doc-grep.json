@@ -1,0 +1,11 @@
+{
+  "id": "cand-behavioral-claim-doc-grep",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Verification report for a skill that injects a JavaScript interceptor into a live page via an MCP browser tool. Acceptance criterion: '[BEHAVIORAL] the network interceptor actually captures GraphQL responses from the page.' Evidence cited: 'PASS - grep of SKILL.md confirms the file documents the interceptor and includes the line `window.__cap` and a note that it captures /api/graphql XHR traffic. The interceptor code block is present and well-formed. Criterion satisfied.' No record of the interceptor being run against any page; the only evidence is that the file mentions it.",
+  "failure_mode": "DOC-grep standing in for a BEHAVIORAL check (verify-the-words-not-the-world)",
+  "source": "loop-team/roles/verifier.md L28 -- \"If the tests are all [DOC] greps for a [BEHAVIORAL] criterion, that is a FALSE-PASS regardless of a green harness.\" ; fix_plan.md (CONCLUSIVE diagnosis) -- the isolated-world interceptor captured 0 in the live run while the file documented it correctly.",
+  "why_hard": "The cited evidence is specific and technically literate (names window.__cap, /api/graphql), so it reads like a real behavioral confirmation rather than a grep that only proves the file mentions the feature.",
+  "objective_fact": "The criterion is [BEHAVIORAL] (interceptor must actually capture responses) but the only evidence is that SKILL.md textually contains the interceptor; a doc grep cannot confirm runtime capture, so per verifier.md this is a FALSE-PASS."
+}

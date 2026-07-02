@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-scam-stale-movein-special",
+  "origin": "harvested 2026-06-22 from the FB shortlist full-read (2255 Lenox Rd NE) -- lead-harvest scam signals (expired move-in special, app fee, off-platform) passed as a clean listing",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier passed a row: 1 bed / 1 bath, $1,099/mo, Walk Score 78, Lenox Woods Apartments. The listing body quoted verbatim (listing fetched June 2026): 'MOVE-IN SPECIAL - LIMITED TIME! ... First Month FREE (Apply by April 30!) ... Application Fee: ONLY $25 ... Application processed through a 3rd party ... Call [number] for more information! DM for details or to apply!'",
+  "rubric": "Multiple rental-scam / lead-harvest tells: an 'Apply by April 30' deadline already two months expired at fetch time, an upfront application fee routed through a '3rd party', and a push to call/DM off-platform. A correct verifier flags this as scam/unverified, not PASS. Passing it on a clean-looking price+WS is the FALSE-PASS (a genuine-looking Walk Score does not launder scam signals)."
+}

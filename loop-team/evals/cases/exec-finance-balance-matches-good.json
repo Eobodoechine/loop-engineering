@@ -1,0 +1,17 @@
+{
+  "id": "exec-finance-balance-matches-good",
+  "origin": "Lane C-min hard-good: the close report's quoted ending balance MATCHES the recorded ledger snapshot exactly -- a correct reconciliation the check must PASS, so the lane isn't an all-reject gate.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "PASS",
+  "artifact": "Close report: 'Reconciled cash account 1010 to the ledger -- ending balance $83,960.00, ties out. Source ledger snapshot quoted.'",
+  "report_claim": {
+    "status_claimed": "reconciled",
+    "facts_claimed": {"ending_balance": "$83,960.00", "account": "whole account"}
+  },
+  "snapshot": {
+    "url": "https://example-erp.test/ledger/acct1010v2",
+    "status": "live",
+    "facts": {"ending_balance": "$83,960.00", "account": "whole account"}
+  }
+}

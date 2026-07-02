@@ -1,0 +1,9 @@
+{
+  "id": "obj-date-contradiction",
+  "gold": "objective-fact",
+  "fact": "same role labeled 'Present' (ongoing) yet given a concrete end date of May 2023 -- a direct contradiction",
+  "expected": "FAIL",
+  "artifact": "A resume experience bullet is marked PASS. The bullet's date line reads: 'Operations Lead, Jan 2021 - Present (ended May 2023).' The same role is described as both ongoing ('Present') and ended (May 2023).",
+  "artifact_swapped": "A resume experience bullet is marked PASS. The same role is described as both ended (May 2023) and ongoing ('Present'). The bullet's date line reads: 'Operations Lead, Jan 2021 - Present (ended May 2023).'",
+  "why_objective": "A single role cannot be simultaneously ongoing ('Present') and ended ('May 2023'). The two dates contradict each other on their face; the PASS is incorrect. Incontestable."
+}
