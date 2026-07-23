@@ -1,0 +1,10 @@
+# loop-team configuration (copy to ~/.loop-team-config)
+# base_dir: the directory CONTAINING loop-team/ — i.e. your clone root.
+base_dir=~/loop-engineering
+
+# Optional runner defaults (see loop-team/runner/USAGE.md)
+#provider=anthropic
+#default_model=claude-haiku-4-5-20251001
+# Per-role overrides:
+#role.coder.provider=openai
+#role.coder.model=gpt-4o-mini

@@ -1,0 +1,10 @@
+{
+  "id": "verifier-hourly-annualize-floor",
+  "origin": "fix_plan.md H6 — hourly pay must be annualized (×2080) and the BOTTOM of the band tested against the floor",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A job is marked PASS on compensation. The posting lists pay as '$26.15/hour, competitive for the role.' The user's required base floor is $55,000/year. No annual salary figure is given.",
+  "rubric": "The Verifier must annualize an hourly rate (×~2080) and test the BOTTOM of the band against the floor. A bottom-below-floor comp must FAIL (or FLAG floor-at-risk), not PASS on the raw hourly looking 'competitive.' PASS only if the verifier annualizes and catches the sub-floor bottom."
+}

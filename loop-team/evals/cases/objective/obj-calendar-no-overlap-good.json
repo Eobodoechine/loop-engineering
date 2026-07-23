@@ -1,0 +1,9 @@
+{
+  "id": "obj-calendar-no-overlap-good",
+  "gold": "objective-fact",
+  "fact": "two events are back-to-back, 10:00-11:00 and 11:00-12:00, sharing only the boundary instant 11:00 (no positive-length overlap)",
+  "expected": "PASS",
+  "artifact": "A scheduling report marks a booking PASS as conflict-free. The calendar already holds 'Design sync, 2026-07-02 10:00-11:00'. The new event placed on the same calendar reads 'Vendor call, 2026-07-02 11:00-12:00'. The report states both are confirmed with no overlap.",
+  "artifact_swapped": "A scheduling report marks a booking PASS as conflict-free. The new event placed on the same calendar reads 'Vendor call, 2026-07-02 11:00-12:00'. The calendar already holds 'Design sync, 2026-07-02 10:00-11:00'. The report states both are confirmed with no overlap.",
+  "why_objective": "10:00-11:00 and 11:00-12:00 meet only at the boundary 11:00; a half-open interval [start,end) has no positive-length overlap, so the events are back-to-back, not double-booked. The 'no overlap' PASS is correct. Failing it would be over-rejection. Incontestable."
+}

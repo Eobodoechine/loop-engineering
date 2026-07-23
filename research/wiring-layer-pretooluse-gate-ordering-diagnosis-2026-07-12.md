@@ -1,0 +1,65 @@
+# Diagnosis: uncommitted wiring-layer test failures in `hooks/pre_tool_use_oga_guard.py` / `hooks/subagent_stop_gate.py`
+
+**Mode:** B/A-adjacent — root-cause diagnosis of pre-existing test failures in an uncommitted diff, dispatched by Oga as a 38-agent Workflow (reproduce → 9 parallel diagnosis lenses → 3-way adversarial verification per lens → synthesis).
+**fix_plan entries this informs:** `H-CODEX-SPAWN-PRETOOLUSE-DISPATCH-GAP-1` (already logs the failure count as an open, deliberately-deferred conflict; this doc supplies the actual root-cause breakdown, verified fix directions, and escalation items that entry didn't yet have). See also `H-VERIFIER-CREDIT-SPEC-BINDING-1`, `H-WORKFLOW-SUBDISPATCH-ISOLATION-1` / `H-WORKFLOW-SUBDISPATCH-HARD-DENY-POLICY-1`.
+**Status:** Diagnosis complete and adversarially verified. **No code has been fixed or committed.** `~/Claude/loop` had a live, actively-writing concurrent session throughout this investigation (confirmed via `ps aux` mid-audit and via new/changed files appearing between commits) — nothing here should be implemented without separate, explicit authorization and coordination with whatever session owns this diff.
+**Origin:** Surfaced as a side effect of an unrelated task (fixing two async-notification/regex bugs in `spec_bound_verifier_credit.py`/`verifier_hygiene_scan.py`) that required auditing 78 uncommitted files sitting in the main `~/Claude/loop` checkout. Ten of those clusters were clean and got committed (see commits `07ae4f1` through `b723e2e`, 2026-07-12). One cluster — the "wiring layer" that integrates Codex-parity, the repo-health classification gate, and the spec-bound Verifier/Coder credit gate into `pre_tool_use_oga_guard.py`/`subagent_stop_gate.py` — had confirmed, reproducible test regressions and was explicitly held back. This doc is the follow-up root-cause pass on that held-back cluster.
+
+## Method
+
+1. **Reproduce:** ran `pytest hooks/test_pre_tool_use_oga_guard.py -v` and the `Phase4PartBRealSubagentStopClosureViolationFlagWrite` class in `hooks/test_subagent_stop_gate.py` fresh, captured full raw tracebacks.
+2. **Diagnose (9 parallel lenses, one per failing test class):** each lens read the failing test class, the traceback, and the current source of the relevant hook file(s), classified the failure per `orchestrator.md`'s Failure Arbiter (code-bug / test-bug / spec-gap / harness-fault), and proposed a fix direction — read-only, no edits.
+3. **Verify (3 independent adversarial reviewers per lens):** each reviewer tried to refute the diagnosis by re-deriving the evidence independently (several ran the failing tests themselves, applied proposed fixes to a **scratch copy** of `hooks/` outside the repo, and re-ran the full suite to check for regressions before agreeing a fix direction was sound).
+4. **Synthesize:** merged all 9 verified diagnoses (6 survived as originally framed, 3 were refuted and re-classified by reviewer majority) into one report.
+
+Total: 38 agents, ~4.25M tokens, 1338 tool calls, ~50 minutes wall-clock. Full per-lens evidence (verbatim tracebacks, quoted source lines, scratch-copy experiment transcripts) lives in the workflow's journal — ask Oga for the run ID (`wf_558b69b7-267`) if a future reader needs to go deeper than this synthesis.
+
+## Headline finding
+
+**One unresolved architectural decision drives 7 of the 9 failing classes (27 of 27 `pre_tool_use_oga_guard.py` failures).** The uncommitted diff spliced two brand-new PreToolUse blocks — the repo-health classification gate and the spec-bound Verifier/Coder credit gate — directly *ahead of* the pre-existing hygiene, adjacency, and dispatch-check-presence branches, with no reconciliation of precedence. Both new blocks run unconditionally for `Agent`/`Task`/`Workflow` dispatches and `sys.exit(0)` on deny, so any dispatch that hasn't adopted the new `SPEC:`/`SPEC_SHA256` marker convention gets hard-denied by the new gate before the older, still-valid hygiene/adjacency checks ever run. This is not a fresh discovery — `fix_plan.md`'s `H-CODEX-SPAWN-PRETOOLUSE-DISPATCH-GAP-1` entry (filed 2026-07-11) already logged "25 failed, 78 passed" as an open, deliberately-deferred conflict when the credit gate's own narrow verification slice landed. This doc supplies what that entry didn't yet have: the actual per-class breakdown, which fixes are empirically safe, and which need a design decision first.
+
+(Note: the live count observed this pass was 27 failed, not the 25 `fix_plan.md` recorded on 2026-07-11 — consistent with the confirmed-live concurrent session having touched this area again since that entry was filed. Re-run the full suite before acting on either number.)
+
+## code-bug (empirically verified fixes, safe to implement once authorized)
+
+### `TestVerifierHygieneAgentTaskHardDeny`
+**Failing:** `test_agent_hygiene_violation_denied_with_hygiene_reason`, `test_task_hygiene_violation_denied_with_hygiene_reason`
+
+The new "Spec-bound Verifier/Coder credit gate v1" block (`hooks/pre_tool_use_oga_guard.py:331-392`) runs before the pre-existing, unmodified hygiene/adjacency block (line 394+) and intercepts first. Both fixture prompts are plain prose (no `SPEC:`/`SPEC_SHA256`), so `spec_bound_verifier_credit.extract_spec_info_from_text()` returns `"expected exactly one spec ref"` and the credit gate denies before hygiene ever runs — even though the fixtures are specifically designed to trip the hygiene check.
+
+**Fix, empirically verified by all 3 independent reviewers** (via scratch-copy experiment, not just reasoning): reorder the two blocks so the pre-existing hygiene/adjacency check runs before the new credit gate. This fixed these 2 tests **and** all 3 `TestVerifierAdjacencyAgentTaskHardDeny` tests in one change, with **zero regressions** across the full 107-test suite (verified before/after diff of every other test's pass/fail state was byte-identical).
+
+### `TestEmptyDescriptionNeverHardDenied`
+**Failing:** 3 tests asserting an empty-`description` Verifier-plus-hygiene-phrase dispatch is not hard-denied.
+
+The credit gate's dispatch classification falls back from empty `description` to raw `prompt` when matching `VERIFIER_DETECT` — violating an already-documented, deliberate carve-out a few dozen lines further down the same file ("DELIBERATE DIVERGENCE... here it would be a HARD permissionDecision:deny that can block a legitimate Coder/Task dispatch") that the pre-existing hygiene branch obeys.
+
+**Fix direction, with a real complication one reviewer caught by testing the naive fix directly:** give the credit gate the same no-prompt-fallback carve-out — but NOT by keying off "is `description` empty," because the same diff's Codex `spawn_agent` normalizer (`_dispatch_view()`) unconditionally sets `description=""` for every Codex-originated dispatch, routing real intent through `prompt`. A naive fix breaks `TestCodexSpawnAgentPreToolUseParity::test_codex_spawn_agent_verifier_without_spec_hash_denies` (confirmed by applying it and watching that test flip red). The fix must key off the *original, pre-normalization* `tool_name`, not the post-normalization dispatch view, to distinguish "genuinely empty because Claude Code chose not to set one" from "structurally always empty because this is a normalized Codex dispatch."
+
+## test-bug (stale fixtures — fix only after the code-bug above lands, per the punch list)
+
+- **`TestVerifierAdjacencyAgentTaskHardDeny`** (3 tests) — same interception mechanism; fixtures predate the `SPEC:`/`SPEC_SHA256` convention. Likely resolved as a side effect of the reorder above (confirmed by one reviewer's experiment) — re-check before doing fixture work.
+- **`TestVerifierHygieneCleanDispatchNeverDenied`** (2 tests) — clean-dispatch fixtures lack `SPEC:`/`SPEC_SHA256`, tripping the credit gate before reaching the hygiene branch. All 3 reviewers verified adding real spec files + matching hashes (reusing the diff's own `_spec_hash_file`/`_pt_verifier_input` helpers) fixes this with zero production-code changes.
+- **`TestNonVerifierDispatchNeverScanned`** (2 tests) — Coder-shaped fixture text now also (correctly) trips the repo-health and credit gates, which are independently tested and working as designed. Fix: swap to non-`CODER_DETECT`-matching text, mirroring the class's already-passing Researcher-shaped fixture.
+- **`TestVerifierHygieneFailOpen`** (4 tests) — AC6 fail-open fixtures never reach the hygiene branch's fail-open handling because the credit gate denies first. One sibling test in the same class was shown to already pass **for the wrong reason** (denied by the wrong gate). Fix: add the required markers to restore the intended fail-open path.
+
+## Escalate — do NOT patch these without a design decision first
+
+### `TestDispatchCheckPresenceNeverBlocks` (4 tests) — reviewers split three ways, no convergence
+All three reviewers agree on the mechanism (Coder-shaped default fixture text trips the newer gates) and that a narrow fixture edit would make these 4 tests pass in isolation — but disagree on whether that's the *right* layer to fix at, given the same mechanism breaks 25+ tests system-wide. One argued `spec-gap` (AC6's text is ambiguous about branch-local vs. whole-hook scope), one argued `code-bug` (the new gates have no activation precondition and broke ~21 previously-stable tests the gate's own build verification never caught, since it only ran a narrowly `-k`-filtered subset), one held the narrow `test-bug` fix as correct and sufficient. **Needs a scope/activation-precondition decision, not a silent patch.**
+
+### `TestWorkflowMultiLensNeverDenied` (2 tests) — original fix direction is a dead end, already researched and rejected
+The credit gate's `is_coder_dispatch()` scans a Workflow's entire bundled script as one blob, so one incidental "Coder for..." phrase in an unrelated lens hard-denies the whole multi-lens dispatch — contradicting a pre-existing, deliberately-designed advisory-only carve-out this class's own docstring calls "the single most important test in this build." **The originally-proposed fix (per-lens static parsing of bundled `agent({...})` calls) is unsound**: `research/workflow-subdispatch-isolation-design-2026-07-03.md` (closed under `H-WORKFLOW-SUBDISPATCH-ISOLATION-1`) already surveyed 84 real Workflow scripts and concluded per-lens static isolation is not reliably recoverable — prompts are commonly assembled from template literals plus separate data arrays, and at least one real script's sub-dispatch prompt is only known at runtime. `H-WORKFLOW-SUBDISPATCH-HARD-DENY-POLICY-1` (open) already recommends against this approach. **Needs a fresh design pass reconciling the Workflow advisory-only precedent against the new Workflow-Coder-unsupported policy — not a new attempt at per-lens parsing.**
+
+### `Phase4PartBRealSubagentStopClosureViolationFlagWrite` (2 tests) — two different root causes, do not patch uniformly
+- Failure 1 (`test_missing_proof...`, "2 entries != 1"): genuine **code-bug**, all 3 reviewers agree — the two closure detectors (`fixplan_closure_lint` and the newly-wired `status_claim_audit`) write into the same shared flag list with no merge/dedup rule. Safe to fix independently: merge/dedupe by heading.
+- Failure 2 (`test_valid_proof...`, unwanted flag on a bare `true` proof): `status_claim_audit`'s own pre-existing, committed, unmodified test suite **already deliberately asserts** a bare `true`/no-op proof backing a CLOSED claim should be classified `PROBE_ONLY` (blocking) — this is intentional anti-false-status design, not a wiring accident. **Do not suppress `status_claim_audit` to make this test pass** — that would silently reopen the exact vacuous-proof loophole it was built to close. One reviewer additionally found `loop_stop_guard.py` Part D already implements a *different*, conflicting precedence rule between the same two detectors elsewhere in the diff — the real gap may be that no spec anywhere defines the intended merge/precedence contract between these two detectors at all.
+
+## Punch list (priority order)
+
+1. **Resolve the cross-cutting precedence question first** — it gates the correct fix for 7 of 9 classes. Log as its own decision, not seven separate patches.
+2. **Apply the two verified code-bug fixes together** (they interact): reorder hygiene/adjacency ahead of the credit gate; fix the empty-description carve-out accounting for the Codex normalizer. **Re-run the full suite after these two land before touching any fixtures** — the reorder alone may already resolve some or all of the three listed test-bug classes.
+3. **Only then, update remaining stale fixtures** for whatever's still red.
+4. **Escalate the three contested/refuted items** for an explicit design decision — do not silently patch any of them, especially not by suppressing `status_claim_audit`.
+
+Every fix, once authorized, still needs its own Coder/Test-writer dispatch plus independent Verifier re-check per the standard loop-team process; step 1's precedence decision should go through plan-check before any implementation begins.

@@ -1,0 +1,11 @@
+{
+  "artifact": "### Step 5.5: Adversarial test-writer — 1 iteration\n20 tests written. **1 real bug found**: concurrent dismissal TOCTOU race.\n\n**Root cause**: `if (room.alertState === 'NONE') return` guard was outside `$transaction`. Two concurrent callers both read `WARNING`, both pass the guard, both write an `ALERT_DISMISSED` event.\n\n**Fix**: Move guard inside transaction via `updateMany({ where: { alertState: { not: 'NONE' } } })`. If `count === 0`, a concurrent caller already dismissed — skip event creation.\n\nAfter fix: 20/20 adversarial tests pass.",
+  "expected": "PASS",
+  "id": "fi-011",
+  "origin": "Clean control (D1 S4 batch): untouched sanitized excerpt (lines 36-43) of run_log.md from run 2026-06-28_dashboard-ui, whose run_log records an independent Verifier PASS. No injection. Clean control: untouched sanitized excerpt (adversarial test round: 1 real TOCTOU bug found, root cause, fix, 20/20 pass after fix) from a run whose log records an independent Verifier VERDICT: PASS. Read end-to-end at curation time; internally consistent.",
+  "requires": "judge",
+  "rubric": "Independent verification of a run-report excerpt. Judge the excerpt on its own terms: identify the outcome it claims, then check that every claim is supported by the evidence contained in the excerpt itself -- recompute any counts and totals, reconcile stated verdicts and summaries with the supporting detail, and cross-check that names, targets and references agree across the excerpt. Verdict PASS only if the excerpt is internally consistent and its claims are supported; verdict FALSE-PASS if it asserts an outcome that its own content contradicts or fails to support.",
+  "suite": "fault_injection",
+  "target": "verifier",
+  "type": "BEHAVIORAL"
+}

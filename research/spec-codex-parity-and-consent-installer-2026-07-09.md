@@ -1,0 +1,522 @@
+## REVISION NOTE (v2, post plan-check PLAN_FAIL, 2026-07-09)
+
+Round-1 plan-check returned `PLAN_FAIL` on Deliverable A's `_detect_runtime()` design (v1 AC-3).
+**The citation was independently verified and CONFIRMED, not fabricated:** read
+`<HOME>/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/hook-development/SKILL.md`
+lines 300-318 directly — the quoted JSON block and "Stop/SubagentStop: `reason`" text match the
+source verbatim. This is Anthropic's own bundled plugin-authoring skill, documenting the real
+Claude Code hook runtime's stdin contract (not a Codex or generic template doc — frontmatter:
+"Hook Development for Claude Code Plugins"). **Independently cross-checked against
+`code.claude.com/docs/en/hooks` (fetched live, separate from the skill file)**, which confirms the
+same common-field set — `session_id`, `transcript_path`, `cwd`, `permission_mode`,
+`hook_event_name` (plus newer fields `prompt_id`, `effort`, `agent_id`/`agent_type` when inside a
+subagent) — on **every** hook event, Stop included. Two independent sources agree:
+`hook_event_name` and `permission_mode` are real Claude Code fields, not Codex-exclusive ones.
+**v1's AC-3 design (discriminate Codex-vs-Claude-Code by presence of `hook_event_name`/
+`permission_mode`) is therefore WRONG as drafted** — it would misclassify real Claude Code
+sessions as Codex, silently routing them through the new adapter, which would find no
+`spawn_agent`/`wait_agent` items and return an empty list (no exception — AC-7's fail-open catch
+never fires), silently disabling `RUNLOG_MISSING`/`thrash-past-green` on the one runtime where
+they work today. This is fixed below (Deliverable A redesigned to discriminate on transcript
+CONTENT shape, which Step 2b's own real evidence already showed is genuinely asymmetric between
+the two runtimes, unlike the stdin field set).
+
+**A related, independently-surfaced finding, not required to fix in this spec but flagged for
+awareness:** the live `code.claude.com/docs/en/hooks` page was searched for the literal string
+`stop_hook_active` (the field `loop_stop_guard.py`'s own docstring and code currently depend on,
+`hooks/loop_stop_guard.py:7,61`) and **it does not appear anywhere on that page**. Every existing
+test asserting `stop_hook_active` behavior (`test_loop_stop_guard.py` lines 91-99, 193-194,
+247-249, 333-344, 433-440) constructs it synthetically rather than against a captured real
+payload — the same self-confirming-test risk plan-check flagged for the new Codex work may
+already exist, unnoticed, in the EXISTING Claude Code baseline. Not this spec's scope to fix, but
+recorded here so a future spec/plan-check round picks it up rather than re-discovering it cold.
+
+---
+
+# SPEC (pre-implementation, for plan-check) — Codex enforcement parity + consent-gated installer
+
+**Status:** DRAFT v1, not yet plan-checked. Research + spec only — zero implementation code in this
+document or applied to disk. Written by Researcher dispatch, 2026-07-09, following up on
+`research/run-logging-enforcement-gap-codex-vs-claude-code-2026-07-09.md` (run-logging) and its
+Checkpointing addendum (mid-build git-commit persistence). Read both before implementing — this
+spec assumes their findings.
+
+## Goal (Nnamdi's own framing, verbatim intent)
+1. The enforcement (run-logging gate + checkpoint gates) must work in **both** Claude Code and
+   Codex — not just Claude Code with Codex silently blind.
+2. **Real Codex-side enforcement, not just a backstop.** A git pre-commit/pre-push backstop is
+   acceptable as defense-in-depth, never as the primary answer. The actual gates
+   (`RUNLOG_MISSING` in `loop_stop_guard.py`; `thrash-past-green`/`step-size` in
+   `micro_step_gates.py`) must genuinely recognize and block inside Codex sessions.
+3. **Consent-gated distribution.** Anyone who clones/imports the repo must either find the guards
+   already installed (silent no-op) or be explicitly asked to accept/reject installing them —
+   never silent no-install, never silent auto-install — for both a Claude Code user and a Codex
+   user opening the repo fresh.
+
+---
+
+## Step 1 — Confirmed repo target (empirical, not assumed)
+
+`git -C ~/Claude/loop remote -v` returns **empty** — `~/Claude/loop` (the private working copy,
+canonical source of truth per `~/Claude/CLAUDE.md`) has **no git remote configured at all**.
+Confirmed via direct read of `~/Claude/loop/.git/config`: only `[core]` and a
+`[branch "main"] vscode-merge-base = origin/main` line (an editor setting, not a real remote).
+
+The actual GitHub-tracked repo is a **separate directory**, `~/loop-public`, whose `origin` is
+confirmed via `git -C ~/loop-public remote -v`:
+```
+origin  https://github.com/Eobodoechine/loop-engineering.git (fetch)
+origin  https://github.com/Eobodoechine/loop-engineering.git (push)
+```
+`~/loop-public` is not a manually-maintained fork — it is an **auto-published, single-commit
+snapshot mirror**, regenerated by `~/Claude/loop/scripts/snapshot-publish.sh` on every commit to
+`~/Claude/loop`'s `main` branch (wired via `~/Claude/loop/.git/hooks/post-commit` →
+`auto-publish-on-commit.sh`, confirmed present in `~/.claude/settings.json`'s permission
+allowlist). Per `~/Claude/loop/README.md`'s "Publishing model" section (read): tracked-content-only
+(`git archive`), fail-closed PII scan, a since-last-publish freshness marker
+(`.loop-public/.loop-publish-meta.json` records the published `main_sha`). `git log` on both repos
+confirms: `~/Claude/loop`'s `main` has real, dense commit history (feature commits, chore commits);
+`~/loop-public`'s history is entirely `snapshot: publish tracked tree (<timestamp>)` commits —
+consistent with the mirror model.
+
+**Implication for this build:** the installer package and consent-flow bootstrap files must be
+authored under `~/Claude/loop/` (the actual editable source of truth) at a path that is NOT
+excluded by the publish filter (confirmed exclusions: `public/`, `runs/`, `loop-team/runs/` per
+`README.md`/`path_removal.py`) — a new top-level `loop-guards/` directory (proposed below) is safe,
+since it matches neither exclusion pattern. It will appear in `~/loop-public` → GitHub
+automatically on the next commit + publish cycle, with no separate distribution step needed.
+
+---
+
+## Step 2 — Codex's real hook payload shape (empirically captured, not theorized)
+
+This was the single riskiest unknown (`PORTABILITY.md` flags it explicitly: "Codex session-file
+format: UNVERIFIED"). Two independent, real sources close it:
+
+### 2a. Official schema (developers.openai.com/codex/hooks, confirmed via fetch)
+**`Stop` hook stdin fields:** `session_id`, `transcript_path` (string | null), `cwd`,
+`hook_event_name`, `model`, `permission_mode`, `turn_id`, `stop_hook_active` (bool),
+`last_assistant_message` (string | null).
+**`SubagentStop` hook stdin fields:** all of the above, plus `agent_id`, `agent_type`,
+`agent_transcript_path` (string | null — **"Path to the subagent transcript file, if any"**).
+The docs explicitly warn: *"the transcript format isn't a stable interface for hooks and may
+change over time"* — the adapter design below treats the transcript **contents** as
+best-effort/fail-open, same discipline this framework already applies everywhere else in
+`loop_stop_guard.py`.
+
+**This is structurally close to Claude Code's own contract** (`{transcript_path, stop_hook_active}`
+per `loop_stop_guard.py`'s own docstring) — same two core fields, plus Codex adds richer metadata.
+The field-name-level porting problem is smaller than `PORTABILITY.md` feared. The real problem
+(next section) is the **transcript CONTENT shape**, not the top-level hook fields.
+
+### 2b. Real, on-disk captured transcripts from the actual taxahead build (empirical, not synthetic)
+Found and read directly: `~/.codex/sessions/2026/07/09/rollout-*.jsonl` — Codex's own session
+rollout format, dozens of real files from 2026-07-09, several referencing "taxahead" by content
+(confirmed via grep). Inspected the largest (730 lines) structurally (field names and counts only —
+no proprietary business content reproduced beyond short illustrative fragments below).
+
+**Confirmed real structure:**
+- Top-level `type` values: `session_meta`, `turn_context`, `event_msg`, `response_item`,
+  `world_state`, `compacted`.
+- `response_item` payloads carry a `type` of their own: `function_call` (148 in this file),
+  `function_call_output` (147), `message` (136), `reasoning` (47), `custom_tool_call` (6, all
+  `apply_patch`), `custom_tool_call_output` (6), `tool_search_call`/`tool_search_output`.
+- **Codex's sub-agent dispatch primitive is a 3-call state machine, not a single synchronous
+  tool_use/tool_result pair the way Claude Code's `Task`/`Agent`/`Workflow` tool is:**
+  - `spawn_agent` (27 calls in this file) — `arguments: {"agent_type": "...", "message": "..."}`
+    → `function_call_output.output: {"agent_id": "<uuid>", "nickname": "<name>"}`. Observed
+    `agent_type` values in this real file: `explorer`, `worker`, `default`.
+  - `wait_agent` (27 calls) — `arguments: {"targets": ["<agent_id>", ...], "timeout_ms": N}`
+    → `output: {"status": {"<agent_id>": {"completed": "<free-text summary>"}}, "timed_out": bool}`.
+    **Confirmed it supports batched multi-target waits** (one `wait_agent` call awaiting 2+
+    `agent_id`s at once) and that its `call_id` is **different from** the originating
+    `spawn_agent`'s `call_id` — correlation is by `agent_id`, not by `tool_use_id`/`call_id`.
+  - `close_agent` (22 calls) — terminates a spawned agent.
+- **Directly confirmed the loop-team Verifier role IS being dispatched through this exact
+  mechanism in real use**: one real `spawn_agent` call's `arguments.message` in this file begins
+  *"You are acting as the loop-team plan-check Verifier for the TaxAhead Gmail connector build.
+  Do all file reads/greps/tool calls yourself, directly. Do NOT dispatch your own sub-agents for
+  any part of this task -- you are a leaf worker, not an orchestrator... Mode: PLAN-..."* — the
+  exact phrase `_VERIFIER_DETECT` (the shared regex in `verifier_hygiene_scan.py`) is built to
+  catch (`plan-?check verifier`), just delivered via `spawn_agent`'s `message` argument instead of
+  a Claude-Code `Task` tool's `prompt` field.
+- **Each spawned sub-agent gets its OWN, separate rollout file**, confirmed via a spawned agent's
+  own `session_meta.payload`: `"session_id": "019f480c-...", "thread_source": "subagent"`
+  (distinct session_id from its parent/coordinator's rollout file). This directly corroborates the
+  official docs' `agent_transcript_path` field on `SubagentStop` — the sub-agent's real completion
+  content is **not fully inline** in the parent's `wait_agent` output (which returned only a short
+  synthesized `"completed"` summary in the sample observed: *"Blocked by sandbox during branch
+  creation, then approved escalation succeeded... No implementation changes or tests run yet."* —
+  this reads like a summary, not necessarily the sub-agent's own verbatim final message).
+
+### 2c. What is still NOT captured (be explicit about the remaining gap)
+The literal **hook-invocation stdin JSON** (the bytes Codex's `Stop`/`SubagentStop` hook process
+actually receives on its stdin at the moment `loop_stop_guard.py` would fire) was **not directly
+captured** in this pass — no live trivial Codex session was triggered to observe it (judged
+out-of-scope for a research-only dispatch: starting a real `codex`/`codex exec` invocation has
+real side effects — cost, a live sandboxed session, uncertain interactivity requirements — and the
+dispatch instructions required this only be attempted if clearly safe and read-only; it was not
+attempted). What we have instead is (a) the **documented schema** for that stdin (2a, high-
+confidence, official docs) and (b) the **real on-disk session/transcript format** those stdin
+fields point at (2b, directly read from genuine, non-synthetic session files created by the actual
+Codex CLI during the actual taxahead build this whole investigation started from). The one
+remaining unconfirmed link is whether `transcript_path`'s on-disk file is **byte-identical** in
+schema to the `rollout-*.jsonl` files inspected in 2b (very likely — they are Codex's own native
+session-log format, referenced as "session rollout" throughout Codex's own log output — but not
+verified via a live hook firing). **Deliverable A's AC-1, below, requires closing this exact last
+gap as its first acceptance criterion**, via one real, minimal, explicitly human-run Codex session
+(not a Researcher/Coder-run one) with hook debug logging enabled, before the adapter's parsing
+logic is considered validated end-to-end.
+
+---
+
+## Step 3 — Codex's SessionStart-equivalent for the consent flow
+
+Confirmed via `developers.openai.com/codex/guides/agents-md` (via search synthesis, cross-checked
+against `~/.codex/AGENTS.md` and the taxahead worktree's own `AGENTS.md` already found on disk):
+
+- **Global scope:** once per Codex run, Codex reads `AGENTS.override.md` if present, else
+  `AGENTS.md`, from `$CODEX_HOME` (defaults to `~/.codex`). Confirmed `~/.codex/AGENTS.md` exists
+  today (480 bytes) and currently contains ONLY Codex's own memory/skills boilerplate — no
+  reference to `~/Claude/loop/` (this is precisely why Codex sessions never picked up the
+  run-logging mandate the way a Claude Code session does via `~/Claude/CLAUDE.md`'s override).
+- **Project scope:** starting at the git repo root, Codex walks DOWN to the current working
+  directory, reading `AGENTS.override.md` then `AGENTS.md` (then configured fallback names) at
+  **every directory level**, concatenating root-first → cwd-last (cwd content is weighted more
+  heavily by recency in the resulting prompt), capped at `project_doc_max_bytes` (default 32 KiB).
+- This is Codex's direct structural analog of Claude Code auto-reading `CLAUDE.md` at session
+  start — **a repo-root `AGENTS.md` (or `AGENTS.override.md` for guaranteed precedence over any
+  pre-existing repo `AGENTS.md`, e.g. the Lovable-managed one already found in the taxahead
+  worktree) is the correct, real hook point for the consent-flow bootstrap prompt**: it is read
+  automatically, with zero action required from the human or the agent, the same way
+  `~/Claude/CLAUDE.md` is today for Claude Code.
+
+Sources: [Custom instructions with AGENTS.md – Codex | OpenAI Developers](https://developers.openai.com/codex/guides/agents-md), cross-checked against direct reads of `~/.codex/AGENTS.md` and `<HOME>/.codex/worktrees/3759/taxahead-connector-platform/AGENTS.md`.
+
+---
+
+## Step 4 — Spec: Deliverables and acceptance criteria
+
+### Deliverable A — Codex enforcement parity
+
+**Design.** A new sibling module, `hooks/codex_transcript_adapter.py`, imported by both
+`loop_stop_guard.py` and `micro_step_gates.py` (mirroring the existing
+`verifier_hygiene_scan.py` shared-module pattern — one canonical implementation, not two that can
+drift, per `H-VERIFIER-REGEX-DUPLICATE-1`'s already-documented lesson). It does NOT replace the
+existing Claude-Code-shaped detection logic; it is consulted ADDITIONALLY, gated on a runtime
+discriminator (see AC-3, **redesigned post plan-check** — see REVISION NOTE above), and its job is
+to produce the SAME normalized shape the existing logic already consumes (a list of
+"verifier-shaped dispatch, paired result text" tuples; a list of "sub-agent dispatched after last
+green, still uncommitted" booleans) so `RUNLOG_MISSING`, `thrash-past-green`, and `step-size`'s
+existing decision logic is reused unchanged, not reimplemented per-runtime.
+
+**Runtime discriminator (v2 — content-based, not stdin-field-based).** Plan-check correctly killed
+v1's design (top-level stdin field presence — `hook_event_name`/`permission_mode` — turned out to
+be common to BOTH runtimes per two independently-verified sources, see REVISION NOTE). The
+discriminator instead inspects the **transcript file's own content shape**, which Step 2b's real,
+directly-read evidence already proves is genuinely asymmetric: a Claude Code transcript's
+tool-call entries are `tool_use` blocks with `name` ∈ `{"task","agent","subagent","workflow"}`; a
+Codex transcript's tool-call entries are `response_item` payloads with `type: "function_call"` and
+`name` ∈ `{"spawn_agent","wait_agent","close_agent","exec_command",...}` inside a
+`{"type": "response_item", "payload": {...}}` envelope with sibling top-level `type` values
+(`session_meta`, `turn_context`, `event_msg`, `world_state`) that never appear in a Claude Code
+transcript at all. `_detect_runtime(transcript_path)` opens the transcript file itself (not the
+hook's stdin `data` dict) and returns `"codex"` iff it finds at least one JSONL line whose
+top-level `type == "session_meta"` (a Codex-only envelope marker, confirmed absent from Claude
+Code's transcript format by construction — Claude Code transcripts are flat message/tool_use
+arrays, never JSONL-wrapped-in-a-`type`/`payload` envelope), `"claude_code"` iff it finds at least
+one `tool_use`-shaped block instead, and `"unknown"` (→ existing Claude-Code-shaped path, current
+behavior, zero regression risk) if neither marker is found — an explicit three-way return, never a
+guess from absence.
+
+**Concrete inputs it must handle (per Step 2's real evidence):**
+- Detect a Verifier-shaped dispatch by scanning `spawn_agent` `function_call` items' `arguments.
+  message` text with the EXISTING `_VERIFIER_DETECT` regex (imported, not reimplemented) — NOT by
+  tool/function name (name is always `spawn_agent` regardless of role).
+- Correlate a `spawn_agent` call to its eventual result by `agent_id` (returned in that call's own
+  `function_call_output.output.agent_id`), then forward-scanning subsequent `wait_agent`
+  `function_call_output.output.status.<agent_id>.completed` entries for the SAME `agent_id` — NOT
+  by `call_id`/`tool_use_id` 1:1 pairing (confirmed structurally impossible: `wait_agent` batches
+  multiple `agent_id`s per call and uses its own distinct `call_id`).
+- Resolve and read the sub-agent's OWN separate transcript when the parent's `wait_agent`
+  `"completed"` summary is insufficient to find a `VERDICT:\s*pass` match — via
+  `agent_transcript_path` (available on a live `SubagentStop` hook firing per the official schema)
+  or, as a same-turn `Stop`-time fallback, by locating the child's own `rollout-*.jsonl` file whose
+  `session_meta.payload.session_id` equals the target `agent_id` under the same session-date
+  directory tree as the parent's own `transcript_path`.
+
+**Acceptance criteria:**
+1. **AC-1 (payload validation, blocking — must be satisfied before any other AC is graded):** a
+   real, minimal, human-run Codex session (a single trivial no-op turn, hook debug logging
+   enabled) has been executed, its literal `Stop`/`SubagentStop` hook stdin JSON captured
+   verbatim to a fixture file, and diffed against Step 2's inferred schema. Any discrepancy found
+   must be reconciled into this spec BEFORE Deliverable A's code is written. (Per the dispatch
+   instructions: this step is human-run, not Researcher/Coder-run, since it requires actually
+   invoking a live Codex session.)
+1b. **AC-1b (retargeted in v2 round 2 — was stdin-shape, now transcript-shape, since that's what
+   v2's `_detect_runtime` actually reads):** confirm the real, on-disk Claude Code transcript
+   file's own top-level line-type distribution — this is the claim AC-3 v2 actually depends on,
+   not the Stop-hook stdin JSON (that was the right target for the old, now-superseded,
+   stdin-field-based v1 design; v2 reads `transcript_path`'s file contents instead, so this AC must
+   gate THAT). Already independently confirmed twice in this spec's own review history — round-2
+   plan-check verified it directly, and the Researcher re-verified it a third time, independently,
+   in this same revision pass — against a real, live Claude Code transcript on this machine:
+   `~/.claude/projects/-Users-eobodoechine/0b468db8-1390-4952-aec8-ea19573095c9/subagents/agent-ae1f93647ff39d063.jsonl`.
+   Confirmed: every top-level JSON line's `"type"` value is one of `{"user", "assistant"}` only —
+   `tool_use` blocks live NESTED inside `message.content[]` items, never as a top-level `"type"`
+   value — and a direct grep for `"type":"session_meta"` / `"type": "session_meta"` across the
+   whole file returns **zero matches**. This is symmetric, real evidence to Step 2b's Codex-side
+   capture (the same file class this spec already cites,
+   `~/.codex/sessions/2026/07/09/rollout-2026-07-09T14-03-17-...jsonl`, whose FIRST line is
+   literally `{"type":"session_meta",...}`) — both runtimes' real transcript shapes are now
+   directly confirmed, not assumed from either tool's documentation. AC-3's discriminator and its
+   tests (AC-4/AC-4b/AC-5/AC-6) must be built against these two real, cited files (or fixtures
+   structurally faithful to them), never against either tool's docs alone or the old
+   `stop_hook_active` docstring assumption — closing the self-confirming-false-test risk plan-check
+   flagged in round 1.
+2. **AC-2:** `codex_transcript_adapter.py` exposes a pure function
+   `extract_verifier_dispatches(transcript_path: str) -> list[VerifierDispatch]` where
+   `VerifierDispatch` carries at minimum `{agent_id, agent_type, prompt_text, result_text,
+   result_source}` (`result_source` ∈ `{"wait_agent_summary", "child_transcript"}`, so a
+   downstream consumer/test can assert which path resolved the text). Unit-tested against a
+   synthetic (not real/proprietary) fixture built from the STRUCTURE observed in 2b — same field
+   names, invented content.
+3. **AC-3 (redesigned in v2; hardened in v2 round 2 — see the "Runtime discriminator" design
+   paragraph above):** `loop_stop_guard.py`'s `RUNLOG_MISSING` gate and `micro_step_gates.py`'s
+   `thrash-past-green` gate BOTH call a shared runtime-discriminator function,
+   `_detect_runtime(transcript_path) -> Literal["claude_code","codex","unknown"]`, keyed on
+   **transcript CONTENT shape** (presence of a `{"type": "session_meta", ...}`-enveloped JSONL line
+   ⇒ Codex; presence of a bare `tool_use` block ⇒ Claude Code; neither ⇒ `"unknown"`, falls through
+   to today's unchanged behavior) — **never** on top-level stdin field presence, per the REVISION
+   NOTE. **Mandatory implementation discipline (round-2 plan-check finding, this is not optional):
+   `_detect_runtime` MUST be implemented via strict structural matching only** — parse each
+   transcript line independently as its own JSON object (`json.loads(line)`), and check ONLY that
+   parsed object's own top-level `"type"` key for the literal value `"session_meta"`. It must
+   **never** be a substring/regex/blob scan across the raw file bytes or across any nested
+   `content`/`message`/`text` field, and never scan across line boundaries. The same discipline
+   applies to the Claude-Code-side check: a `tool_use` block only counts at its real structural
+   position (nested inside a parsed line's `message.content[]` array items, each checked for
+   `item.get("type") == "tool_use"`), never a bare text/regex match for the string `tool_use`
+   anywhere in the line. **Why this specific discipline, not a looser one:** this spec's own text
+   (Step 2b above) contains the literal strings `session_meta` and
+   `{"type": "response_item", "payload": {...}}` as illustrative prose about Codex's format; the
+   Coder implementing this AC will `Read()` this very spec file as part of the work, which embeds
+   that text into a `tool_result` inside the Coder's OWN Claude Code transcript. A looser detector
+   (e.g. the substring/blob-scan pattern this codebase already uses elsewhere for a deliberately
+   over-fire-safe check) would find that embedded prose and misclassify the Coder's own genuine
+   Claude Code session as Codex — silently, no exception, so AC-7's fail-open catch never fires on
+   it. Strict per-line, top-level-key-only JSON parsing structurally cannot be fooled by prose
+   appearing inside a `tool_result`'s nested text content, because that text is never itself parsed
+   as a standalone top-level JSON line. Route to `codex_transcript_adapter` when Codex is detected,
+   the existing Claude-Code-shaped scan otherwise. Both paths must be unit-tested with the SAME
+   assertions (parametrized), proving parity, not just "the Codex path exists" — and per AC-1b,
+   both fixture sets must be built from REAL captured/confirmed transcripts (or real-shaped,
+   structurally faithful synthetic fixtures derived from them), not from either runtime's
+   documentation alone.
+4. **AC-4:** a synthetic-Codex-shaped fixture reproducing the real, confirmed
+   `spawn_agent`→`wait_agent` Verifier-dispatch pattern (2b), with the `wait_agent` completion
+   text containing `VERDICT: PASS` and NO run_log.md present in the referenced run dir, causes
+   `RUNLOG_MISSING` to fire with the SAME violation message format Claude Code gets today —
+   proving the gate genuinely blocks under Codex-shaped input, not merely that the code runs
+   without crashing.
+4b. **AC-4b (new in v2 round 2 — the adversarial embedded-text collision test, required, not
+   optional):** two fixtures, both must pass, proving AC-3's strict structural matching actually
+   resists the exact collision round-2 plan-check identified:
+   - **Fixture 1 (Claude-Code-side):** a REAL-shaped Claude Code transcript (built from the actual
+     confirmed structure of `.../subagents/agent-ae1f93647ff39d063.jsonl` per AC-1b) containing a
+     `tool_result` block whose text content is a `Read()` of a file embedding Codex-shaped example
+     JSON — literally, this spec.md's own current text (or an equivalent excerpt containing the
+     strings `session_meta` and `{"type": "response_item", "payload": {...}}`) as the embedded
+     file content. `_detect_runtime` on this fixture MUST still return `"claude_code"`.
+   - **Fixture 2 (Codex-side, symmetric):** a REAL-shaped Codex rollout transcript (built from the
+     actual confirmed structure of the cited real `rollout-2026-07-09T14-03-17-...jsonl` file)
+     containing a `function_call_output` whose `output` text embeds Claude-Code-shaped example
+     text (e.g. a literal `"tool_use"` block excerpt as embedded prose, not a real structural
+     block). `_detect_runtime` on this fixture MUST still return `"codex"`.
+   Both fixtures directly encode round-2 plan-check's own finding as an executable regression test,
+   not just a design-time discipline — a future refactor that loosens the matching back to a
+   substring/blob scan will fail this test immediately.
+5. **AC-5:** the inverse case — a synthetic Codex fixture where a real, non-empty `run_log.md`
+   exists in the referenced run dir — produces NO `RUNLOG_MISSING` violation (false-positive
+   check; a gate that always fires is as broken as one that never does).
+6. **AC-6:** `thrash-past-green`'s Codex-path detection of "a sub-agent dispatched after the last
+   green verify" is proven via a synthetic fixture using `spawn_agent`/`agent_type: "worker"` (the
+   real observed `agent_type` value for implementation work in 2b) positioned after a green verify
+   event, uncommitted code present — gate fires with the existing message.
+7. **AC-7:** fail-open preserved: any malformed/unexpected Codex transcript shape (a schema drift
+   the official docs explicitly warn about) causes `codex_transcript_adapter` to raise internally
+   and be caught by the SAME `except Exception: sys.stderr.write(...)` fail-open pattern already
+   used by every other gate in `loop_stop_guard.py`/`micro_step_gates.py` — never a hard crash,
+   never a silent hang.
+8. **AC-8:** a regression test proving `H-VERIFIER-REGEX-DUPLICATE-1`'s lesson isn't repeated:
+   `codex_transcript_adapter.py` imports `_VERIFIER_DETECT` from `verifier_hygiene_scan.py` rather
+   than defining its own copy — grep-checked in CI/test, not just code review.
+
+**Explicitly out of scope for Deliverable A:** `VERIFIER_ADJACENCY` and the other non-runlog,
+non-checkpoint gates in `loop_stop_guard.py` (adjacency hygiene, review-commit re-diff, etc.) —
+Codex-parity for those is a separate, later spec; this build is scoped to the two gates
+Nnamdi explicitly named (run-logging, checkpointing).
+
+---
+
+### Deliverable B — Portable, consent-gated installer
+
+**Design.** New top-level directory `loop-guards/` in `~/Claude/loop` (safe under the publish
+filter per Step 1):
+```
+loop-guards/
+  hooks/                      # the (now Codex-aware, post-Deliverable-A) hook scripts —
+                               # copied/symlinked from ~/Claude/loop/hooks/ at install time,
+                               # not duplicated source
+  install.py                  # the installer (see AC-9 below)
+  detect_install_state.py     # "already installed?" check, importable + CLI
+  bootstrap/
+    CLAUDE_MD_SNIPPET.md       # consent-prompt text block for CLAUDE.md
+    AGENTS_MD_SNIPPET.md       # consent-prompt text block for AGENTS.md (Codex)
+  README.md                   # Deliverable C
+```
+
+**Acceptance criteria:**
+9. **AC-9:** `install.py --check` (no side effects) reports, per tool, one of `INSTALLED` /
+   `NOT_INSTALLED` / `PARTIAL` (some but not all of the 5 hook events registered) by reading
+   `~/.claude/settings.json` and `~/.codex/hooks.json` and comparing registered `command` strings
+   against the expected canonical paths — this is the detection the bootstrap snippets call before
+   ever prompting.
+10. **AC-10:** `install.py --install` is a NO-OP (prints "already installed, nothing to do") when
+    AC-9 already reports `INSTALLED` for that tool — satisfies "silent no-op on repeat runs."
+11. **AC-11 (hardened in v2 — plan-check finding):** `install.py --install` NEVER runs without an
+    explicit, freshly-obtained accept for THIS invocation — no flag or env var bypasses the
+    human-facing prompt (a `--yes`/non-interactive flag is permitted ONLY for a human's own
+    scripted re-install of guards they already consented to once on that machine, never for a
+    first-time install on a stranger's machine — see AC-15's scoped-out risk note). **The
+    confirmation read MUST open and read from `/dev/tty` directly (not `sys.stdin`)** — a bare
+    "is stdin a TTY" check (`sys.stdin.isatty()`) is satisfiable by `echo yes | script` piping
+    fake input through a redirected-but-TTY-flagged stdin; reading `/dev/tty` explicitly requires
+    an actual attached terminal and fails closed (abort, do not install) if `/dev/tty` cannot be
+    opened at all (e.g. true non-interactive/CI context).
+12. **AC-12 (hardened in v2 — plan-check finding):** on accept, `install.py` writes the hook
+    registration block into `~/.claude/settings.json` (Claude Code) and/or `~/.codex/hooks.json`
+    (Codex) using a JSON-merge (preserving any pre-existing unrelated hooks/config in that file —
+    never a blind overwrite), and prints a diff of exactly what changed before writing it —
+    mirroring this framework's own `settings.json` HARD BLOCK precedent
+    (`feedback_settings_json_hard_block.md`) that this kind of edit always needs an explicit,
+    informed human step, never an inferred one. **If the pre-existing `~/.claude/settings.json` or
+    `~/.codex/hooks.json` fails to parse as JSON, `install.py` MUST abort loudly** (non-zero exit,
+    a clear stderr message naming the unparseable file and its path, zero writes attempted) —
+    **never** silently overwrite a file it cannot safely merge into. This is a real, named risk on
+    a stranger's machine (this exact file class — `~/.codex/config.toml`'s `[hooks.state]` — has
+    already broken silently once in this framework's own history per
+    `H-CODEX-PARITY-2026-07-08`), not a hypothetical edge case.
+13. **AC-13:** for Codex specifically, `install.py` does NOT attempt to fabricate or pre-approve a
+    `trusted_hash` entry in `~/.codex/config.toml`'s `[hooks.state]` — it writes ONLY
+    `~/.codex/hooks.json`, and its post-install message explicitly tells the human "open Codex and
+    approve the new/changed hooks via `/hooks` — this install script cannot do that step for you,"
+    consistent with `H-CODEX-PARITY-2026-07-08`'s already-documented finding that hook-trust is a
+    human-only, non-programmatic step in Codex.
+14. **AC-14 (tool-scoped in v2 — plan-check finding):** the bootstrap snippets
+    (`CLAUDE_MD_SNIPPET.md` / `AGENTS_MD_SNIPPET.md`) are self-contained prose a fresh agent can
+    act on with no other context: on session start, run `python3
+    loop-guards/detect_install_state.py --tool claude_code` (from the `CLAUDE_MD_SNIPPET.md` path)
+    or `--tool codex` (from `AGENTS_MD_SNIPPET.md`) — **an explicit, tool-scoped flag, never an
+    aggregate/combined boolean** (plan-check finding: an aggregate check could read "installed"
+    for the pair while one tool's guards are genuinely absent, e.g. Claude Code installed but
+    Codex not, silently masking the Codex-only gap this whole build exists to close). If
+    `NOT_INSTALLED` or `PARTIAL` for the queried tool specifically, summarize in plain language
+    what the guards do (run-log + checkpoint enforcement) and their effect (some turns will be
+    blocked until a run log/commit exists), then explicitly ask the human to accept or reject
+    BEFORE running `install.py --install --tool <that tool>`; if `INSTALLED` for that tool, say
+    nothing (silent).
+
+**Explicitly flagged as a real risk, not silently built:**
+15. **AC-15 (risk flag, requires Nnamdi's explicit sign-off before Deliverable B is built, not
+    just plan-checked):** auto-editing a THIRD PARTY's global `~/.claude/settings.json` or
+    `~/.codex/hooks.json` — files that can carry the user's OWN unrelated hooks, and which this
+    framework's own history (`feedback_settings_json_hard_block.md`,
+    `feedback_hook_trust_hash_regression.md`) has already shown can silently break things when
+    edited casually — is a materially bigger trust ask than "accept a single keypress." Recommend,
+    at minimum: (a) the diff-preview in AC-12 is mandatory, not optional; (b) a documented,
+    tested uninstall path (`install.py --uninstall`) ships in the SAME build, not as a follow-up;
+    (c) the installer refuses to run at all in a non-interactive/CI context (no TTY) regardless of
+    flags, since a silent CI auto-install on someone else's pipeline is exactly the "silent
+    auto-install" failure mode Nnamdi named as unacceptable. This AC does not get a pass/fail from
+    plan-check alone — it needs Nnamdi to explicitly say "yes, build the settings.json-writing
+    installer with these guardrails" before Deliverable B's Coder dispatch, per this framework's
+    own standing "self-modifying config authorization bar" rule
+    (`feedback_self_modifying_config_authorization_bar.md`: generic "you're allowed" is not
+    sufficient authorization for agent-config edits; the exact file path must be named).
+
+---
+
+### Deliverable C — Fallback docs
+
+**Acceptance criteria:**
+16. **AC-16:** `loop-guards/README.md` contains a "Manual install" section with copy-pasteable,
+    numbered steps for BOTH tools (the exact JSON block to add to `~/.claude/settings.json`; the
+    exact JSON block to add to `~/.codex/hooks.json` plus the `/hooks` trust-approval reminder from
+    AC-13), for a human who declined the prompt, or who opened the repo in a context where the
+    auto-check in AC-14 couldn't run (e.g. editing files directly on GitHub, or a tool with no
+    AGENTS.md/CLAUDE.md auto-read at all).
+17. **AC-17:** the same README states plainly what breaks WITHOUT the guards installed (run-log
+    and checkpoint gates become purely advisory prose again, per this investigation's own
+    findings) — so a human who declines makes an informed choice, not a blind one.
+
+---
+
+## Open questions for plan-check (not resolved by this research pass)
+- **[SUPERSEDED by v2's REVISION NOTE]** ~~Whether `_detect_runtime`'s field-presence
+  discriminator (AC-3) is robust against a FUTURE Codex schema change...~~ — v1's field-presence
+  design was replaced with content-shape discrimination in v2. New open question in its place:
+  whether a FUTURE Codex or Claude Code transcript-format change could introduce a
+  `session_meta`-envelope-shaped line (Codex's marker) into a Claude Code transcript, or a bare
+  `tool_use` block into a Codex transcript, collapsing v2's discriminator the same way v1's stdin-
+  field assumption collapsed. Lower risk than v1 (transcript format is a deeper structural choice
+  than a stdin field list, per the official docs' own "not a stable interface... may change over
+  time" warning applying to BOTH — but the warning itself means this isn't a zero-risk design
+  either) — AC-7's fail-open path is the backstop if it ever does drift.
+- Whether `agent_transcript_path` is reliably populated on EVERY `SubagentStop` firing, or only
+  sometimes ("if any," per the official field description) — AC-2/AC-4's child-transcript fallback
+  path needs this answered empirically alongside AC-1's real-payload capture.
+- Whether the same adapter approach generalizes to Gemini CLI/Cursor (both already partially
+  scoped in `PORTABILITY.md`) or whether this build should stay Codex-only for now — recommend
+  Codex-only, since that's the concretely-demonstrated, real, currently-occurring gap.
+
+## Sources (this dispatch, all read/fetched directly, no sub-agents)
+- `~/Claude/loop/.git/config`, `git -C ~/Claude/loop remote -v`, `git -C ~/Claude/loop branch -vv`
+- `~/loop-public/.git`, `git -C ~/loop-public remote -v`, `~/loop-public/.loop-publish-meta.json`
+- `~/Claude/loop/README.md` "Publishing model" section
+- `which codex` / `codex --version` (codex-cli 0.41.0, `/opt/homebrew/bin/codex`)
+- `~/.codex/config.toml` (full) — confirms `[hooks.state]` trust entries for all 5 loop-team hooks,
+  `[projects."<HOME>/Claude/loop"] trust_level = "trusted"`
+- `~/.codex/sessions/2026/07/09/rollout-2026-07-09T14-03-17-019f480c-5c61-7b53-8b62-25f48e47cefb.jsonl`
+  (730 lines, real taxahead-Gmail-connector session, structurally inspected: type/name field
+  distributions, `spawn_agent`/`wait_agent`/`close_agent` argument and output shapes, a real
+  `agent_type: "default"` Verifier-role dispatch message, sub-agent's own separate
+  `session_meta` confirming `thread_source: "subagent"`)
+- [Custom instructions with AGENTS.md – Codex | OpenAI Developers](https://developers.openai.com/codex/guides/agents-md)
+- `learn.chatgpt.com/docs/hooks` (redirect target of `developers.openai.com/codex/hooks`) — Stop/SubagentStop hook stdin field schema
+- `~/Claude/loop/hooks/loop_stop_guard.py`, `~/Claude/loop/hooks/micro_step_gates.py`,
+  `~/Claude/loop/hooks/verifier_hygiene_scan.py` (re-read for the shared `_VERIFIER_DETECT`
+  import pattern this spec reuses)
+- `~/Claude/loop/PORTABILITY.md` (full, re-read)
+- `research/run-logging-enforcement-gap-codex-vs-claude-code-2026-07-09.md` (this dispatch's own
+  prior findings, assumed as context)
+
+**v2 revision sources (post plan-check, this pass):**
+- `<HOME>/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/hook-development/SKILL.md`
+  lines 1-60 and 270-349, read directly — citation independently verified verbatim (lines 300-318).
+- `code.claude.com/docs/en/hooks` (fetched live, 3 separate targeted fetches) — confirmed
+  `session_id`/`transcript_path`/`cwd`/`permission_mode`/`hook_event_name`/`prompt_id`/`effort`/
+  `agent_id`/`agent_type` as common fields across all hook events including Stop; confirmed
+  `stop_hook_active` does NOT appear anywhere on that page.
+- `~/Claude/loop/hooks/loop_stop_guard.py` lines 7, 61 (the `stop_hook_active` docstring claim and
+  its live usage) and `~/Claude/loop/hooks/test_loop_stop_guard.py` lines 91-99, 193-249, 333-344,
+  433-440 (confirmed all `stop_hook_active` test fixtures are synthetically constructed, none
+  built against a captured real payload).
+
+**v2 round-2 revision sources (post second plan-check PLAN_FAIL, this pass):**
+- `~/.claude/projects/-Users-eobodoechine/0b468db8-1390-4952-aec8-ea19573095c9/subagents/agent-ae1f93647ff39d063.jsonl`
+  — independently re-read directly (not just trusted from the verifier's report): confirmed
+  top-level `"type"` values are `{"user", "assistant"}` only; confirmed zero matches for
+  `"type":"session_meta"` / `"type": "session_meta"` via direct grep across the full file.
+- `~/.codex/sessions/2026/07/09/rollout-2026-07-09T14-03-17-019f480c-5c61-7b53-8b62-25f48e47cefb.jsonl`
+  — re-cited (already read in the original pass): first line is `{"type":"session_meta",...}`.

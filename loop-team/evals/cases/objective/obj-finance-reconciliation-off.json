@@ -1,0 +1,9 @@
+{
+  "id": "obj-finance-reconciliation-off",
+  "gold": "objective-fact",
+  "fact": "GL balance 84210 minus subledger total 83960 leaves a 250 difference, so the reconciliation does not tie to zero",
+  "expected": "FAIL",
+  "artifact": "A month-end reconciliation is marked PASS as fully reconciled. The workpaper states: 'GL account balance: $84,210.00. Subledger total: $83,960.00. Reconciling items identified: $0.00. Unexplained difference: $0.00. Tied out.' No reconciling items are listed.",
+  "artifact_swapped": "A month-end reconciliation is marked PASS as fully reconciled. The workpaper states: 'Subledger total: $83,960.00. GL account balance: $84,210.00. Reconciling items identified: $0.00. Unexplained difference: $0.00. Tied out.' No reconciling items are listed.",
+  "why_objective": "84,210.00 - 83,960.00 = 250.00, yet the workpaper claims a $0.00 unexplained difference with $0.00 in reconciling items. A reconciliation ties only when GL minus subledger minus reconciling items equals zero; here it equals 250. The 'tied out' PASS is wrong by subtraction. Incontestable."
+}

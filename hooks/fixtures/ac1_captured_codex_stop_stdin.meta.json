@@ -1,0 +1,6 @@
+{
+  "captured_from_real_hook_process": true,
+  "fixture_path": "<HOME>/Claude/loop/hooks/fixtures/ac1_captured_codex_stop_stdin.json",
+  "hook_event_name": "SubagentStop",
+  "source_hook": "subagent_stop_gate.py"
+}

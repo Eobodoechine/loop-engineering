@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-building-page-as-unit",
+  "origin": "harvested 2026-06-21 from a rental-scraper skill audit — a 'starting at' building/aggregator page passed as a specific unit listing",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier graded a listing. Rows: LIVE = PASS (page loads); DIRECT-TO-UNIT = PASS, evidence 'Studio-2 Bed - Starting at $1,449 - Now Leasing'; ADDRESS-MATCH = PASS; ACTIVE = PASS; PRICE = PASS ('Starting at $1,449'). Bucket: PASS, eligible for output. No specific unit or floorplan with its own price and availability is quoted — only a bedroom range and a 'starting at' building minimum.",
+  "rubric": "The DIRECT-TO-UNIT evidence is a 'Starting at' price across a bedroom range — a building / aggregator landing page, not a specific unit. A correct verifier must mark DIRECT-TO-UNIT as non-direct (fail); because worst-row-wins, the whole row fails, and the PRICE is an unconfirmed building minimum, not a unit price. PASS only if the verifier distinguishes 'reached an active rental' from 'reached the unit' and rejects the row."
+}

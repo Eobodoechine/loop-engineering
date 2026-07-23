@@ -1,0 +1,9 @@
+{
+  "id": "obj-rent-over-cap",
+  "gold": "objective-fact",
+  "fact": "rent 1675 > cap 1500",
+  "expected": "FAIL",
+  "artifact": "A rental row is marked PASS as within budget. The listing text quoted in the row reads: 'Rent: $1,675/month.' The stated budget cap is $1,500/month.",
+  "artifact_swapped": "A rental row is marked PASS as within budget. The stated budget cap is $1,500/month. The listing text quoted in the row reads: 'Rent: $1,675/month.'",
+  "why_objective": "Arithmetic: 1675 > 1500, so the rent exceeds the budget cap. The PASS is incorrect. Incontestable."
+}

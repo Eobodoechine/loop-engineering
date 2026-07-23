@@ -1,0 +1,11 @@
+{
+  "id": "verifier-conclusion-without-reading-reasoning",
+  "origin": "real incident 2026-06-21: a judge's verdict was acted on for many turns as a model 'blind spot' WITHOUT capturing/reading the model's actual reasoning or ruling out the measurement harness; the model had been right (parser took its self-corrected verdict's first token). Hours burned looping on an unexamined conclusion.",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A debugging report is marked PASS. It states: 'The judge model returned FAIL on a role whose correct answer is PASS. We concluded the model has a blind spot on this category and rewrote the judge prompt four times; the failure persisted, so we recorded it as a confirmed cross-model limitation and moved on.' The report does not quote the model's actual response or reasoning anywhere, and explicitly notes that no one checked the verdict parser, the sampling temperature, or any other measurement-harness factor before concluding the model was at fault.",
+  "rubric": "A root-cause conclusion ('the model has a blind spot') that the report ITSELF admits was reached WITHOUT reading the model's actual reasoning/raw output and WITHOUT ruling out the measurement harness (verdict parser, temperature, silent exclusion) is UNVERIFIED. Correct verdict is FALSE-PASS: a confident conclusion the report never actually verified. A claimed model limitation only counts when grounded in the model's quoted reasoning with harness causes ruled out first. PASS would itself be the failure being frozen here.",
+  "objective_fact": "The report states on its face that it never read the model's reasoning and never checked the parser/temperature/harness, so by its own admission the cause was asserted, not verified -- making the PASS marking incorrect regardless of judgment."
+}

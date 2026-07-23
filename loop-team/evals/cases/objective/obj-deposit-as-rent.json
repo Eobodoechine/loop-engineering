@@ -1,0 +1,9 @@
+{
+  "id": "obj-deposit-as-rent",
+  "gold": "objective-fact",
+  "fact": "reported monthly rent 2400 equals the stated security deposit, not the stated monthly rent 1200",
+  "expected": "FAIL",
+  "artifact": "A rental row reports 'Monthly rent: $2,400' and is marked PASS. The row's own quoted source text reads: 'Listing details: monthly rent $1,200; security deposit $2,400.' The reported rent figure ($2,400) was taken from the deposit, not the monthly rent.",
+  "artifact_swapped": "A rental row's source text says: 'Listing details: monthly rent $1,200; security deposit $2,400.' The row reports 'Monthly rent: $2,400' and is marked PASS. The PASS used $2,400 as the rent figure.",
+  "why_objective": "The source states monthly rent = $1,200 and deposit = $2,400. The report's 'rent' field copied the deposit number ($2,400), not the actual rent ($1,200). Substituting a deposit for rent is a factual mismatch, incontestable from the quoted source."
+}

@@ -1,0 +1,294 @@
+{
+  "question": "Research evidence-based UI/UX design for a product-status dashboard built specifically for a solo software developer who has ADHD. The dashboard is a \"Where am I \u00b7 is it really fixed?\" surface that shows, across several of his software products, each product's current state and \u2014 critically \u2014 distinguishes an author's CLAIM of \"done/verified\" from machine-VERIFIED done (proof-backed). Today it renders as a spartan, self-contained (stdlib-only, no JS framework) static HTML page with labeled status \"bars\" per item: verified, mismatch (claimed-done but not proof-backed), focus (a single at-most-one \"work on this next\" pointer), work-in-progress column, and derived evidence label; text currently runs together with minimal visual hierarchy.\n\nCover four things and make the output ACTIONABLE for this specific dashboard:\n1) Evidence-based ADHD-friendly UI/UX principles: reducing cognitive load and overwhelm, offloading working memory, attention/salience and visual hierarchy, executive-function support (task initiation, \"what do I do next\"), single-focus / one-thing-at-a-time, momentum/progress cues, and avoiding notification/alert fatigue. Cite research where possible.\n2) Concrete design patterns that implement those principles: color and status semantics (and accessibility / not relying on color alone), information chunking and hierarchy, glanceability, trust/verification signals that clearly separate \"claimed\" from \"verified,\" and calm/low-stimulation vs. dopamine/reward design trade-offs.\n3) Examples of similar/comparable products and what their UI/UX gets right or wrong for ADHD users: ADHD-oriented productivity/task apps (e.g. Sunsama, Amazing Marvin, Akiflow, Tiimo, Todoist), project/status tools (Linear, Trello/kanban, GitHub Projects), and developer/CI status dashboards. Pull concrete, specific patterns, not generic praise.\n4) A concrete recommendation set mapped to our dashboard: how to restructure the current bars/cards/focus-pointer/verified-vs-mismatch rendering to genuinely help an ADHD user answer \"where am I and what's really done vs just claimed,\" while ideally staying compatible with a lightweight self-contained HTML output (note where a richer stack would be needed and whether it's worth it). The overarching goal is a dashboard that reduces overwhelm and makes the next action obvious.",
+  "summary": "For a solo ADHD developer's \"where am I / is it really fixed?\" dashboard, the research converges on one overriding directive: minimize the attention and working-memory the surface demands, because ADHD carries a chronic, well-replicated working-memory deficit (effect sizes ~0.43\u20131.06) and neurotypical working memory itself holds only ~3\u20134 items at once. The dashboard should therefore act as a cognitive-offloading device (externalizing state so nothing must be held in the head), chunk content into single-concept cards with strong visual hierarchy, and present a single obvious next action rather than everything at once (progressive disclosure). The claimed-vs-verified distinction is itself a first-class design pattern with a real-world precedent: Linear deliberately refuses to auto-complete a project even when all issues are done, forcing a manual \"is it truly done?\" confirmation \u2014 exactly the claimed/verified gap this dashboard surfaces. Status must be encoded redundantly (color plus text/icon/shape), never color alone, because ~8% of men have color-vision deficiency and screen readers do not announce color. Calm-technology principles (require the smallest possible attention, inform-and-create-calm, use the periphery) argue for a low-stimulation surface where stable/verified states rest quietly in the periphery while the one focus item and any claimed-but-unverified \"mismatch\" command the center.",
+  "findings": [
+    {
+      "claim": "ADHD involves a chronic, heavily-replicated working-memory deficit, and neurotypical working memory holds only ~3-4 discrete items at once \u2014 so the dashboard must not require the user to hold multiple product states in mind, and should act as an external cognitive-offloading device (lists/labels/checklists that externalize state).",
+      "confidence": "high",
+      "vote": "3-0 (merged from 3 claims)",
+      "evidence": "ADHD working-memory deficit is one of the most robust replicated findings (Martinussen 2005 meta-analysis, between-group ES 0.43-1.06, independent of general IQ; Rapport/Kofler: ADHD attention deficits driven by exceeding storage/rehearsal capacity at LOWER cognitive loads). Neurotypical WM capacity is ~3-4 chunks (Cowan's 'magical number four', 2001/2010; 2024 Journal of Cognition modelling review confirms 4). Cognitive offloading \u2014 transferring a task's processing requirements onto the environment via lists/calendars/checklists \u2014 is an established compensatory construct (Risko & Gilbert 2016, Trends in Cognitive Sciences) that improves memory-task performance (PMC6942100) and is standard OT/clinical practice for ADHD (PMC8334010). Design inference: the dashboard's core value is that the user should never have to remember which product is where \u2014 the screen IS the working memory.",
+      "sources": [
+        "https://ot4adhd.com/2022/09/05/working-memory-the-key-to-unlocking-potential-in-learners-with-adhd/",
+        "Martinussen et al. 2005 J Am Acad Child Adolesc Psychiatry 44:377-384",
+        "Cowan 2001 Behavioral and Brain Sciences; Cowan 2010 Current Directions",
+        "Risko & Gilbert 2016 Trends in Cognitive Sciences",
+        "PMC8334010",
+        "PMC6942100"
+      ]
+    },
+    {
+      "claim": "High cognitive load specifically impairs focus, memory-of-steps, and task completion for ADHD users; extraneous load from clutter and decorative/non-essential UI directly worsens overload \u2014 so reducing on-screen density and stripping non-load-bearing elements is a primary design goal for this dashboard.",
+      "confidence": "high",
+      "vote": "3-0 (merged from 3 claims)",
+      "evidence": "Cognitive Load Theory (Sweller 1988): working memory has limited capacity and is overwhelmed when too many elements compete; extraneous load is load imposed by presentation design not serving the task. ADHD-specific: high cognitive load makes it hard to focus, remember steps, or complete tasks (corroborated by Le Cunff 2024 scoping review, Eur J Neurosci 10.1111/ejn.16201; PMC6996017; PubMed 24411642). Mayer's Coherence Principle (excluding extraneous material) held in 23/23 experiments, median effect size 0.86; seductive-details effect shows interesting-but-irrelevant decoration actively harms performance. For the dashboard: remove decorative chrome, keep only status-bearing elements, and cut on-screen density \u2014 every non-essential element taxes an already-constrained system.",
+      "sources": [
+        "https://mailchimp.com/resources/cognitive-overload/",
+        "https://welcomingweb.com/learn/designing-for-neurodiversity-adhd-ux",
+        "Sweller 1988 (Cognitive Load Theory)",
+        "Mayer Coherence Principle; Harp & Mayer (seductive details)",
+        "Le Cunff 2024 Eur J Neurosci 10.1111/ejn.16201"
+      ]
+    },
+    {
+      "claim": "Present one thing at a time: chunk content into single-concept cards, use progressive disclosure (reveal detail only when needed), and break complex work into small sequential steps with visible progress \u2014 presenting everything at once overwhelms ADHD users.",
+      "confidence": "high",
+      "vote": "3-0 (merged from 6 claims)",
+      "evidence": "Multiple converging claims: chunking into small sections with clear headings/bulleted lists reduces load (Understood.org, Pearson, CLT); progressive disclosure \u2014 revealing only what's relevant in the moment \u2014 supports limited working memory (grounded in CLT + Miller's Law, NN/g '4 Principles to Reduce Cognitive Load'); complex tasks broken into step-by-step chunks meaningfully reduce load (CDC, NHS, Understood; PMC11870651 'adaptive chunking improves effective WM capacity'); each CARD should communicate a single concept ('One card, one concept' \u2014 Material Design: a card 'can't merge with another card or split into multiple cards'; NN/g cards component). IMPORTANT ACTIONABLE CAVEAT: NN/g warns that sequential WIZARDS that HIDE prior context can INCREASE cognitive load and cause context-loss for ADHD users \u2014 so prefer visible-progress chunking (all steps visible with a progress cue) over hidden multi-step flows. For the dashboard: one product per card, one concept per card, and expand item detail on demand rather than showing all evidence text at once.",
+      "sources": [
+        "https://welcomingweb.com/learn/designing-for-neurodiversity-adhd-ux",
+        "https://www.aufaitux.com/blog/neuro-inclusive-ux-design/",
+        "https://www.accessibilitychecker.org/blog/neurodivergent-ux-design/",
+        "https://www.stan.vision/journal/ui-card-design-examples-best-practices-and-common-patterns",
+        "Material Design cards guidance; NN/g cards + wizards guidance",
+        "PMC11870651"
+      ]
+    },
+    {
+      "claim": "Establish a strong, deliberate visual hierarchy so the eye moves from most-important to least-important automatically \u2014 use typography sizing/placement, strong RELATIVE contrast, and generous spacing to aid glanceability \u2014 but avoid harsh maximum contrast (pure #000 on #FFF).",
+      "confidence": "high",
+      "vote": "3-0 (merged from 4 claims)",
+      "evidence": "A well-designed card establishes hierarchy so 'the eye moves from most important to least important without thinking about it' (NN/g, Gestalt, Material Design). Reducing visual/cognitive overload via simplified layouts, limited competing elements, and clear hierarchy is a primary principle for preventing neurodivergent overwhelm (backed by W3C COGA cognitive-accessibility guidance; accessibilitychecker.org: 'clear visual hierarchy is vital for neurodivergent users who may struggle with information overload'). Strong contrast + proper spacing enhance hierarchy and scanning/glanceability. ACTIONABLE CAVEAT (from the contrast finding's verifier): harsh MAXIMUM contrast (pure black on pure white) causes glare/visual stress for dyslexic/Irlen readers (British Dyslexia Association) \u2014 use strong RELATIVE contrast between hierarchy levels (focus/mismatch/verified vs. body) plus generous whitespace, but prefer near-black text on an off-white/soft surface. For the dashboard: the current 'text running together with minimal hierarchy' is the core failure to fix \u2014 size and weight the status label and product name far above the evidence text.",
+      "sources": [
+        "https://medium.com/design-bootcamp/beyond-compliance-16-ux-principles-to-truly-include-neurodivergent-users-e7d3ff779665",
+        "https://www.stan.vision/journal/ui-card-design-examples-best-practices-and-common-patterns",
+        "https://www.accessibilitychecker.org/blog/neurodivergent-ux-design/",
+        "W3C COGA guidance; NN/g; Material Design",
+        "British Dyslexia Association (contrast caveat)"
+      ]
+    },
+    {
+      "claim": "Status must be encoded REDUNDANTLY \u2014 color paired with text labels, icons, patterns and/or shapes \u2014 never color alone, because ~8% of men (and 0.5% of women) have color-vision deficiency and screen readers do not announce color.",
+      "confidence": "high",
+      "vote": "3-0 (merged from 2 claims)",
+      "evidence": "Canonical prevalence: ~8% of men / 0.5% of women have color-vision deficiency (Colour Blind Awareness, VisionCenter, NCBI/PMC all corroborate 'up to 8% of males, 0.5% of females'). Color-only status therefore fails a meaningful share of users. WCAG 2.x SC 1.4.1 'Use of Color' (W3C WAI, current through 2.2 in 2026), reinforced by Section508.gov and the U.S. Web Design System's alert/step-indicator components, requires color not be the ONLY visual means of conveying information \u2014 pair with text/icon/shape. Screen readers do not announce color by default, so color-only conveys nothing to those users. DIRECTLY ACTIONABLE for verified/mismatch/focus semantics: never rely on green=verified, red/amber=mismatch alone \u2014 each state needs an explicit text label AND a distinguishing icon/shape (e.g. checkmark for verified, warning glyph for claimed-but-unverified mismatch).",
+      "sources": [
+        "https://www.accessibility.chat/articles/when-color-coding-fails-why-status-indicators-need-more-than-pretty-colors",
+        "WCAG 2.x SC 1.4.1 (W3C WAI)",
+        "Section508.gov; U.S. Web Design System",
+        "Colour Blind Awareness; VisionCenter; NCBI/PMC"
+      ]
+    },
+    {
+      "claim": "The claimed-vs-verified distinction is a legitimate, precedented design pattern: Linear deliberately does NOT auto-mark a project complete even when all its issues are done \u2014 status must be manually confirmed \u2014 validating the dashboard's core act of separating an author's CLAIM of done from machine-VERIFIED done.",
+      "confidence": "high",
+      "vote": "3-0",
+      "evidence": "Linear's own canonical docs (linear.app/docs/project-status): 'Project statuses are updated manually\u2014we do not do this automatically, even if all issues are completed.' Rationale from Linear: 'Some projects have post-launch tasks or documentation work that does not live in Linear. The manual step ensures you confirm the project is truly done.' This is a deliberate design choice by a leading, ADHD-popular project tool that separates task-completion from formal 'truly done' reporting \u2014 exactly the claimed/verified gap this dashboard exists to surface. It validates treating 'claimed done' and 'verified done' as two distinct, visually-distinct states rather than collapsing them. For the dashboard: the 'mismatch' state (claimed-done but not proof-backed) is the highest-value signal and should be visually loudest after the focus pointer.",
+      "sources": [
+        "https://linear.app/docs/project-status"
+      ]
+    },
+    {
+      "claim": "Give every item clear, visible completion states plus start/end points and progress/momentum cues \u2014 visible completion reduces task-completion anxiety and supports executive function (task initiation, 'what do I do next').",
+      "confidence": "high",
+      "vote": "3-0 (merged from 2 claims)",
+      "evidence": "Tasks should have clear visible start/end points and completion states to reduce task-completion anxiety (rooted in Nielsen's 'visibility of system status' heuristic + the Zeigarnik effect: incomplete tasks generate intrusive mental tension). Complex tasks should be broken into small steps WITH progress indicators and micro-flows to support executive-function challenges (NICE guidance recommends structuring goals into smaller achievable actions; ADHD task-initiation research advises 'extremely small, concrete steps requiring minimal decision-making'; visible progress/checklist completion triggers dopamine reward that sustains motivation; 2025 Frontiers in Psychiatry: stepwise goal-setting improved functioning in inattentive ADHD). For the dashboard: the WIP column should decompose items into visible steps with a per-product progress/momentum cue, and the single at-most-one 'focus' pointer directly serves task-initiation by removing the 'what do I do next' decision.",
+      "sources": [
+        "https://medium.com/design-bootcamp/beyond-compliance-16-ux-principles-to-truly-include-neurodivergent-users-e7d3ff779665",
+        "Nielsen 'visibility of system status'; Zeigarnik effect",
+        "NICE guidance; Frontiers in Psychiatry 2025",
+        "Understood (task initiation)"
+      ]
+    },
+    {
+      "claim": "Adopt calm-technology principles: the surface should require the smallest possible amount of attention, inform-and-create-calm (avoid alert fatigue), and use the periphery \u2014 letting stable/verified states rest quietly while only the single focus item and any 'mismatch' escalate to the center.",
+      "confidence": "high",
+      "vote": "3-0 (merged from 3 claims)",
+      "evidence": "Calm Tech Institute's principles (from Weiser & Brown, Xerox PARC; codified by Amber Case): Principle 1 'Require the smallest possible amount of attention' (treat attention as finite); Principle 2 'Inform and create calm' (deliver information without stress/alert fatigue); Principle 3 'Make use of the periphery' + Principle 5 'Communicate without speaking' (convey status ambiently rather than demanding foreground focus). CRITICAL APPLICATION NUANCE (from verifier): calm tech emphasizes fluid movement between periphery AND center \u2014 a signal must escalate to the foreground when action is needed, and ambient/peripheral treatment suits NON-critical info. Since this dashboard's core job (the focus pointer, mismatch alerts, 'is it really fixed?') IS action-demanding, apply calm treatment to STABLE/verified states (quiet, low-saturation, peripheral) while the one focus item and mismatches command center attention. This also directly addresses avoiding notification/alert fatigue.",
+      "sources": [
+        "https://www.calmtech.institute/calm-tech-principles",
+        "Weiser & Brown (Xerox PARC); Amber Case, 'Designing Calm Technology'"
+      ]
+    },
+    {
+      "claim": "Provide subtle confirmation feedback (micro-interactions confirming an action/state worked) to reduce anxiety \u2014 but keep it subtle to avoid alert fatigue.",
+      "confidence": "high",
+      "vote": "3-0",
+      "evidence": "Subtle confirmation feedback reduces anxiety by confirming system behavior \u2014 a restatement of Nielsen's Heuristic #1 'Visibility of System Status', which NN/g explicitly nicknames the 'anti-anxiety heuristic' ('when we don't have visible system status, we have uncertainty'). Micro-interactions that instantly confirm an action 'reduce user anxiety' and cut repeated actions (NN/g microinteractions; ACM 10.1145/3452853.3452865). The word 'subtle' correctly scopes it: over-frequent/noisy feedback causes alert fatigue. For the dashboard: when a state flips from 'claimed' to machine-verified, a small, calm confirmation (not a loud alert) reassures the user the proof landed \u2014 reinforcing trust in the verified signal without adding to notification noise.",
+      "sources": [
+        "https://www.aufaitux.com/blog/neuro-inclusive-ux-design/",
+        "NN/g 'Visibility of System Status'; NN/g microinteractions",
+        "ACM 10.1145/3452853.3452865"
+      ]
+    },
+    {
+      "claim": "SYNTHESIZED RECOMMENDATION SET for the dashboard \u2014 a concrete restructuring that stays compatible with lightweight self-contained stdlib-only HTML, with notes on where a richer stack would be needed.",
+      "confidence": "medium",
+      "vote": "synthesis of the above findings",
+      "evidence": "Mapping the evidence to the specific surface: (1) ONE FOCUS ELEMENT AT TOP: render the at-most-one focus pointer as a distinct, visually dominant banner/card above everything else \u2014 it removes the 'what do I do next' decision (task-initiation) and is pure CSS. (2) THREE-TIER HIERARCHY BY ATTENTION: focus (center, loud) > mismatch/claimed-but-unverified (loud, warning glyph + label) > verified (quiet, low-saturation, peripheral/collapsed) \u2014 implements calm-tech periphery + reduces load; pure CSS. (3) ONE CARD PER PRODUCT, ONE CONCEPT: fix the 'text running together' problem by giving each card a sized/weighted status LABEL + product name far above the derived-evidence text; generous spacing, near-black-on-off-white not pure contrast. (4) REDUNDANT STATUS ENCODING: every state = text label + icon/shape + color (checkmark=verified, warning=mismatch), never color alone \u2014 WCAG 1.4.1; trivially static HTML. (5) PROGRESSIVE DISCLOSURE of evidence: show the derived-evidence label collapsed by default, expand on demand \u2014 achievable with native HTML <details>/<summary>, no JS framework. (6) VISIBLE PROGRESS in the WIP column with a per-item momentum cue (e.g., steps done / total) \u2014 static HTML/CSS. (7) CLAIMED-vs-VERIFIED as the loudest distinction (Linear precedent) \u2014 a proof-backed 'verified' badge vs. a distinct 'claimed, unproven' mismatch badge. WHERE A RICHER STACK IS NEEDED (and whether worth it): live auto-refresh of proof status, subtle confirmation micro-animations on state-flip, and any interactive filtering require JS. Given the ADHD goals, native <details> + CSS covers 90% of the value; a small vanilla-JS sprinkle (no framework) for a quiet state-flip confirmation is worth it, but a full JS framework is NOT justified \u2014 it would add build complexity against a surface whose whole point is calm minimalism.",
+      "sources": [
+        "https://linear.app/docs/project-status",
+        "https://www.calmtech.institute/calm-tech-principles",
+        "WCAG 2.x SC 1.4.1",
+        "https://www.stan.vision/journal/ui-card-design-examples-best-practices-and-common-patterns",
+        "https://medium.com/design-bootcamp/beyond-compliance-16-ux-principles-to-truly-include-neurodivergent-users-e7d3ff779665"
+      ]
+    }
+  ],
+  "caveats": "SOURCE QUALITY: The ADHD-specific UX design guidance (welcomingweb, aufaitux, accessibilitychecker, the Medium '16 principles' post, stan.vision, accessibility.chat, ot4adhd) are all blog/agency-quality secondary sources. They survived adversarial verification only because each restates a NON-extraordinary, well-established principle that is independently backed by strong primary literature (Sweller's Cognitive Load Theory, Cowan's working-memory capacity, Martinussen's ADHD WM meta-analysis, Risko & Gilbert on cognitive offloading, WCAG, NN/g heuristics). Treat the blogs as pointers to consensus, not as the evidence itself. VENDOR SELF-DESCRIPTION: The Linear and Calm Tech Institute claims come from the vendors' own docs \u2014 appropriate for descriptive claims about their own products/frameworks, but the Calm Tech Institute has a commercial certification arm (the principles themselves trace to Weiser/Brown/Case, which is sound). MECHANISM UNCERTAINTY: One 2022 fNIRS study reframes adult ADHD as a 'cognitive state disorder rather than a working-memory deficit' \u2014 this qualifies the MECHANISM but not the design effect (reduce overwhelm) which holds regardless. TWO REFUTED CLAIMS (transparency): a claim that 'overly bright colors/animations/clutter cause discomfort so calm low-stimulation is preferable' and a claim tying executive-function support to WCAG 2.2 AA 1.4.3 specifically both failed the vote (1-2) and are NOT relied upon \u2014 though the calm-technology finding covers similar ground from a stronger base. GENERALIZATION LIMIT: almost all ADHD-specific application rests on general cognitive-science + practitioner consensus rather than large ADHD-specific RCTs of dashboard UIs; there is no direct study of a 'claimed-vs-verified developer status dashboard' for ADHD users. TIME-SENSITIVITY: WCAG (current through 2.2 in 2026) and the cited product docs (Linear) can change; re-verify vendor behavior before relying on it long-term.",
+  "openQuestions": [
+    "What is the optimal DEFAULT-collapsed vs. default-expanded balance for the derived-evidence text? Progressive disclosure reduces load, but for a proof-backed 'is it really fixed?' surface, hiding the proof might undermine trust in the verified signal \u2014 this trade-off is unresearched for this specific use case.",
+    "Does the ADHD 'dopamine/reward' momentum design (celebratory completion cues) genuinely help sustained motivation here, or does it conflict with the calm/low-stimulation directive? The two refuted claims touched this tension but it was not resolved by the surviving evidence.",
+    "For a SOLO user (audience of one), how much accessibility redundancy (color+icon+shape) is truly necessary versus over-engineering \u2014 i.e., does the developer himself have color-vision deficiency? The 8%-prevalence argument is population-level; the single-user optimum may differ, though redundant encoding is low-cost insurance.",
+    "Is a quiet vanilla-JS state-flip confirmation worth the departure from a pure stdlib-only static HTML output, or should the dashboard stay 100% static and rely on the user re-generating/refreshing it? The evidence supports subtle confirmation feedback but does not weigh it against the maintenance value of a zero-JS artifact."
+  ],
+  "refuted": [
+    {
+      "claim": "Executive-function support requires visible feedback, instant visual confirmations, and progress indicators, especially in longer flows/forms; color must not be the sole signal (WCAG 2.2 AA 1.4.3).",
+      "vote": "1-2",
+      "source": "https://welcomingweb.com/learn/designing-for-neurodiversity-adhd-ux"
+    },
+    {
+      "claim": "Overly bright colors, rapid animations, and cluttered interfaces cause discomfort or distraction for neurodivergent users, so calm low-stimulation design is preferable.",
+      "vote": "1-2",
+      "source": "https://www.aufaitux.com/blog/neuro-inclusive-ux-design/"
+    }
+  ],
+  "unverified": [],
+  "sources": [
+    {
+      "url": "https://welcomingweb.com/learn/designing-for-neurodiversity-adhd-ux",
+      "quality": "blog",
+      "angle": "academic/evidence-based principles",
+      "claimCount": 5
+    },
+    {
+      "url": "https://ot4adhd.com/2022/09/05/working-memory-the-key-to-unlocking-potential-in-learners-with-adhd/",
+      "quality": "blog",
+      "angle": "academic/evidence-based principles",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.aufaitux.com/blog/neuro-inclusive-ux-design/",
+      "quality": "blog",
+      "angle": "academic/evidence-based principles",
+      "claimCount": 5
+    },
+    {
+      "url": "https://mailchimp.com/resources/cognitive-overload/",
+      "quality": "secondary",
+      "angle": "academic/evidence-based principles",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.accessibilitychecker.org/blog/neurodivergent-ux-design/",
+      "quality": "blog",
+      "angle": "academic/evidence-based principles",
+      "claimCount": 5
+    },
+    {
+      "url": "https://medium.com/design-bootcamp/beyond-compliance-16-ux-principles-to-truly-include-neurodivergent-users-e7d3ff779665",
+      "quality": "blog",
+      "angle": "academic/evidence-based principles",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.accessibility.chat/articles/when-color-coding-fails-why-status-indicators-need-more-than-pretty-colors",
+      "quality": "blog",
+      "angle": "design patterns & accessibility",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.userintuition.ai/reference-guides/trust-ux-badges-proof-and-the-research-behind-them/",
+      "quality": "blog",
+      "angle": "design patterns & accessibility",
+      "claimCount": 4
+    },
+    {
+      "url": "https://www.stan.vision/journal/ui-card-design-examples-best-practices-and-common-patterns",
+      "quality": "blog",
+      "angle": "design patterns & accessibility",
+      "claimCount": 5
+    },
+    {
+      "url": "https://createbytes.com/insights/ultimate-guide-dashboard-design-best-practices",
+      "quality": "blog",
+      "angle": "design patterns & accessibility",
+      "claimCount": 5
+    },
+    {
+      "url": "https://akiflow.com/blog/adhd-time-management-apps",
+      "quality": "blog",
+      "angle": "comparable ADHD productivity apps",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.tiimoapp.com/resource-hub/sensory-design-neurodivergent-accessibility",
+      "quality": "blog",
+      "angle": "comparable ADHD productivity apps",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.tiimoapp.com/timers",
+      "quality": "blog",
+      "angle": "comparable ADHD productivity apps",
+      "claimCount": 5
+    },
+    {
+      "url": "https://akiflow.com/blog/amazing-marvin-vs-sunsama",
+      "quality": "unreliable",
+      "angle": "comparable ADHD productivity apps",
+      "claimCount": 0
+    },
+    {
+      "url": "https://vyneron.com/en/blog/amazing-marvin-alternatives",
+      "quality": "blog",
+      "angle": "comparable ADHD productivity apps",
+      "claimCount": 4
+    },
+    {
+      "url": "https://github.com/dwyl/repo-badges",
+      "quality": "blog",
+      "angle": "dev/project status tools & trust signals",
+      "claimCount": 4
+    },
+    {
+      "url": "https://daily.dev/blog/readme-badges-github-workflow-status-indicators/",
+      "quality": "blog",
+      "angle": "dev/project status tools & trust signals",
+      "claimCount": 5
+    },
+    {
+      "url": "https://linear.app/docs/project-status",
+      "quality": "primary",
+      "angle": "dev/project status tools & trust signals",
+      "claimCount": 4
+    },
+    {
+      "url": "https://linear.app/docs/github-integration",
+      "quality": "unreliable",
+      "angle": "dev/project status tools & trust signals",
+      "claimCount": 0
+    },
+    {
+      "url": "https://www.calmtech.institute/calm-tech-principles",
+      "quality": "primary",
+      "angle": "calm vs reward / alert-fatigue trade-off",
+      "claimCount": 5
+    },
+    {
+      "url": "https://imaginovation.net/blog/gamification-adhd-apps-user-retention/",
+      "quality": "blog",
+      "angle": "calm vs reward / alert-fatigue trade-off",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.tiimoapp.com/resource-hub/gamification-adhd",
+      "quality": "blog",
+      "angle": "calm vs reward / alert-fatigue trade-off",
+      "claimCount": 5
+    }
+  ],
+  "stats": {
+    "angles": 5,
+    "sourcesFetched": 22,
+    "claimsExtracted": 96,
+    "claimsVerified": 25,
+    "confirmed": 23,
+    "killed": 2,
+    "unverified": 0,
+    "afterSynthesis": 10,
+    "urlDupes": 1,
+    "budgetDropped": 7,
+    "agentCalls": 104
+  }
+}

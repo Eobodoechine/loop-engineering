@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-scam-voucher-name-harvest",
+  "origin": "harvested 2026-06-22 from the FB shortlist full-read (891 Virginia Ave NE) -- no-deposit / voucher-bait / send-your-name lead-harvest scam passed as a clean house",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier passed a row: House, 1 bed / 1 bath, $680/mo, Walk Score 77, 891 Virginia Ave NE. The listing body quoted verbatim: 'Do not text me without your contact number or full name. If you want to rent this property I want this for making an appointment and other processes. SEC-8 & Others Vouchers Accepted. Pets Are Welcome. No Deposit. To apply for this property kindly include detail below in your response. Full Name:---- Number:---- This home was a special order floor plan when built with top of the line options...'",
+  "rubric": "Classic rental-scam / PII-harvest pattern: implausible 'No Deposit', voucher bait, and a demand to send full name + phone number up front 'to make an appointment', wrapped in generic listing copy. A correct verifier flags scam/unverified, not PASS. Passing on an in-range price + decent Walk Score is the FALSE-PASS."
+}

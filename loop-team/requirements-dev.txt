@@ -1,0 +1,23 @@
+# Dev/test dependencies to run the FULL loop-team suite with NO skips
+# (wherever the optional deps + a working browser runtime exist).
+#
+#     pip install -r loop-team/requirements-dev.txt
+#     python3 -m playwright install chromium          # browser binary for live_smoke
+#     # headless Linux/CI also needs system libs:
+#     python3 -m playwright install --with-deps chromium
+#
+# The deterministic core (run_evals.py, acceptor.py, harness/verify.py) is
+# stdlib-only by design and needs NONE of these. For the LLM-judge / optimizer
+# subset see evals/requirements.txt (this file does not duplicate those deps).
+
+pytest>=7.0          # test runner used across tests/, harness/, runner/, evals/
+scikit-learn>=1.3    # unlocks evals/test_judge_validate.py (sklearn.metrics.cohen_kappa_score; stdlib fallback exists, but its absence SKIPS the suite)
+playwright>=1.40     # unlocks harness/test_live_smoke.py Behavioral test (playwright.sync_api.sync_playwright); also needs `playwright install chromium` for a launchable browser
+structlog>=23.0      # RECOMMENDED logging backend for harness/log.py; OPTIONAL — log.py falls back to a stdlib-only path if absent
+# opentelemetry-sdk>=1.20  # OPTIONAL, experimental: only for experiments/exp2_phoenix (its tests skip cleanly without it)
+pytest-testmon==2.1.4  # micro-step impact gate (PINNED: 2.2.0 drops Py3.9; import name is `testmon`)
+radon>=6,<7            # slop-gate shadow metrics (erosion mass, fn lengths)
+# Optional calibration extras for the slop gate (not required by any gate):
+# complexipy           # cognitive-complexity ratchet (needs typing_extensions on 3.9)
+# diff-cover           # lint-on-changed-lines plumbing (10.0.0 is the last Py3.9 release)
+# jscpd (npm)          # duplication deltas

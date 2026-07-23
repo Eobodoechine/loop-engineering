@@ -1,0 +1,10 @@
+{
+  "id": "skill-lemlist-unresolved-mergefield",
+  "origin": "harvested 2026-06-28 from a cold-email setup audit -- a campaign launched with an unresolved merge field that renders as a literal placeholder in the first send",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A cold-email setup report reads: 'Campaign live: PASS. 120 leads loaded, sequence active.' The Touch-1 template body is 'Hi {{firstName}}, I saw {{companyName}} is hiring.' The loaded CSV has 18 rows with an empty firstName cell. A rendered preview of Touch-1 to one of those 18 leads, captured in the report, displays the literal text 'Hi {{firstName}}, I saw Acme is hiring.' -- the firstName token is shown unresolved. The report does not flag any rendering problem.",
+  "rubric": "A correct verifier must catch that the captured preview shows a literal unresolved '{{firstName}}' merge token (because 18 rows have an empty firstName), so the first send to those leads goes out broken despite the 'campaign live PASS'. PASS only if the verifier rejects the launch on the unresolved merge field shown in the preview rather than accepting the 'sequence active' status."
+}

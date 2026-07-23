@@ -1,0 +1,279 @@
+{
+  "question": "Re-establish the peer-reviewed / clinical cognitive-science foundations for designing a productivity and \"status / where am I\" tool for an ADULT with ADHD, and translate EACH foundation into concrete, evidence-grounded design directives for a multi-product status dashboard (a \"Where am I \u00b7 is it really done vs. just claimed?\" surface for a solo software developer with ADHD). This is a science-foundations pass that complements a separate UI-pattern/comparable-products pass \u2014 focus here on the underlying research and its design implications, with REAL verifiable sources.\n\nCover, each with real citations (authors, year, title/journal) and 2-4 concrete design directives mapped to the dashboard:\n1) Barkley's executive-function model of ADHD \u2014 response inhibition, nonverbal working memory, self-regulation of affect/motivation/arousal, and especially \"time blindness\" / temporal discounting; and Barkley's concept of the \"point of performance\" and externalizing information/motivation at the point where behavior happens. What does this imply for making state and the next action externally visible rather than held in the head?\n2) Cognitive Load Theory (Sweller) and working-memory capacity limits (Miller 7\u00b12; Cowan ~4) \u2014 how to minimize extraneous cognitive load, chunk information, and offload working memory in a dense status UI without clutter.\n3) The Extended Mind thesis (Clark & Chalmers 1998) and cognitive-offloading research (e.g., Risko & Gilbert) \u2014 designing the environment/tool as reliable external memory an ADHD user can trust and \"read\" instead of remember.\n4) The Zeigarnik effect and \"open loops\" / unfinished-task intrusion (and any replication caveats) \u2014 how a status surface should represent unfinished vs. finished work so it closes loops and reduces intrusive rumination rather than amplifying it.\n5) Task initiation / activation energy / \"wall of awful\" and the \"what do I do next\" problem in ADHD \u2014 how a single-focus pointer and a concrete next-tiny-action reduce initiation friction.\n6) Reward, dopamine, and immediate-feedback needs in ADHD vs. overstimulation/alert-fatigue \u2014 the trade-off between motivating progress/momentum cues and keeping a calm, low-overwhelm surface.\n\nAlso surface any evidence on: relying on color alone vs. redundant encoding for ADHD/accessibility, and whether \"trust signals\" (clearly separating a claim from verified proof) reduce anxiety/rumination for people prone to doubt-checking. Output must be actionable: for each foundation, state the directive AND how it changes what our dashboard should render. Do NOT fabricate citations \u2014 if a source can't be verified, say so.",
+  "summary": "Six cognitive-science foundations for an ADHD-adult productivity/status dashboard are well-supported by primary, peer-reviewed sources, and each translates into concrete design directives. Barkley's executive-function model (1997) establishes response-inhibition as the core deficit that secondarily impairs working memory, motivation regulation, and time perception \u2014 grounding the central directive to externalize state, next-action, time, AND motivation at the \"point of performance\" (the exact place/time behavior fails), because ADHD is a disorder of performance, not knowledge. Working-memory limits (Cowan's ~4 chunks, revising Miller's 7\u00b12) plus Cognitive Load Theory (Paas & van Merri\u00ebnboer 2020) mandate chunking, offloading, and substituting extraneous/decorative load for action-relevant information. The Extended Mind / cognitive-offloading literature (Risko & Gilbert 2016; Gilbert 2019-2022) shows external reminders cut prospective-memory forgetting from ~45% to ~5%, that people already over-prefer offloading, and \u2014 critically \u2014 that whether a user offloads to a tool is governed by metacognitive confidence and TRUST in the tool's reliability, directly supporting a dashboard that visibly separates \"claimed\" from \"verified\" so low-confidence, doubt-prone ADHD users can trust it as external memory. The Zeigarnik/open-loop finding (Masicampo & Baumeister 2011) shows unfinished goals produce measurable intrusive thoughts and impaired unrelated-task performance, relieved by concrete plan-making \u2014 arguing the surface should capture a concrete next step per open loop to close the rumination loop. Two requested sub-topics (redundant/non-color encoding for accessibility; task-initiation \"wall of awful\") did not yield surviving primary citations in this pass and are flagged as gaps.",
+  "findings": [
+    {
+      "claim": "Barkley's unifying theory holds ADHD is fundamentally a deficit in behavioral (response) INHIBITION \u2014 not primarily attention \u2014 which secondarily impairs four executive functions: nonverbal working memory, self-regulation of affect/motivation/arousal, internalization of speech (verbal WM), and reconstitution. Design directive: because the user cannot reliably hold state or the next action in working memory, the dashboard must externalize current state and the next action as always-visible surfaces rather than relying on recall; render 'where am I' and 'what's next' as first-class persistent elements, not buried in menus.",
+      "confidence": "high",
+      "vote": "3-0 (claims 0,1,2 merged)",
+      "sources": [
+        "Barkley, R.A. (1997). Behavioral inhibition, sustained attention, and executive functions: Constructing a unifying theory of ADHD. Psychological Bulletin, 121(1), 65-94. DOI 10.1037/0033-2909.121.1.65 (PMID 9000892) \u2014 https://psycnet.apa.org/doiLanding?doi=10.1037%2F0033-2909.121.1.65"
+      ],
+      "evidence": "Primary peer-reviewed landmark (7000+ citations). Abstract states ADHD 'comprises a deficit in behavioral inhibition' and models the four EFs plus sustained attention as secondary/downstream impairments; working memory is explicitly among the EFs with strongest deficit evidence. Caveat: Barkley scoped the single-core-inhibition model to the hyperactive/combined presentation and excluded predominantly-inattentive; multi-pathway models (Sonuga-Barke, Nigg) challenge a single-core account \u2014 so read as 'ADHD-combined per Barkley,' not all presentations."
+    },
+    {
+      "claim": "Barkley's core intervention principle: ADHD is a disorder of PERFORMANCE, not knowledge/skill \u2014 failure happens at the 'point of performance' (the place and time the person fails to use what they already know). Because covert/internal information is a weak source of stimulus control, information must be externalized as physical, overt representations placed in the setting where behavior happens. Design directive: put the status surface, cues, and next-tiny-action AT the moment/place of work (e.g., ambient/persistent surface in the dev environment), not as detached documentation or knowledge; interventions inserted at the point of performance beat 'more information delivered elsewhere.'",
+      "confidence": "high",
+      "vote": "3-0 (claims 3,6 merged)",
+      "sources": [
+        "Barkley, R.A. ADHD, Executive Functioning and Self-Regulation (factsheet). https://www.russellbarkley.org/factsheets/ADHD_EF_and_SR.pdf",
+        "Barkley, R.A. (1997). Psychological Bulletin, 121(1), 65-94 (self-regulation theory)."
+      ],
+      "evidence": "Verbatim from the primary author factsheet: internal information is 'weak as a source of stimulus control,' so 'physical representations of that information will be needed in the setting at the point of performance,' and 'Conveying more knowledge does not prove as helpful as altering the parameters associated with the performance of that behavior at its appropriate point of performance.' Point-of-performance/externalization is universally attributed to Barkley; no contradicting source found."
+    },
+    {
+      "claim": "ADHD/EF deficits produce 'temporal myopia' (time blindness): behavior is governed by the immediate now rather than internal information about future events, and adolescents with ADHD show empirically steeper temporal discounting of delayed rewards plus impaired time REPRODUCTION (not estimation). Design directive: make time itself externally represented and shrink the gaps between event, response, and outcome \u2014 render elapsed/remaining time, deadlines, and 'how long since X / how long until done' explicitly and visually; break long-horizon goals into near-now checkpoints so consequences feel proximate rather than distant.",
+      "confidence": "high",
+      "vote": "3-0 (claims 4,7,8 merged)",
+      "sources": [
+        "Barkley, R.A. ADHD, EF and Self-Regulation factsheet \u2014 https://www.russellbarkley.org/factsheets/ADHD_EF_and_SR.pdf",
+        "Barkley, Edwards, Laneri, Fletcher & Metevia (2001). Executive functioning, temporal discounting, and sense of time in adolescents with ADHD and ODD. Journal of Abnormal Child Psychology, 29(6), 541-556. DOI 10.1023/A:1012233310098 (PMID 11761287)"
+      ],
+      "evidence": "Factsheet verbatim: EF-deficit individuals are assisted 'by making time itself more externally represented, by reducing or eliminating gaps in time among the components of a behavioral contingency (event, response, outcome).' The 2001 study (ADHD teens N=101 vs matched controls N=39) found significantly steeper discounting and worse time reproduction (not estimation). Corroborated by meta-analyses (Jackson & MacKillop 2016; Patros 2016; Zheng 2022). Caveats: discounting effect was reward-magnitude-specific and rewards were hypothetical; sample was adolescents with ODD comorbidity \u2014 direction is robust but magnitude/adult generalization is an inference."
+    },
+    {
+      "claim": "Externalizing information alone is insufficient \u2014 ADHD also involves weak INTERNALLY GENERATED motivation, so external, often artificial sources of motivation (small, immediate, frequent rewards) must also be arranged and sustained at the point of performance. Design directive: pair the status surface with lightweight, immediate progress/momentum cues (e.g., visible completion of a tiny next-action, a done-count, a streak) so motivation is externalized where the work happens \u2014 but keep them small and periodic, not a rational one-shot reward.",
+      "confidence": "high",
+      "vote": "3-0 (claim 5)",
+      "sources": [
+        "Barkley, R.A. ADHD, EF and Self-Regulation factsheet \u2014 https://www.russellbarkley.org/factsheets/ADHD_EF_and_SR.pdf"
+      ],
+      "evidence": "Verbatim: 'It is not simply the internally represented information that is weak... It is the internally generated sources of motivation associated with them that are weak as well... sources of motivation must also be externalized in those contexts in which tasks are to be performed.' Barkley recommends immediate/frequent/concrete feedback over delayed reward. Non-refuting caveat: Self-Determination Theory literature debates whether extrinsic rewards can undermine intrinsic motivation \u2014 qualifies implementation (keep cues informational, not controlling), not the descriptive core."
+    },
+    {
+      "claim": "Working-memory capacity is ~4 chunks (range 3-5), not Miller's 7\u00b12 \u2014 Miller's number was a rough estimate/rhetorical device, not a strict limit. Cognitive Load Theory's central principle is to SUBSTITUTE productive (action-relevant) load for unproductive (extraneous/decorative) load, not merely reduce total load. Design directive: never require the user to hold more than ~3-5 live items in view at once; chunk information into small labeled groups; aggressively strip decorative/extraneous load (chrome, animation, redundant labels) while PRESERVING the information needed to act \u2014 a dense status UI stays dense with signal, not clutter.",
+      "confidence": "high",
+      "vote": "3-0 (claims 9,10,11,12 merged)",
+      "sources": [
+        "Cowan, N. (2001). The magical number 4 in short-term memory: A reconsideration of mental storage capacity. Behavioral and Brain Sciences, 24(1), 87-114. \u2014 https://www.cambridge.org/core/journals/behavioral-and-brain-sciences/article/magical-number-4-in-shortterm-memory-a-reconsideration-of-mental-storage-capacity/44023F1147D4A1D44BDC0AD226838496",
+        "Paas, F. & van Merri\u00ebnboer, J.J.G. (2020). Cognitive-Load Theory: Methods to Manage Working Memory Load in the Learning of Complex Tasks. Current Directions in Psychological Science, 29(4), 394-398. DOI 10.1177/0963721420922183"
+      ],
+      "evidence": "Cowan (BBS target article, 6500+ cites) verbatim: capacity 'averaging about four chunks'; Miller's seven was 'meant more as a rough estimate and a rhetorical device than as a real capacity limit.' Paas & van Merri\u00ebnboer verbatim: CLT designs methods that 'substitute productive for unproductive cognitive load,' with extraneous load defined as activities 'not productive for learning' that should be minimized to free WM. The slot-vs-resource debate disputes whether a fixed number exists but never restores 7\u00b12 \u2014 it argues effective capacity is even lower/more variable, strengthening the directive."
+    },
+    {
+      "claim": "Cognitive offloading \u2014 using external action/tools to reduce cognitive demand \u2014 reliably improves performance (perception, memory, arithmetic, counting, spatial reasoning), and external reminders cut prospective-memory forgetting from ~45% (unaided) to ~5%. Intention offloading (placing perceptual cues/reminders in the environment) is a validated mechanism. Design directive: treat the dashboard as reliable external memory for delayed intentions \u2014 surface each open commitment as a persistent, perceptible cue tied to when/where it must trigger, so the user reads state instead of remembering it.",
+      "confidence": "high",
+      "vote": "3-0 (claims 13,15,18 merged)",
+      "sources": [
+        "Risko, E.F. & Gilbert, S.J. (2016). Cognitive Offloading. Trends in Cognitive Sciences, 20(9), 676-688 (PMID 27542527). \u2014 https://samgilbert.net/pubs/Risko2016TiCS.pdf",
+        "Gilbert et al. (2022/2023). Outsourcing Memory to External Tools: A Review of 'Intention Offloading'. Psychonomic Bulletin & Review. DOI 10.3758/s13423-022-02139-4 \u2014 https://link.springer.com/article/10.3758/s13423-022-02139-4",
+        "Gilbert et al. (2020). Optimal use of reminders. J. Exp. Psychol. General, 149(3), 501-517."
+      ],
+      "evidence": "Risko & Gilbert define offloading as 'the use of physical action to alter the information processing requirements of a task so as to reduce cognitive demand' and list the five improved domains; describe intention offloading via post-its, task-relevant objects, and smartphone time/location reminders. The 2022 review reports Gilbert et al. (2020) forgetting rates of ~45% unaided vs ~5% with reminders (nearly an order of magnitude). Peer-reviewed, foundational, corroborated. Caveat: the 45%/5% figures come from a demanding lab paradigm, not a universal real-world rate; offloading has a known cost (weaker internal memory when the aid is absent), which argues for making the aid reliably present."
+    },
+    {
+      "claim": "Whether a user offloads to a tool is governed by METACOGNITION: (a) confidence in one's own memory \u2014 lower-confidence people set more reminders even when actual ability is equal; and (b) TRUST in / reliability of the external store \u2014 higher-trust, intuitive tools that give immediate feedback are offloaded to more and yield better performance. People also carry a systematic BIAS toward offloading (they offload even when unaided memory would score better). Design directive: because doubt-prone, low-confidence ADHD users are exactly the population most inclined to lean on an external store, invest in making the dashboard demonstrably trustworthy \u2014 intuitive, immediate-feedback, and reliable \u2014 so the pre-existing offloading preference actually pays off; unreliable state will be abandoned.",
+      "confidence": "high",
+      "vote": "3-0 (claims 14,16,17,19,20,21,22,23 merged)",
+      "sources": [
+        "Risko, E.F. & Gilbert, S.J. (2016). Cognitive Offloading. Trends in Cognitive Sciences, 20(9), 676-688. \u2014 https://samgilbert.net/pubs/Risko2016TiCS.pdf",
+        "Boldt, A. & Gilbert, S.J. (2019). Confidence guides spontaneous cognitive offloading. Cognitive Research: Principles and Implications. DOI 10.1186/s41235-019-0195-y",
+        "Peng et al. (2025). Cognitive Offloading in Short-Term Memory Tasks: Trust Toward Tools as a Moderator. Int'l Journal of Human-Computer Interaction, 41(21). DOI 10.1080/10447318.2025.2474449",
+        "Gilbert et al. (2022) review, DOI 10.3758/s13423-022-02139-4; Gilbert et al. (2020) Optimal use of reminders, JEP:General 149(3)."
+      ],
+      "evidence": "Risko & Gilbert: offloading is shaped by 'metacognitive confidence' and 'beliefs about the reliability of a particular external store.' Boldt & Gilbert (2019) verbatim: participants 'set more reminders when they were less confident (regardless of actual memory ability)' \u2014 confidence, not objective ability, drives offloading (confirmed via biased-feedback manipulation). Peng et al. (2025): participants offloaded more to tools they trusted, with better performance when trust was high (effect strongest at medium difficulty). Gilbert (2020): participants were 'significantly biased toward using external reminders, even when they had a financial incentive to choose optimally.' Caveats: trust effect was medium-difficulty-specific; studies used general adult samples, so the ADHD extension is a well-grounded design inference, not a directly tested ADHD result."
+    },
+    {
+      "claim": "Unfinished goals ('open loops') produce measurable cognitive interference \u2014 intrusive thoughts during unrelated tasks, heightened accessibility of goal-related words, and impaired unrelated-task performance \u2014 consistent with the Zeigarnik effect; crucially, making a concrete PLAN for the unfinished goal eliminates most of that interference (Masicampo & Baumeister's 'Consider It Done'). Design directive: represent unfinished vs finished work so the surface CLOSES loops rather than amplifying rumination \u2014 for each open item show a concrete captured next step (not just an unresolved reminder), and visibly distinguish done from open; a bare list of unfinished tasks with no plan can worsen intrusive rumination, while an item paired with a concrete next action quiets it.",
+      "confidence": "high",
+      "vote": "3-0 (claim 24)",
+      "sources": [
+        "Masicampo, E.J. & Baumeister, R.F. (2011). Consider It Done! Plan Making Can Eliminate the Cognitive Effects of Unfulfilled Goals. Journal of Personality and Social Psychology, 101(4), 667-683. DOI 10.1037/a0024192 \u2014 https://users.wfu.edu/masicaej/MasicampoBaumeister2011JPSP.pdf"
+      ],
+      "evidence": "Top-tier JPSP primary source. Abstract (near-verbatim): unfinished goals 'caused intrusive thoughts during an unrelated reading task (Studies 1 and 5B), high mental accessibility of goal-related words (Studies 2 and 3), and poor performance on an unrelated anagram task (Study 4)'; plan-making removed these effects. Caveat: the broader Zeigarnik effect and some Baumeister-lab findings have a contested replication record, so retain the 'consistent with' hedge and lean on the robust, actionable part \u2014 that a concrete plan/next-step reduces intrusion."
+    }
+  ],
+  "caveats": "Source quality is uniformly high: every surviving finding rests on primary, peer-reviewed sources (Barkley 1997 Psychological Bulletin; Cowan 2001 BBS; Paas & van Merri\u00ebnboer 2020 Current Directions; Risko & Gilbert 2016 TiCS; Boldt & Gilbert 2019; Peng et al. 2025 IJHCI; Masicampo & Baumeister 2011 JPSP) with unanimous 3-0 verification. Key caveats: (1) Barkley's single-core-inhibition model is scoped to the hyperactive/combined presentation and is challenged by multi-pathway models (Sonuga-Barke, Nigg) \u2014 it is a foundational lens, not undisputed consensus for all ADHD presentations. (2) The temporal-discounting and time-reproduction evidence is from ADOLESCENTS with ODD comorbidity using hypothetical rewards; the discounting effect was reward-magnitude-specific \u2014 the phenomenon is real and meta-analytically replicated, but adult-specific magnitudes are an inference. (3) The metacognition/trust/offloading-bias studies used general adult samples, so applying them to a low-confidence ADHD developer is a reasonable design inference, not a directly tested ADHD result. (4) The dramatic 45%\u21925% reminder benefit is from a demanding lab paradigm, not a real-world base rate, and offloading has a documented cost (weaker unaided memory when the aid is absent) \u2014 argues for reliability, not for offloading everything. (5) The Zeigarnik effect has a contested replication record; the durable, actionable finding is that a concrete plan/next-step reduces intrusion, so keep the 'consistent with' hedge. (6) Design directives translating each foundation to the dashboard are engineering inferences grounded in the sources (especially Barkley's own point-of-performance construct), not claims the papers themselves make about dashboards.",
+  "openQuestions": [
+    "No surviving primary citation was found for redundant/non-color encoding vs. color-alone for ADHD/accessibility. This is a real, well-established principle (WCAG 1.4.1 'Use of Color'; Ware's Information Visualization) but was not verified in this pass \u2014 a follow-up should pull WCAG 2.x SC 1.4.1 and colour-perception literature directly. Do NOT cite it as verified until sourced.",
+    "Task initiation / activation energy / the 'wall of awful' and the 'what do I do next' pointer produced no surviving primary citation. The single-next-tiny-action directive is currently supported only indirectly (via Barkley's externalization + Masicampo & Baumeister's plan-making). A dedicated pass should seek empirical work on task initiation deficits in ADHD (e.g., research on procrastination, effort discounting, or the goal-gradient/implementation-intentions literature \u2014 Gollwitzer's implementation intentions is a strong candidate).",
+    "Does explicitly separating a 'claimed done' signal from a 'verified done' signal measurably reduce anxiety/rumination for doubt-prone users? The trust-and-offloading literature supports that tool reliability drives reliance, and Zeigarnik/plan-making supports loop-closure reducing intrusion, but no source directly tested a 'claim vs. proof' trust-signal UI. This is a plausible, well-motivated hypothesis worth a targeted search (or an A/B test) rather than a verified finding.",
+    "Alert-fatigue vs. motivating-feedback trade-off: Barkley supports frequent, immediate, small rewards, and CLT supports minimizing extraneous load, but no source quantified where 'motivating momentum cue' tips into 'overstimulating alert.' Notification-fatigue / interruption-cost HCI literature (e.g., Mark et al. on interruptions) would be needed to set concrete thresholds.",
+    "Adult-ADHD-specific replication: most offloading/metacognition evidence is from neurotypical adults and most time-perception evidence from adolescents. An open question is how strongly these effects hold, in magnitude, for adults with ADHD specifically."
+  ],
+  "refuted": [],
+  "unverified": [],
+  "sources": [
+    {
+      "url": "https://psycnet.apa.org/doiLanding?doi=10.1037%2F0033-2909.121.1.65",
+      "quality": "primary",
+      "angle": "Barkley EF model + point of performance / time blindness",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.russellbarkley.org/factsheets/ADHD_EF_and_SR.pdf",
+      "quality": "primary",
+      "angle": "Barkley EF model + point of performance / time blindness",
+      "claimCount": 5
+    },
+    {
+      "url": "https://link.springer.com/article/10.1023/A:1012233310098",
+      "quality": "primary",
+      "angle": "Barkley EF model + point of performance / time blindness",
+      "claimCount": 5
+    },
+    {
+      "url": "https://frisch-ot.com/wp-content/uploads/2021/11/EFModelBarkely.pdf",
+      "quality": "unreliable",
+      "angle": "Barkley EF model + point of performance / time blindness",
+      "claimCount": 0
+    },
+    {
+      "url": "https://www.cambridge.org/core/journals/behavioral-and-brain-sciences/article/magical-number-4-in-shortterm-memory-a-reconsideration-of-mental-storage-capacity/44023F1147D4A1D44BDC0AD226838496",
+      "quality": "primary",
+      "angle": "Cognitive Load Theory + working memory limits (Sweller, Miller, Cowan)",
+      "claimCount": 3
+    },
+    {
+      "url": "https://onlinelibrary.wiley.com/doi/10.1207/s15516709cog1202_4",
+      "quality": "unreliable",
+      "angle": "Cognitive Load Theory + working memory limits (Sweller, Miller, Cowan)",
+      "claimCount": 0
+    },
+    {
+      "url": "https://journals.sagepub.com/doi/10.1177/0963721420922183",
+      "quality": "primary",
+      "angle": "Cognitive Load Theory + working memory limits (Sweller, Miller, Cowan)",
+      "claimCount": 4
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Cognitive_load",
+      "quality": "secondary",
+      "angle": "Cognitive Load Theory + working memory limits (Sweller, Miller, Cowan)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://education.nsw.gov.au/content/dam/main-education/about-us/educational-data/cese/2017-cognitive-load-theory.pdf",
+      "quality": "secondary",
+      "angle": "Cognitive Load Theory + working memory limits (Sweller, Miller, Cowan)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.sciencedirect.com/topics/psychology/cognitive-load-theory",
+      "quality": "unreliable",
+      "angle": "Cognitive Load Theory + working memory limits (Sweller, Miller, Cowan)",
+      "claimCount": 0
+    },
+    {
+      "url": "https://samgilbert.net/pubs/Risko2016TiCS.pdf",
+      "quality": "primary",
+      "angle": "Extended Mind + cognitive offloading (Clark & Chalmers, Risko & Gilbert)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.tandfonline.com/doi/full/10.1080/10447318.2025.2474449",
+      "quality": "primary",
+      "angle": "Extended Mind + cognitive offloading (Clark & Chalmers, Risko & Gilbert)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://link.springer.com/article/10.3758/s13423-022-02139-4",
+      "quality": "primary",
+      "angle": "Extended Mind + cognitive offloading (Clark & Chalmers, Risko & Gilbert)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://samgilbert.net/pubs/Gilbert2020JEPG.pdf",
+      "quality": "primary",
+      "angle": "Extended Mind + cognitive offloading (Clark & Chalmers, Risko & Gilbert)",
+      "claimCount": 4
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Extended_mind_thesis",
+      "quality": "secondary",
+      "angle": "Extended Mind + cognitive offloading (Clark & Chalmers, Risko & Gilbert)",
+      "claimCount": 4
+    },
+    {
+      "url": "https://link.springer.com/article/10.1186/s41235-019-0195-y",
+      "quality": "primary",
+      "angle": "Extended Mind + cognitive offloading (Clark & Chalmers, Risko & Gilbert)",
+      "claimCount": 4
+    },
+    {
+      "url": "https://users.wfu.edu/masicaej/MasicampoBaumeister2011JPSP.pdf",
+      "quality": "primary",
+      "angle": "Zeigarnik / open loops (with replication caveats)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.nature.com/articles/s41599-025-05000-w",
+      "quality": "primary",
+      "angle": "Zeigarnik / open loops (with replication caveats)",
+      "claimCount": 3
+    },
+    {
+      "url": "https://escholarship.org/uc/item/2qb9x9wd",
+      "quality": "primary",
+      "angle": "Zeigarnik / open loops (with replication caveats)",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.researchgate.net/publication/37367696_Implementation_Intentions_and_Goal_Achievement_A_Meta-Analysis_of_Effects_and_Processes",
+      "quality": "unreliable",
+      "angle": "Task initiation / activation energy / next-action friction in ADHD",
+      "claimCount": 0
+    },
+    {
+      "url": "https://www.researchgate.net/publication/378870694_The_When_and_How_of_Planning_Meta-Analysis_of_the_Scope_and_Components_of_Implementation_Intentions_in_642_Tests",
+      "quality": "primary",
+      "angle": "Task initiation / activation energy / next-action friction in ADHD",
+      "claimCount": 5
+    },
+    {
+      "url": "https://www.envisionadhd.com/single-post/why-starting-is-hard-the-science-of-task-initiation-in-adult-adhd-and-what-actually-helps",
+      "quality": "blog",
+      "angle": "Task initiation / activation energy / next-action friction in ADHD",
+      "claimCount": 4
+    },
+    {
+      "url": "https://www.helloklarity.com/post/breaking-the-first-step-barrier-how-micro-steps-can-help-adhd-brains-overcome-task-initiation-problems/",
+      "quality": "blog",
+      "angle": "Task initiation / activation energy / next-action friction in ADHD",
+      "claimCount": 5
+    },
+    {
+      "url": "https://eprints.soton.ac.uk/18277/",
+      "quality": "primary",
+      "angle": "Reward/dopamine + alert fatigue + redundant encoding/accessibility",
+      "claimCount": 3
+    },
+    {
+      "url": "https://acamh.onlinelibrary.wiley.com/doi/10.1111/j.1469-7610.2006.01619.x",
+      "quality": "primary",
+      "angle": "Reward/dopamine + alert fatigue + redundant encoding/accessibility",
+      "claimCount": 3
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5387195/",
+      "quality": "primary",
+      "angle": "Reward/dopamine + alert fatigue + redundant encoding/accessibility",
+      "claimCount": 4
+    },
+    {
+      "url": "https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-without-color.html",
+      "quality": "primary",
+      "angle": "Reward/dopamine + alert fatigue + redundant encoding/accessibility",
+      "claimCount": 4
+    },
+    {
+      "url": "https://journals.sagepub.com/doi/abs/10.1177/1087054718772138",
+      "quality": "primary",
+      "angle": "Reward/dopamine + alert fatigue + redundant encoding/accessibility",
+      "claimCount": 4
+    }
+  ],
+  "stats": {
+    "angles": 6,
+    "sourcesFetched": 28,
+    "claimsExtracted": 104,
+    "claimsVerified": 25,
+    "confirmed": 25,
+    "killed": 0,
+    "unverified": 0,
+    "afterSynthesis": 8,
+    "urlDupes": 0,
+    "budgetDropped": 8,
+    "agentCalls": 111
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cand-jd-keyword-genuinely-held",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Tailored resume bullet, written to mirror the JD's exact phrasing: 'Built and maintained ETL pipelines in dbt and Snowflake to power analytics reporting.' Source provided alongside: the master resume reads 'Developed data transformation workflows using dbt on Snowflake; maintained reporting pipelines.' The JD's required-skills line (quoted in the artifact) reads 'Experience building ETL pipelines with dbt and Snowflake.' The tailored bullet adopts the JD's wording ('ETL pipelines', 'dbt', 'Snowflake') and every tool named is present in the master.",
+  "failure_mode": "over-rejection of legitimate JD-keyword mirroring (reads as keyword-stuffing, but every keyword is grounded in the master)",
+  "source": "fix_plan.md H-RESUME-2 -- the fail case is adding \"an unconfirmed skill/tool keyword\"; mirroring is allowed \"for skills/experience the candidate actually has per master.\" ; loop-team/roles/verifier.md L8 -- a traceable rephrase should PASS.",
+  "why_hard": "The bullet visibly adopts the JD's exact keywords, which pattern-matches keyword-stuffing/fabrication; but every tool it names (dbt, Snowflake) and the transformation/pipeline work appear in the master, so the mirroring is grounded and allowed.",
+  "objective_fact": "Every tool and skill the tailored bullet borrows from the JD (dbt, Snowflake, transformation/reporting pipelines) is present in the quoted master resume; mirroring JD phrasing for skills the candidate genuinely has is permitted, so the bullet is a correct PASS."
+}

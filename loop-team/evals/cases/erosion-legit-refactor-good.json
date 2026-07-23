@@ -1,0 +1,10 @@
+{
+ "id": "erosion-legit-refactor-good",
+ "origin": "fix_plan 2026-07-01: hard-good \u2014 growth without slop must PASS (over-rejection guard)",
+ "type": "DETERMINISTIC",
+ "target": "slop_metrics",
+ "expected": "PASS",
+ "code_before": "def process(rows):\n    out = []\n    for r in rows:\n        if r.get(\"kind\") == \"a\" and r.get(\"v\") is not None and r[\"v\"] > 0:\n            out.append({\"k\": \"a\", \"v\": r[\"v\"] * 2})\n        elif r.get(\"kind\") == \"b\" and r.get(\"v\") is not None and r[\"v\"] > 1:\n            out.append({\"k\": \"b\", \"v\": r[\"v\"] + 1})\n        elif r.get(\"kind\") not in (\"a\", \"b\") and r.get(\"v\"):\n            out.append({\"k\": \"other\", \"v\": r[\"v\"]})\n    return out\n",
+ "code_after": "def _valid_a(r):\n    return r.get(\"kind\") == \"a\" and r.get(\"v\") is not None and r[\"v\"] > 0\n\ndef _valid_b(r):\n    return r.get(\"kind\") == \"b\" and r.get(\"v\") is not None and r[\"v\"] > 1\n\ndef _transform(r):\n    if _valid_a(r):\n        return {\"k\": \"a\", \"v\": r[\"v\"] * 2}\n    if _valid_b(r):\n        return {\"k\": \"b\", \"v\": r[\"v\"] + 1}\n    if r.get(\"kind\") not in (\"a\", \"b\") and r.get(\"v\"):\n        return {\"k\": \"other\", \"v\": r[\"v\"]}\n    return None\n\ndef process(rows):\n    \"\"\"Same behavior, split into intention-revealing helpers.\"\"\"\n    out = []\n    for r in rows:\n        t = _transform(r)\n        if t is not None:\n            out.append(t)\n    return out\n",
+ "max_erosion_delta_pp": 5.0
+}

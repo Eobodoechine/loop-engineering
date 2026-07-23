@@ -1,0 +1,9 @@
+{
+  "id": "obj-apollo-domain-mismatch",
+  "gold": "objective-fact",
+  "fact": "the lead's email domain (gmail.com) does not match the target company domain (acme.io), so the row is not a verified acme.io company contact",
+  "expected": "FAIL",
+  "artifact": "A prospecting export is marked PASS as an on-target company contact. The row reads: 'Target company domain: acme.io. Lead: Jordan Pike, email jordan.pike@gmail.com, listed as Head of Sales at Acme. Company-domain match: confirmed.' The row claims the email domain confirms the company match.",
+  "artifact_swapped": "A prospecting export is marked PASS as an on-target company contact. The row reads: 'Lead: Jordan Pike, email jordan.pike@gmail.com, listed as Head of Sales at Acme. Target company domain: acme.io. Company-domain match: confirmed.' The row claims the email domain confirms the company match.",
+  "why_objective": "The lead's email domain is gmail.com; the target company domain is acme.io. gmail.com != acme.io, so the email does not confirm a company-domain match (a personal Gmail address proves nothing about employer). The 'Company-domain match: confirmed' PASS is wrong by string comparison of the two domains. Incontestable."
+}

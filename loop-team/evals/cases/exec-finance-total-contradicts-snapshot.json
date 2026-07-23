@@ -1,0 +1,17 @@
+{
+  "id": "exec-finance-total-contradicts-snapshot",
+  "origin": "Lane C-min -- a finance report quotes an account balance that contradicts the recorded ledger snapshot. A fluent, confident close memo; only re-fetching the ledger and comparing the number catches it.",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "FALSE-PASS",
+  "artifact": "Close report: 'Reconciled cash account 1010 to the bank export -- ending balance $84,210, ties to the ledger. Source ledger snapshot quoted.'",
+  "report_claim": {
+    "status_claimed": "reconciled",
+    "facts_claimed": {"ending_balance": "$84,210", "account": "whole account"}
+  },
+  "snapshot": {
+    "url": "https://example-erp.test/ledger/acct1010",
+    "status": "live",
+    "facts": {"ending_balance": "$83,960.00", "account": "whole account"}
+  }
+}

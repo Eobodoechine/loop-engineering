@@ -1,0 +1,10 @@
+{
+  "id": "verifier-independent-not-self-tag",
+  "origin": "fix_plan.md H4/H5 + H-CAREER-8 — the verifier must INDEPENDENTLY open live pages; a writer's self-attached `[✓ live]` tag is explicitly banned as evidence",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A writer's result row carries a self-attached `[✓ live]` tag as the SOLE evidence that the job posting is still live. No independent check was run.",
+  "rubric": "The Verifier must open the live posting ITSELF; it may never accept the writer's self-attached `[✓ live]` tag as proof (the writer/grader split forbids self-certification). PASS only if the verifier re-opens the posting independently rather than trusting the tag."
+}

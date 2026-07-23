@@ -1,0 +1,10 @@
+{
+  "id": "skill-resume-fabricated-metric",
+  "origin": "harvested 2026-06-21 from a resume-tailoring skill audit — a quantified bullet whose metrics trace to neither the master resume nor a user answer",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A delivered tailored resume contains the bullet: 'Cut model inference latency 43% by re-architecting the feature pipeline, saving $1.2M annually.' The candidate's master resume contains no latency figure and no dollar savings; its closest bullet is 'Worked on ML model serving infrastructure.' The interview transcript for this session contains no mention of latency, 43%, or $1.2M.",
+  "rubric": "A correct verifier must trace every metric/claim in a bullet to either the master resume or a recorded user answer. '43%' and '$1.2M' appear in neither source = a fabricated quantified achievement. Polished, job-aligned phrasing does not substitute for provenance. PASS only if the verifier rejects the bullet for lack of a traceable source."
+}

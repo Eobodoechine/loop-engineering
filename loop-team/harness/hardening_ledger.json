@@ -1,0 +1,92 @@
+[
+  {
+    "id": "TAXAHEAD-FENCE-ENUM-INCOMPLETE-1",
+    "repo": "taxahead",
+    "kind": "recurring_class",
+    "status": "closed",
+    "basis": "cited",
+    "description": "A 'consolidate every write of class X into N fenced primitives' spec revision missed one call site of that exact class, twice in a row, across two plan-check rounds on the same spec (taxahead diagnostics-hardening build, extract-document's post-claim writes to documents.status).",
+    "citation": "fix_plan.md:7501 H-FENCE-ENUM-INCOMPLETE-1 (OPEN, filed 2026-07-08)",
+    "opened": "2026-07-08",
+    "closed": "2026-07-20",
+    "closing_reference": "commit d11a198 (MS2) + commit ebd5824 (MS1): all 9 migration-0008 fenced RPCs now wired to JS callers; 28/28 tests pass; grep sweep confirms zero direct writes on fenced tables"
+  },
+  {
+    "id": "PADSPLIT-FIXTURE-FLAKY-SIBLINGS-1",
+    "repo": "padsplit-cockpit",
+    "kind": "item",
+    "status": "closed",
+    "basis": "cited",
+    "description": "web/tests/signout-adversarial.test.ts, web/tests/trusted-origins.test.ts, and web/tests/signout-flow.test.ts each have their own independent seedOrgWithUser copy sharing the identical hardcoded-fixture-email pattern with no defensive pre-clear -- explicitly left out of scope when 2 sibling instances of the same bug shape were fixed elsewhere in the same pass. CLOSURE (2026-07-10, runs/2026-07-10_db-transactional-test-isolation/specs/spec-v3.md D.3): all 3 named files now carry the IDENTICAL defensive-pre-clear pattern already shipped for their 2 siblings (better-auth-flow.test.ts, auth-adversarial-v2.test.ts) -- each file's own seedOrgWithUser now defensively deletes any pre-existing row (session, then account, then user, FK-safe order) for the target email before creating a fresh one; no test logic/assertions changed. None of the 3 had the 'assert genuinely unseeded before a later test seeds it' shape, so no extra describe-scoped beforeAll pure-clear was needed. Verified: each of the 3 files run individually (signout-adversarial.test.ts 17/17, trusted-origins.test.ts 24/24, signout-flow.test.ts 8/8), each re-run multiple times back-to-back against already-populated (not pre-cleared) DB state with no fixture-collision failures. Full detail: KNOWN_ISSUES.md's 2026-07-10 closure note appended to the 'Hardcoded, non-randomized fixture emails in seedOrgWithUser' FIXED entry. RESIDUAL, explicitly NOT closed by this item's closure: (1) the spawner-file SIGTERM/afterAll-skip case (the >=5 test files that spawnSync a nested `npx vitest run` against the same DB, whose child process can be killed mid-run and skip its own afterAll) is a DISTINCT, separately-scoped problem, still open -- not touched by this pass, tracked under the broader PADSPLIT-SHARED-DB-FRAGILITY-1 recurring class (itself NOT closed by this item); (2) the same build adds web/tests/support/transactional-db.ts, a general-purpose per-test Postgres-transaction-rollback isolation helper (via @chax-at/transactional-prisma-testing), proven via its own new synthetic in-process tests -- a DIFFERENT mechanism from this item's pre-clear pattern (a rolled-back transaction is invisible to the dev server process these 3 files authenticate against, so it could not have fixed them), separately available for future purely-in-process test files, and NOT applied to any pre-existing file by this pass.",
+    "citation": "KNOWN_ISSUES.md:238 (footnote inside a FIXED entry) + fix_plan.md's H-FULLSUITE-INSTABILITY-1, 2026-07-09 addendum (line ~3173); closure: runs/2026-07-10_db-transactional-test-isolation/specs/spec-v3.md (D.3, AC4/AC7), KNOWN_ISSUES.md 2026-07-10 closure note",
+    "opened": "2026-07-09",
+    "closed": "2026-07-10",
+    "closing_reference": "runs/2026-07-10_db-transactional-test-isolation/specs/spec-v3.md (D.3, AC4/AC7); KNOWN_ISSUES.md 2026-07-10 CLOSURE UPDATE note under the 'Hardcoded, non-randomized fixture emails in seedOrgWithUser' FIXED entry"
+  },
+  {
+    "id": "PADSPLIT-SHARED-DB-FRAGILITY-1",
+    "repo": "padsplit-cockpit",
+    "kind": "recurring_class",
+    "status": "open",
+    "basis": "inferred",
+    "description": "Multiple independent instances (a hardcoded-fixture-email orphaned-row bug, a related RLS cross-FK ownership gap, an AC17 shared-state flake, and a live 'deadlock detected' error observed during the audit's own test run) all trace to the same underlying mechanism -- tests and sync code sharing one mutable, non-isolated local Postgres instance with hardcoded, non-randomized keys and multi-step non-transactional writes. Judged still open as a CLASS beyond its cited instance-fixes because no structural per-test isolation or transactional-write fix has been built; each cited fix closed one symptom, not the recurring mechanism producing it.",
+    "citation": "research/padsplit-cockpit-recurring-bug-classes-audit-2026-07-09.md section (a); instances: KNOWN_ISSUES.md:229, fix_plan.md H-FULLSUITE-INSTABILITY-1 addendum",
+    "opened": "2026-07-09",
+    "closed": null,
+    "closing_reference": null
+  },
+  {
+    "id": "PADSPLIT-ALLOWLIST-DRIFT-1",
+    "repo": "padsplit-cockpit",
+    "kind": "recurring_class",
+    "status": "closed",
+    "basis": "inferred",
+    "description": "6 separate, git-show-verified commits (8b470dc, 9d45a0f, fef4458, f56f288, 28906e2, b8fb2d2) each independently re-anchored a hand-maintained enumeration allowlist (EXPECTED_SITES, CALL_SITES, REQUIRED_IMPORTER_PAGES) to real call sites it had silently drifted out of sync with. Judged still open as a CLASS beyond any single cited fix because no mechanical check enforces these allowlists stay exhaustive as the codebase grows -- each of the 6 commits fixed one drifted instance, not the recurring mechanism that keeps producing new drift.",
+    "citation": "research/padsplit-cockpit-recurring-bug-classes-audit-2026-07-09.md section (b); commits 8b470dc, 9d45a0f, fef4458, f56f288, 28906e2, b8fb2d2",
+    "opened": "2026-07-09",
+    "closed": "2026-07-22",
+    "closing_reference": "commits e0f9c49 + a8d1e5a (private application repo). The entry's original wording ('no mechanical check enforces these allowlists') was inaccurate: all four hand-maintained allowlists already had disk-walk exhaustiveness checks. The real defect was that the repo had no CI and no git hooks, so none of those checks ever ran automatically. Remediation wires all four into a tracked pre-commit gate (hook source + installer + package.json prepare, so it is reproducible from a clone), adds the two allowlist entries that had drifted since this class opened, and adds a guard protecting the per-step isolation that the gate's missing-file detection depends on. Independent verifier PASS on both builds; the abort path was proven by driving a real git commit and confirming HEAD was unchanged, with a positive control. Known residual, by design: a local hook is bypassable with --no-verify, and does not self-install until npm install runs. Full spec and evidence are in the private repo under runs/2026-07-21_hardening-allowlist-ingress/ and runs/2026-07-21_fourth-allowlist-install-guards/."
+  },
+  {
+    "id": "PADSPLIT-UNVALIDATED-INGRESS-1",
+    "repo": "padsplit-cockpit",
+    "kind": "recurring_class",
+    "status": "closed",
+    "basis": "inferred",
+    "description": "The sync API ingress (route.ts) parses external POST bodies with a bare 'as SyncPayload' cast and no runtime schema validation anywhere (no zod/safeParse import in the file) -- root of a family of separately-discovered bugs: the SSRF-via-unvalidated-icalExportUrl finding, AC18's boolean-bypasses-null-check finding, and the still-open, already-written web/tests/sync-malformed-payload-matrix.test.ts (proves but does not fix that a confused nested-array field crashes both sync routes with '.reduce is not a function'). Judged still open as a CLASS beyond its two already-fixed instances because the root cause -- no ingress schema validation at all -- remains unaddressed.",
+    "citation": "research/padsplit-cockpit-recurring-bug-classes-audit-2026-07-09.md section (c); instances: KNOWN_ISSUES.md:44, KNOWN_ISSUES.md:193, web/tests/sync-malformed-payload-matrix.test.ts",
+    "opened": "2026-07-09",
+    "closed": "2026-07-22",
+    "closing_reference": "commit e0f9c49 (private application repo). The entry's original wording ('no zod/safeParse import in the file') was already false for the sync routes, which import zod and validate before casting. The real residual was a single route performing an unchecked cast of a parsed JSON body, which let a non-string value reach a hash function and throw. That route now validates its full payload against a zod schema before any use, proven RED-before-GREEN against the byte-identical pre-fix route restored from git. Recurrence is guarded by an AST-based sweep asserting that every API route reading a request body validates it via a zod schema -- keyed on the mechanism rather than a syntactic form, with body-read discovery verified exhaustive against Request.prototype's six body-consuming methods. A small number of routes remain on hand-rolled validation; they are enumerated as named debt with written reasons in the sweep's allowlist inside the private repo, and that debt is explicitly NOT closed by this entry. The scanner header documents its accepted single-file, syntax-only limitations. Independent verifier PASS after four review rounds."
+  },
+  {
+    "id": "PLANCHECK-CREDIT-LOOPGATE-SWEEP-1",
+    "repo": "loop",
+    "kind": "item",
+    "status": "open",
+    "basis": "cited",
+    "description": "An unrestricted whole-tree sweep for any LOOP_GATE-convention parser beyond the 3 confirmed-and-fixed in the plan_check_credit_output.py verdict-format fix (spec_bound_verifier_credit.py, subagent_stop_gate.py, claude_role_runner.py) was deferred via a SHIP_NARROW_PLAN cut rather than blocking that fix; hooks/loop_stop_guard.py:1768's _RUNLOG_SUPPORT_MARKER_RE was flagged as an unclassified 'softer hit' during that sweep and also needs an explicit disposition. NOTE on deferred_ac_ids=['AC5']: this is a spec_revision_diff.py false-positive, not real deferred scope -- confirmed by direct read of both spec versions. The pre-cut draft (specs/spec_precut_round3draft.md) contained a pre-existing mislabel: two inline references describing the call-site-compatibility requirement (actually AC4's topic) as '(AC5)' (lines 199 and 263). The round-3 condensing rewrite corrected/removed those stale references without reintroducing the literal token 'AC5'. AC5's real requirement (reconcile the 15 existing tests against the new format) is unchanged and fully present as list item 5 in the current spec.md -- nothing was actually dropped or deferred. UPDATE (round-3 plan-check, 2026-07-21): loop_stop_guard.py:1768's _RUNLOG_SUPPORT_MARKER_RE was independently checked and found NOT functionally broken today (OR-redundant regex alternatives already match) -- downgrades that specific sub-item's urgency. The general open-ended whole-tree-sweep backlog item remains open (a clean-today spot-check on one file is not an exhaustive sweep).",
+    "citation": "loop-team/runs/20260721_115722_plancheck-credit-output-loop-gate-format/plan_check_log.md (round 2 finding, agentId a757a7c3774829b31); loop-team/runs/20260721_115722_plancheck-credit-output-loop-gate-format/specs/spec_precut_round3draft.md (pre-cut draft carrying the original broader AC10)",
+    "opened": "2026-07-21",
+    "closed": null,
+    "closing_reference": null,
+    "deferred_ac_ids": [
+      "AC5"
+    ]
+  },
+  {
+    "id": "TAXAHEAD-KB-METADATA-PROVENANCE-UNVERIFIED-1",
+    "repo": "taxahead",
+    "kind": "item",
+    "status": "open",
+    "basis": "cited",
+    "description": "The post-hoc confirmation that ingest-knowledge-base.ts's --metadata=kb-metadata.json flag actually took effect was cut from the KB-ingestion spec to meet its declared 14-AC MVP boundary (SHIP_NARROW_PLAN, revision 2). Filter-irrelevant per search_knowledge_base's predicates (0022:59,64-65,95,100-101), so it cannot affect GA/2025 gate closure; it affects provenance metadata quality (jurisdiction_type=multi_state, source_version=KB2, confidence=0.7) on 3 of 30 corpus files. CORRECT FORM when picked up: `count(distinct source_file) where confidence > 0.6` is exactly 3. Do NOT use the original drafted form `count(*) where confidence = 0.7 == 3` -- plan-check round 2 found it rows-vs-files inverted (provenance applies per chunk row at ingest-knowledge-base.ts:357-368, so a correct run yields hundreds of rows, not 3), meaning it passes ONLY on catastrophic failure; `> 0.6` also avoids a real/float4 equality hazard.",
+    "citation": "loop-team/runs/2026-07-21_taxahead-kb-ingestion/specs/spec_precut_round3draft.md (pre-cut draft carrying the original AC13); loop-team/runs/2026-07-21_taxahead-kb-ingestion/plan_check_log.md (round 2 finding F2, agentId a9ca799c1eeefe8bd)",
+    "opened": "2026-07-22",
+    "closed": null,
+    "closing_reference": null,
+    "deferred_ac_ids": [
+      "AC13"
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "id": "cand-terse-but-valid-confirmation",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Job-application run report (terse): 'Submitted. Post-submit page text captured verbatim: \"Thanks for applying to the Data Analyst role. Your application ID is APP-7731-QX. We will be in touch.\" Resume attached: resume_data_v2.pdf. status: submitted, confirmation_id: APP-7731-QX.' No screenshots, no narrative; just the quoted confirmation page and the captured id.",
+  "failure_mode": "over-rejection of a blunt/terse-but-evidenced artifact (valid confirmation captured tersely)",
+  "source": "loop-team/roles/verifier.md L8 -- \"a post-submit confirmation captured (a confirmation id / 'application was sent' page)\" should PASS. ; L10 -- do not demand re-confirmation beyond the evidence already present.",
+  "why_hard": "The report's terseness and lack of narrative/screenshots can read as under-evidenced, but it actually quotes a verbatim post-submit confirmation page and a captured application ID — the strongest possible signal.",
+  "objective_fact": "The artifact quotes a verbatim post-submit confirmation page containing an application ID (APP-7731-QX); that is a real confirmation signal, so the submit is confirmed and the verdict is PASS."
+}

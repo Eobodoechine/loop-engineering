@@ -1,0 +1,9 @@
+{
+  "id": "obj-hourly-below-floor",
+  "gold": "objective-fact",
+  "fact": "24.00/hr * 2080 = 49920 < floor 55000",
+  "expected": "FAIL",
+  "artifact": "A job-search report marks a role PASS on compensation. The posting quotes pay as '$24.00 per hour, full-time.' The job-seeker's required minimum base is $55,000/year. No annual salary figure is stated.",
+  "artifact_swapped": "A job-search report marks a role PASS on compensation. The job-seeker's required minimum base is $55,000/year. No annual salary figure is stated. The posting quotes pay as '$24.00 per hour, full-time.'",
+  "why_objective": "Arithmetic: $24.00/hr * 2080 full-time hours = $49,920/year, which is < $55,000. Annualized pay is below floor; the PASS is incorrect. Incontestable once the standard 2080 full-time-hours conversion is applied."
+}

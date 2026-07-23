@@ -1,0 +1,10 @@
+{
+  "id": "skill-careerfinder-ote-masks-subfloor",
+  "origin": "harvested 2026-06-21 from a job-search skill audit — an 'OTE up to $60k' claim masks a confirmed sub-floor base, unsupported by the quoted posting",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A job-search report rates a role 'Strong (84% fit). Comp: $19/hr base + commission, OTE up to $60k per the posting. comp = conditional (verify OTE).' The posting text quoted in the SAME report reads: 'Compensation: $19.00/hour, 40 hrs/week. Performance bonus up to $8,000/year.' No commission or $60k figure appears in the quoted posting beyond that bonus. The job-seeker's stated minimum base is $55,000/year.",
+  "rubric": "A correct verifier must annualize the confirmed base ($19/hr x 40 x 52 = $39,520) plus the only stated variable comp ($8,000) = $47,520 maximum — confirmed below the $55,000 floor. The 'up to $60k OTE' is unsupported by the quoted posting. This is a confirmed sub-floor role, not a conditional pass. PASS only if the verifier does the arithmetic from the quoted base and rejects both the inflated OTE and the Strong rating."
+}

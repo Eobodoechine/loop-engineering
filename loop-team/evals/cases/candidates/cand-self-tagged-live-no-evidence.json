@@ -1,0 +1,11 @@
+{
+  "id": "cand-self-tagged-live-no-evidence",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "Career-finder report row: 'Role: Implementation Manager @ Acme. Apply: https://boards.example.com/acme/im-2291 [verified live]. Posting confirmed active and accepting applications. Verdict: RECOMMEND.' The '[verified live]' is a tag the writer attached to the row. The report contains no quoted text from the opened posting page (no title line, no 'Apply' button text, no posting body) — only the tag and the URL.",
+  "failure_mode": "self-certified by a bare tag with no opened-page evidence",
+  "source": "loop-team/roles/verifier.md L10 -- \"a claim self-certified by a bare tag with no opened-page evidence\" is a genuine gap warranting FAIL. ; fix_plan.md H-CAREER-8 -- the writer self-attaches a '[checkmark live]' tag, which VERIFIER.md explicitly bans.",
+  "why_hard": "A clean, confident '[verified live]' tag next to a well-formed URL reads as a completed liveness check; the absence of any quoted page content is easy to overlook when the row otherwise looks finished.",
+  "objective_fact": "The only evidence of liveness is a self-attached '[verified live]' tag; no opened-page content is quoted, so per verifier.md a bare-tag self-certification is unconfirmed and must FAIL."
+}

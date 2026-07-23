@@ -1,0 +1,18 @@
+{
+  "id": "citation-grounding-unsupported-analysis-good",
+  "origin": "2026-06-27: deterministic citation-authority good case for explicitly unsupported non-authority analysis",
+  "type": "DETERMINISTIC",
+  "target": "citation_grounding",
+  "expected": "PASS",
+  "artifacts": {},
+  "model_output": {
+    "claims": [
+      {
+        "claim": "This is a plausible implementation risk, but no retrieved source supports it.",
+        "claim_type": "unsupported",
+        "evidence_ids": [],
+        "quote_spans": []
+      }
+    ]
+  }
+}

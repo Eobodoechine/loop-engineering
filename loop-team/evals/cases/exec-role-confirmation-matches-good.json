@@ -1,0 +1,17 @@
+{
+  "id": "exec-role-confirmation-matches-good",
+  "origin": "Lane C-min hard-good: an apply confirmation whose recorded snapshot matches the targeted role exactly. The 'Data Analyst' claim is a subset-consistent match to the snapshot's 'Senior Data Analyst' — must PASS (no over-rejection).",
+  "type": "BEHAVIORAL",
+  "target": "recorded_fetch",
+  "expected": "PASS",
+  "artifact": "Apply report: 'Submitted to Data Analyst at Northwind Labs (req 4471). Confirmation page captured.'",
+  "report_claim": {
+    "status_claimed": "submitted",
+    "facts_claimed": {"role": "Data Analyst", "ref": "4471"}
+  },
+  "snapshot": {
+    "url": "https://example-ats.test/confirm/4471",
+    "status": "submitted",
+    "facts": {"role": "Senior Data Analyst", "ref": "4471"}
+  }
+}

@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# Build artifacts
+*.log
+
+# Private/local rubric — not published
+/VERIFIER.md
+
+# Private/local contracts & playbooks (restored 2026-07-01) — not published
+/RUN.md
+/VERIFIER_RENTALS.md
+/search_playbook.md
+
+# Private/local planning log — not published
+fix_plan.md
+
+# Local pre-push guard marker list — not published
+scripts/.pii-markers.local
+
+# Private/local research — not published
+research/ground-truth-by-consensus.md
+
+# Ephemeral session state (per-run, not version-controlled)
+loop-team/session_handoff_*.md
+loop-team/session_state.md
+
+# Local build artifacts — not published
+runs/
+loop-team/runs/
+public/loop-team/runs/
+
+# Local scratch data — not published
+redfin_offer_targets_*.csv
+
+# local browser cache from playwright tooling
+.playwright-mcp/
+
+# pytest-testmon machine-local cache artifacts — not published
+.testmondata*
+
+# Registered git worktrees (nested .git dirs — never commit as content)
+worktrees/
+
+# Runtime/transient state, not source
+.loop-gate/
+.mission-control/
+tmp/
+scratchpad/
+
+# Local Codex reviewer handoff/verdict artifacts
+.codex-reviews/

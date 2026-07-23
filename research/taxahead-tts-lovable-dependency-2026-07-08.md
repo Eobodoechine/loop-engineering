@@ -1,0 +1,485 @@
+# taxahead: is `src/routes/api/tts.ts` (Lovable AI Gateway TTS) dead code or a live dependency?
+
+**Date:** 2026-07-08
+**Mode:** D (domain research for a build) — dispatched by Oga mid-migration (Lovable → self-managed
+Supabase + Cloudflare Workers) to decide whether to delete or replace the leftover Lovable-gateway
+TTS route.
+**Scope:** repo `<HOME>/Claude/Projects/taxahead/` (read-only) + Lovable's official docs
+(external, explicitly authorized by the dispatch). No sub-agents used; all tool calls run directly.
+
+---
+
+## 1. Full content of `src/routes/api/tts.ts`
+
+Read in full (55 lines). Verbatim:
+
+```ts
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/api/tts")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const apiKey = process.env.LOVABLE_API_KEY;
+        if (!apiKey) {
+          return new Response("LOVABLE_API_KEY not configured", { status: 500 });
+        }
+
+        let body: { text?: string; voice?: string };
+        try {
+          body = await request.json();
+        } catch {
+          return new Response("Invalid JSON", { status: 400 });
+        }
+
+        const text = (body.text ?? "").trim();
+        if (!text) return new Response("Missing text", { status: 400 });
+
+        const voice = body.voice ?? "alloy";
+
+        const upstream = await fetch("https://ai.gateway.lovable.dev/v1/audio/speech", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-4o-mini-tts",
+            input: text,
+            voice,
+            response_format: "mp3",
+          }),
+        });
+
+        if (!upstream.ok) {
+          const errText = await upstream.text().catch(() => "");
+          return new Response(errText || `TTS failed: ${upstream.status}`, {
+            status: upstream.status,
+          });
+        }
+
+        return new Response(upstream.body, {
+          headers: {
+            "Content-Type": "audio/mpeg",
+            "Cache-Control": "no-store",
+          },
+        });
+      },
+    },
+  },
+});
+```
+
+**Shape summary:**
+- Route: `POST /api/tts`, a TanStack Start server route (Cloudflare-Workers-deployed, see §4).
+- Request body: `{ text: string, voice?: string }` (voice defaults to `"alloy"`).
+- Auth: `process.env.LOVABLE_API_KEY` as a Bearer token to Lovable's gateway. Hard-fails 500 if unset.
+- Upstream call: `POST https://ai.gateway.lovable.dev/v1/audio/speech` with
+  `{ model: "openai/gpt-4o-mini-tts", input, voice, response_format: "mp3" }` — this is an
+  **OpenAI-Audio-API-compatible request shape**, and the `model` string
+  (`openai/<provider>/<model>` style) indicates Lovable's gateway is itself a multi-provider proxy
+  forwarding to OpenAI's TTS model under a unified key/format (same shape family as OpenRouter /
+  Cloudflare AI Gateway).
+- Response: streams `upstream.body` straight through with `Content-Type: audio/mpeg`,
+  `Cache-Control: no-store`. No caching, no retry, no rate limiting.
+- Error handling: 500 if no key, 400 for bad JSON / missing text, passes upstream's status code
+  and error text through verbatim on failure.
+- No model/voice enumeration or validation beyond a hardcoded default; the model is hardcoded
+  server-side (caller can't pick a different model, only `voice`).
+
+---
+
+## 2. Exhaustive grep of the entire repo for TTS / Lovable-gateway references
+
+All commands run from repo root (`cd <HOME>/Claude/Projects/taxahead`), excluding
+`node_modules/` and `.git/` (and lockfiles for the broadest pass) to filter vendor noise. Every
+hit is reported below — none were sampled/dropped.
+
+### Command set
+```
+grep -rn "/api/tts" . --include="*.*" -I 2>/dev/null | grep -v "node_modules\|\.git/"
+grep -rn "api/tts" . -I 2>/dev/null | grep -v "node_modules\|\.git/"
+grep -rn "audio/speech" . -I 2>/dev/null | grep -v "node_modules\|\.git/"
+grep -rin "text-to-speech" . -I 2>/dev/null | grep -v "node_modules\|\.git/"
+grep -rn "LOVABLE_API_KEY" . -I 2>/dev/null | grep -v "node_modules\|\.git/"
+grep -rn "ai.gateway.lovable.dev" . -I 2>/dev/null | grep -v "node_modules\|\.git/"
+grep -rin "tts" . -I 2>/dev/null | grep -v "node_modules\|\.git/\|package-lock\|pnpm-lock\|yarn.lock"
+```
+
+### `/api/tts` and `api/tts` (identical result sets)
+| File:line | Context |
+|---|---|
+| `.lovable/plan.md:17` | "Keep the existing shared `sharedAudioEl` unlock behavior; no changes to `/api/tts` or other files." — a Lovable-agent-authored implementation plan for a bug fix to the **existing, working** read-aloud feature. Confirms the route was treated as live/working as of this plan's authorship. |
+| `src/routeTree.gen.ts:27,111-113,167,190,216,243,266,291,310,420-424,533` | TanStack Router's **auto-generated** route tree — `/api/tts` is registered as a real route in the app's route manifest (`ApiTtsRoute`), same as every other page/route. This is generated by the router's build-time file-based routing scan, not hand-written — it exists because `src/routes/api/tts.ts` exists and is picked up like any other route file. |
+| `src/routes/api/tts.ts:3` | The route definition itself (see §1). |
+| `src/routes/app.feed.tsx:1064` | **The actual caller** — `const res = await fetch("/api/tts", { method: "POST", ... })`. See below. |
+
+### `audio/speech`, `LOVABLE_API_KEY`, `ai.gateway.lovable.dev`
+All three patterns hit **only inside `src/routes/api/tts.ts`** (lines 24, 7/9, 24 respectively) —
+zero references anywhere else in the repo (docs, tests, other routes, config).
+
+### `text-to-speech` (case-insensitive)
+Zero hits anywhere in the repo.
+
+### `tts` (case-insensitive, broad pass, vendor/lockfiles excluded)
+Every hit, classified:
+- `bun.lock:1338` — **noise**: an unrelated package name substring (`tsx/esbuild/...`), not a TTS reference.
+- `.lovable/plan.md:13-17` — **doc mention**, a Lovable-agent bugfix plan for the read-aloud
+  auto-advance/ownership bug in `app.feed.tsx`'s `ttsRegistry`. Real, recent, feature-level plan
+  (not dead-code cleanup).
+- `src/routeTree.gen.ts` (12 lines) — **generated route registration**, not hand-written code (see above).
+- `src/lib/admin-mock-data.ts:93,234` and `src/routes/get-started.tsx:608` — **false positives**:
+  substring hits inside "Massachusetts" (contains "tts"). Not TTS-related.
+- `src/routes/app.feed.tsx` (lines 980-983, 985-990, 1020, 1042, 1047-1048, 1057-1058, 1064,
+  1070, 1092-1094, 1100-1101) — **the live caller and its full supporting state machine** (see below).
+- `src/routes/api/tts.ts:3,31,40` — the route file itself.
+
+**Conclusion for Task 2: there is exactly ONE caller of the TTS route anywhere in the repo, and it
+is a real, wired-up UI feature — NOT zero callers.** This falsifies the "assume it's dead code"
+hypothesis if that was the working assumption; the exhaustive grep set above is reproducible with
+the commands listed.
+
+### The caller in detail: `src/routes/app.feed.tsx` — a "Read aloud" feature on feed messages
+
+Read in full (lines 960-1119 relevant excerpt). Key structure:
+- **Module-level shared state** (lines 980-1008): a `ttsRegistry: TtsEntry[]` array, a
+  `currentTtsId` pointer, and a single shared `<audio>` element (`sharedAudioEl`) that gets
+  "unlocked" (muted-played-then-paused) inside the first user click so that subsequent
+  auto-advanced `.play()` calls aren't blocked by Safari/iOS autoplay policy (explicit comment,
+  line 993-995: *"A single shared `<audio>` element that gets 'unlocked' by the first user click.
+  Reusing it lets subsequent auto-advanced messages call .play() without a fresh gesture
+  (Safari/iOS otherwise throws NotAllowedError)."*).
+- **`AssistantActions` component** (line 1010+) — rendered per assistant feed message, holds
+  `speaking`/`loadingAudio` state, an `AbortController` for in-flight fetches, and registers itself
+  into the shared `ttsRegistry` on mount (`useEffect`, lines 1091-1105).
+- **`playFromText`** (lines 1054-1089) — the actual fetch call:
+  ```ts
+  const res = await fetch("/api/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, voice: "alloy" }),
+    signal: controller.signal,
+  });
+  if (!res.ok) throw new Error(`TTS failed: ${res.status}`);
+  const blob = await res.blob();
+  ...
+  audio.src = url;
+  audio.onended = () => stopPlayback({ autoAdvance: true });
+  ```
+  On success it plays the returned MP3 blob and, on `onended`, auto-advances to the next
+  registered message (auto-advance chain across the whole feed).
+- **`handleReadAloud`** (lines 1107-1117) — the click handler wired to a UI button (confirmed via
+  `onClick={handleReadAloud}` at line 1196, with `aria-label={speaking || loadingAudio ? "Stop
+  reading" : "Read aloud"}` at line 1198 and a loading/speaking icon swap at 1202-1204).
+
+This is a fully-built, stateful, cross-component "continuous read-aloud with auto-advance and
+single-owner audio element" feature — the kind of thing that takes real design effort, not an
+accidental leftover. The `.lovable/plan.md` file (see below) is a **recent bug-fix plan for this
+exact feature**, further confirming active use, not abandonment.
+
+### `.lovable/plan.md` (full content, 25 lines) — corroborating evidence
+
+```
+## Goal
+All "Read aloud" buttons in the feed act as one coordinated player:
+- Click on any message → that message plays, then it auto-advances through the messages below it.
+- Click again on the currently-playing message → stop.
+- Click on a different message while one is playing → stop the current one immediately and
+  start the newly-clicked one (which then continues auto-advancing from there).
+
+Today the auto-advance chain works (after the previous fix), but each `AssistantActions` only
+tracks its own `speaking` / `loadingAudio` state and only its own `stopPlayback` clears the
+shared audio element. So clicking a second message while another is playing leaves the first
+message stuck in the "Stop reading" UI and can race on the shared `<audio>`.
+
+## Fix (frontend only, `src/routes/app.feed.tsx`, `AssistantActions`)
+1. Extend the module-level `ttsRegistry` entry from `{ id, play }` to `{ id, play, stop }` ...
+...
+5. Keep the existing shared `sharedAudioEl` unlock behavior; no changes to `/api/tts` or other files.
+
+## Verification
+- Open the feed, click Read aloud on message 1 → it plays, then message 2, then 3 auto-advance...
+```
+This is a **Lovable-agent-authored fix plan** for a real UX bug in the read-aloud feature ("after
+the previous fix" implies this is at least the second iteration of work on this feature), dated
+to sit alongside the rest of the migration work in this repo. It explicitly scopes itself to
+"frontend only... no changes to `/api/tts`" — i.e. the plan's author considered the route
+correct/working and out of scope for this fix. There is no plan, comment, or doc anywhere in the
+repo proposing to remove or replace `tts.ts`.
+
+**Falsifiability note:** the exact grep commands above are reproducible verbatim against the repo
+at its current state; re-running them will reproduce the same hit set.
+
+---
+
+## 3. Does `ai.gateway.lovable.dev` require Lovable-platform project hosting?
+
+### What I could verify from Lovable's own docs (fetched directly, quoted verbatim)
+
+**Source: [`docs.lovable.dev/integrations/ai`](https://docs.lovable.dev/integrations/ai)**
+(fetched 2026-07-08)
+- *"AI calls run through a secure backend edge function that Lovable creates for you. Calls are
+  not made directly from the browser, which keeps your credentials and prompts server-side."*
+- *"Lovable automatically generates and manages a `LOVABLE_API_KEY` for each project. You never
+  need to create or provide it yourself."*
+- *"When a project is remixed, a fresh key is generated for the new project automatically."*
+- *"For the best experience, use the built-in AI connector with Lovable Cloud, so your app has
+  the backend needed to make secure model calls."*
+- Supported TTS model listed: **"GPT-4o Mini TTS (default)"** — *"Natural-sounding speech for
+  narration, read-aloud, and voice features."* This matches `tts.ts`'s hardcoded
+  `model: "openai/gpt-4o-mini-tts"` exactly — confirms `tts.ts` was Lovable-agent-generated
+  boilerplate from this exact integration, not custom code.
+- The page does **not** explicitly state whether the gateway can be called from code outside
+  Lovable Cloud, nor what happens if the app isn't deployed on Lovable Cloud.
+
+**Source: [`docs.lovable.dev/integrations/cloud`](https://docs.lovable.dev/integrations/cloud)**
+(fetched 2026-07-08)
+- *"Lovable Cloud is a full-stack cloud platform that takes care of every part of your application
+  — from the frontend your users see, to the backend that powers it behind the scenes."*
+- AI gateway usage is billed as part of "Run credits" for *"apps actively running on the
+  platform"* — i.e. usage accounting is scoped to Lovable-hosted/tracked apps.
+- *"You can rotate `LOVABLE_API_KEY` from the Secrets UI if you suspect it has been exposed;
+  Lovable issues a new key and updates the value in your Edge Function environment
+  automatically."* — key issuance/rotation is described purely in terms of **Lovable's own Edge
+  Function environment**, not a portable secret you copy into an arbitrary host's env config.
+- *"The `LOVABLE_` prefix is reserved for Lovable-managed values such as the Lovable API key used
+  by built-in AI."*
+- The page does not state the gateway is unusable from external hosting, but every operational
+  description (issuance, rotation, injection) is framed entirely around Lovable's own managed
+  Edge Function runtime — there is no documented path to "take this key and use it from your own
+  Cloudflare Worker."
+
+**Source: [`docs.lovable.dev/tips-tricks/deployment-hosting-ownership`](https://docs.lovable.dev/tips-tricks/deployment-hosting-ownership)**
+(fetched 2026-07-08) — no statements found addressing AI Gateway/API-key portability across
+hosting environments; the page covers general code/data export and hosting options but is silent
+on this specific mechanism.
+
+**Source: [`docs.lovable.dev/introduction/faq`](https://docs.lovable.dev/introduction/faq)**
+(fetched 2026-07-08) — no mention of `LOVABLE_API_KEY`, the AI Gateway, or self-hosted AI-feature
+behavior at all. Only generic guidance: *"Never enter your API keys directly in Lovable. If
+you're integrating with an API, we recommend you use secrets in Lovable Cloud or Supabase to
+store your API keys, in combination with their Edge Functions."* (This is about *third-party* API
+keys you bring, not `LOVABLE_API_KEY` itself.)
+
+### What I could NOT find an official, explicit statement on
+- Whether an already-issued `LOVABLE_API_KEY` continues to authenticate against
+  `ai.gateway.lovable.dev` if the calling code is deployed on infrastructure Lovable doesn't
+  control (e.g., a self-managed Cloudflare Worker, as in taxahead's case) — no doc says
+  "works anywhere" or "only works inside Lovable Cloud," explicitly.
+- What happens to the key specifically on project deletion vs. unpublish (found general product
+  behavior — deletion takes down published apps and severs domains — but nothing gateway-specific).
+
+### Supporting (non-authoritative, third-party) signal
+**Source: [azumo.com — "Lovable App Not Working in Production? 5 Common Errors Fixed"](https://azumo.com/artificial-intelligence/ai-insights/lovable-app-not-working)**
+(fetched 2026-07-08, third-party blog, flagged as unverified/secondary per the honesty bar):
+> *"Your API keys work in preview because Lovable injects them at runtime. Deploy to Vercel or
+> Netlify, and those variables vanish."*
+This describes the general pattern of Lovable-managed secrets being injected only inside Lovable's
+own runtime/preview, not persisted as portable env vars once you leave Lovable's hosting. It is
+consistent with, but does not independently confirm, the `LOVABLE_API_KEY` case specifically.
+
+### The strongest evidence is actually first-party, from inside this repo (not a web source)
+- `<HOME>/Claude/Projects/taxahead/.env.lovable-legacy` — this is the **actual
+  snapshot of the env vars Lovable auto-provisioned for this specific project** before migration
+  (keys redacted, names visible): `SUPABASE_PROJECT_ID`, `SUPABASE_PUBLISHABLE_KEY`,
+  `SUPABASE_URL`, `VITE_SUPABASE_PROJECT_ID`, `VITE_SUPABASE_PUBLISHABLE_KEY`,
+  `VITE_SUPABASE_URL`. **No `LOVABLE_API_KEY` anywhere in this file.** This matches the docs'
+  description that the key is injected directly into Lovable's own Edge Function runtime, not
+  handed to the developer as a copyable local env value — i.e., there was never a manual copy of
+  this key surfaced to the project owner in the first place, for this project.
+- Current `.env` (the live, migrated config) also has no `LOVABLE_API_KEY` and no Lovable vars at
+  all — only self-managed Supabase config.
+- No `wrangler secret put LOVABLE_API_KEY` (or equivalent) exists anywhere in the repo's deploy
+  docs (`supabase/DEPLOY.md`) or `loop-team/` handoff notes — confirmed by grep
+  (`grep -rn "wrangler secret\|LOVABLE_API_KEY" .` → only the two `tts.ts` hits already reported).
+- **Practical consequence:** in the current, already-migrated Cloudflare Workers deployment,
+  `process.env.LOVABLE_API_KEY` will be `undefined`, and the route's own first check
+  (`if (!apiKey) return new Response("LOVABLE_API_KEY not configured", { status: 500 })`,
+  `tts.ts:7-10`) will fire on every single call. **The feature is already broken in production
+  right now, independent of the external-portability question** — this repo simply never had
+  access to a copyable key for this route in the first place.
+
+### Synthesis / confidence
+- **Confirmed (official docs, high confidence):** `LOVABLE_API_KEY` is auto-generated,
+  auto-rotated, and auto-injected per Lovable *project*, scoped to Lovable's own managed Edge
+  Function runtime — not a self-service SaaS key you generate from a dashboard and paste anywhere
+  (unlike an OpenAI/Anthropic/ElevenLabs key). The docs never describe a workflow for using it
+  outside Lovable Cloud.
+- **Not officially confirmed either way (moderate confidence, inferred):** whether the HTTP
+  endpoint `ai.gateway.lovable.dev` would technically reject or accept a request bearing a
+  previously-issued key from a non-Lovable host, as a pure protocol matter. I could not find a
+  doc or a first-hand report settling this specific question either way, and I am not asserting a
+  guess about it — flagging this as **not_found** per the researcher honesty bar.
+- **Confirmed (repo-internal, highest confidence — this settles the practical question for
+  taxahead specifically):** taxahead itself never had this key available to configure outside
+  Lovable's managed runtime (`.env.lovable-legacy` proves it), and no one has attempted to
+  provision it as a Cloudflare Worker secret. So regardless of the abstract portability question,
+  **this route is non-functional in taxahead's current deployment today** — every call to it
+  returns HTTP 500.
+
+---
+
+## 4. Repo config check: Lovable env vars + existing post-migration AI-service pattern
+
+### `.env` / `.env.lovable-legacy` (repo root)
+```
+SUPABASE_PROJECT_ID="..."
+SUPABASE_PUBLISHABLE_KEY="..."
+SUPABASE_URL="..."
+VITE_SUPABASE_PROJECT_ID="..."
+VITE_SUPABASE_PUBLISHABLE_KEY="..."
+VITE_SUPABASE_URL="..."
+SUPABASE_SERVICE_ROLE_KEY=""   # (.env only, blank, with a comment on how to reveal it via `supabase projects api-keys --reveal`)
+```
+No `LOVABLE_API_KEY`, no other `LOVABLE_*` var, in either file. Confirmed via
+`find . -iname ".env*"` → only these two files exist repo-wide.
+
+### Wrangler / Cloudflare deploy config
+- No hand-written `wrangler.toml`/`wrangler.jsonc` in the repo (`find . -iname "wrangler*"` →
+  only the **build-output-generated** `./.output/server/wrangler.json`, produced by the Nitro
+  build, not source-controlled).
+- `vite.config.ts:3` confirms the deploy target explicitly: *"tanstackStart, viteReact,
+  tailwindcss, tsConfigPaths, nitro (build-only using **cloudflare as a default target**) ..."*
+  via `@lovable.dev/vite-tanstack-config`.
+- The generated `.output/server/wrangler.json` confirms it concretely: `"name":
+  "tanstack-start-ts"`, `"compatibility_flags": ["nodejs_compat"]`, an `ASSETS` binding — i.e.
+  this app is built to run as a Cloudflare Worker.
+
+### Established pattern for OTHER AI services post-migration — YES, one exists, and it's specific
+`grep -rniE "OPENAI_API_KEY|ANTHROPIC_API_KEY|ELEVENLABS|WORKERS_AI|CLOUDFLARE_AI" .` (vendor dirs
+excluded) turned up a clear, consistent, already-built pattern:
+
+- **`supabase/functions/ask-taxahead/index.ts`** and **`supabase/functions/extract-document/index.ts`**
+  — both Supabase Edge Functions (Deno runtime), both call Anthropic **directly**, no gateway:
+  ```ts
+  const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY")!;
+  const CHAT_MODEL = Deno.env.get("CHAT_MODEL") ?? "claude-sonnet-5";
+  ...
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    headers: {
+      "x-api-key": ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+      ...
+    },
+    ...
+  });
+  ```
+  (`ask-taxahead/index.ts:18-19,109,112-113`; `extract-document/index.ts:15,149,152-153` — same
+  pattern in both files.)
+- **`supabase/DEPLOY.md:14-19`** documents the secret-provisioning step explicitly:
+  ```
+  supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+  supabase secrets set EXTRACTION_MODEL=claude-sonnet-5   # optional, this is the default
+  supabase secrets set CHAT_MODEL=claude-sonnet-5          # optional, this is the default
+  ```
+- **`loop-team/session_handoff_2026-07-08.md:51-52,385-387`** confirms this is the team's live,
+  in-progress migration plan: *"After all 6 [edge functions] land and are verified: Lovable will
+  ask for the `ANTHROPIC_API_KEY` secret..."* and *"`ANTHROPIC_API_KEY` secret for
+  `ask-taxahead`/`extract-document` also still needs setting via `supabase secrets set`."*
+- `supabase/config.toml:101` has `openai_api_key = "env(OPENAI_API_KEY)"` — this is Supabase
+  CLI's **standard boilerplate default** for the local Supabase Studio's own built-in "Supabase
+  AI" SQL-assistant feature (a local-dev-tooling convenience, unrelated to any app feature); it is
+  not evidence of an app-level OpenAI integration. No other `OPENAI_API_KEY` reference exists in
+  the repo.
+- `supabase/functions/_shared/` contains `extraction.ts` and `profiles.ts` — shared helpers, but
+  no shared "AI client" wrapper; each function inlines its own `fetch` to Anthropic directly.
+
+**Conclusion for Task 4: the established, already-in-use, already-documented pattern for AI calls
+post-migration is: direct `fetch()` to `https://api.anthropic.com/v1/messages`, authenticated via
+`ANTHROPIC_API_KEY` (a real, self-service, portable Anthropic API key — not a Lovable-managed
+one), from a Supabase Edge Function (Deno runtime), configured via `supabase secrets set`.** This
+is a real, working, twice-repeated pattern in this exact repo — not a hypothetical "could use X."
+
+One architectural wrinkle worth flagging to the Coder: the existing Anthropic calls live in
+**Supabase Edge Functions** (Deno), while `tts.ts` lives in the **frontend's own TanStack Start
+server route** (Cloudflare Worker/Node runtime, via `@tanstack/react-router`'s `createFileRoute`
+server handlers). A drop-in replacement has two reasonable shapes: (a) keep the route in
+`src/routes/api/tts.ts` but swap the upstream call to a portable TTS provider's own API directly
+(consistent with "keep AI calls in the layer that already has network egress to the internet"),
+or (b) move TTS into a new Supabase Edge Function alongside `ask-taxahead`/`extract-document` for
+full architectural consistency with the rest of the AI surface. Anthropic itself does not (as of
+this research) publish a text-to-speech endpoint, so whichever shape is chosen, the provider
+can't simply be "swap model string, same Anthropic call" — a distinct TTS-capable provider is
+required. Candidates consistent with what's already proven to work in this repo's runtime
+(Cloudflare Workers + Deno edge functions, both plain-`fetch`-based, no SDKs currently installed
+per `package.json`'s dependency list — confirmed no `openai`, `@anthropic-ai/sdk`,
+`elevenlabs`, or `@cloudflare/ai` packages present) include: OpenAI's own `/v1/audio/speech`
+endpoint (same request/response shape `tts.ts` already targets — i.e., **the current code's
+upstream shape needs almost no change**, only the URL and the auth header, since Lovable's
+gateway was itself proxying to `openai/gpt-4o-mini-tts`), ElevenLabs, or Cloudflare Workers AI
+(since the app is already a Cloudflare Worker, Workers AI would need no separate account/billing
+relationship if Cloudflare is already the account holder — this needs confirming with
+Nnamdi/Oga, not assumed here).
+
+---
+
+## 5. Synthesis (for the final report to Oga)
+
+1. **Is TTS used anywhere in the app?** YES — unambiguously. `src/routes/app.feed.tsx` implements
+   a full "Read aloud" feature (button, loading/speaking state, single-shared-audio-element
+   ownership, auto-advance across feed messages) that calls `fetch("/api/tts", ...)`
+   (`app.feed.tsx:1064`). A recent Lovable-agent bug-fix plan (`.lovable/plan.md`) was written
+   specifically to fix a race condition in this feature's auto-advance/ownership logic, and
+   explicitly says "no changes to `/api/tts`" — i.e., the route was considered correct and in
+   active use at the time of that plan. This is a real, deliberately-built feature, not leftover
+   scaffolding.
+
+2. **Does `ai.gateway.lovable.dev` require Lovable-project hosting?** Official docs establish
+   `LOVABLE_API_KEY` is auto-generated/rotated/injected per Lovable project, scoped to Lovable's
+   own managed Edge Function runtime, with no documented workflow for using it from external
+   hosting (moderate-to-high confidence this is "by design tied to Lovable Cloud," though no doc
+   explicitly forbids external use as a protocol matter — flagged as not_found on that narrow
+   point). More decisively: **this specific repo's own `.env.lovable-legacy` snapshot never
+   contained `LOVABLE_API_KEY`** in the first place, and no Cloudflare Worker secret for it has
+   ever been provisioned — so independent of the abstract portability question, the route is
+   *already* non-functional in taxahead's current (self-managed) deployment; every call hits the
+   `LOVABLE_API_KEY not configured` 500 branch today.
+
+3. **Recommendation:** REPLACE, do not just delete — the feature is real and used. Given this
+   repo's own established, already-documented, already-working pattern (direct `fetch()` to a
+   provider's REST API using a plain env-var API key, no SDK, no gateway — proven twice in
+   `supabase/functions/ask-taxahead` and `extract-document` with Anthropic), the lowest-risk
+   replacement is a **direct call to OpenAI's `/v1/audio/speech` endpoint** using an
+   `OPENAI_API_KEY`: the current code's request/response shape (`model: "openai/gpt-4o-mini-tts"`,
+   `input`, `voice`, `response_format: "mp3"`, streamed MP3 response) was already targeting this
+   exact OpenAI model through Lovable's pass-through gateway, so the swap is close to a one-line
+   URL + auth-header change in `tts.ts`, not a rewrite. Whether to keep it in the frontend
+   TanStack route or move it into a new Supabase Edge Function (for consistency with
+   `ask-taxahead`/`extract-document`) is an architecture call for Oga/Nnamdi — both are viable;
+   the Edge Function path matches the rest of the AI surface more closely. Cloudflare Workers AI
+   is worth a look too since the app is already a Cloudflare Worker (no separate vendor
+   relationship needed if Cloudflare is already the billing account), but I did not verify its
+   TTS model quality/availability as part of this research — flagging as a follow-up, not a
+   recommendation, since Mode D scope here was the Lovable-dependency question, not a full
+   TTS-vendor bake-off.
+
+---
+
+## Sources consulted (all opened directly; none cited from memory)
+
+- `docs.lovable.dev/integrations/ai` — https://docs.lovable.dev/integrations/ai
+- `docs.lovable.dev/integrations/cloud` — https://docs.lovable.dev/integrations/cloud
+- `docs.lovable.dev/tips-tricks/deployment-hosting-ownership` — https://docs.lovable.dev/tips-tricks/deployment-hosting-ownership
+- `docs.lovable.dev/introduction/faq` — https://docs.lovable.dev/introduction/faq
+- `lovable.dev/blog/lovable-cloud` — https://lovable.dev/blog/lovable-cloud (checked, no relevant
+  API-key/portability content found)
+- azumo.com blog post (third-party, unverified/secondary, used only as supporting signal, not as
+  a primary claim) — https://azumo.com/artificial-intelligence/ai-insights/lovable-app-not-working
+- rapidevelopers.com blog post (checked, did not contain the expected passage — noted as a dead
+  end, not cited as a claim) — https://www.rapidevelopers.com/lovable-issues/addressing-persistent-bugs-not-resolved-by-lovable-ai
+- Repo files (all read directly, paths as cited throughout): `src/routes/api/tts.ts`,
+  `src/routes/app.feed.tsx`, `src/routeTree.gen.ts`, `.lovable/plan.md`, `.env`,
+  `.env.lovable-legacy`, `package.json`, `vite.config.ts`, `.output/server/wrangler.json`,
+  `supabase/DEPLOY.md`, `supabase/config.toml`, `supabase/functions/ask-taxahead/index.ts`,
+  `supabase/functions/extract-document/index.ts`, `loop-team/session_handoff_2026-07-08.md`,
+  `loop-team/fix_plan.md` (checked, no tts/lovable/audio mentions).
+
+## What I could not find (not_found, stated explicitly)
+- No official Lovable doc explicitly states whether a `LOVABLE_API_KEY` issued to a project
+  continues to authenticate at the HTTP-protocol level if the calling request originates from
+  infrastructure outside Lovable Cloud. I searched docs, blog, and web broadly and did not find
+  either an explicit confirmation or an explicit denial of this narrow point — reported as a gap,
+  not guessed at.
+- I did not benchmark or verify TTS model quality/pricing across OpenAI vs. Cloudflare Workers AI
+  vs. ElevenLabs — that was out of scope for this Lovable-dependency question and would need its
+  own research pass if Oga wants a vendor bake-off before the Coder implements the replacement.

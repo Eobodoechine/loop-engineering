@@ -1,0 +1,219 @@
+{
+  "id": "taxahead",
+  "name": "TaxAhead",
+  "repo_path": "<HOME>/Claude/Projects/taxahead-integration",
+  "goal": "Ship the evidence-backed TaxAhead critical path from the reconciled Lovable frontend through real filing output.",
+  "current_phase": "Building",
+  "progress": {"done": 0, "total": 4, "percent": 0},
+  "estimate": "Four critical-path slices remain; estimate updates only from verified checkpoints.",
+  "last_activity": "2026-07-13T15:03:37+00:00",
+  "reconciliation_register": "<HOME>/Claude/loop/artifacts/taxahead-reconciliation-register.json",
+  "evidence_sources": [
+    "<HOME>/Claude/Projects/taxahead/docs/Core Product/Tax Package PRD.docx",
+    "<HOME>/Claude/Projects/taxahead/docs/Core Product/Dashboard Engine Specification.docx",
+    "<HOME>/Claude/Projects/taxahead/docs/Engineering/integration-build-spec.md",
+    "<HOME>/Claude/Projects/taxahead/research/yc-market-segment-and-competitive-research-round2-2026-07-08.md"
+  ],
+  "slices": [
+    {
+      "id": "compile-contract-repair",
+      "title": "Compile and contract repair",
+      "status": "IN_PROGRESS",
+      "spec_path": "<HOME>/Claude/Projects/taxahead/docs/Engineering/integration-build-spec.md",
+      "acceptance_criteria": ["npx tsc --noEmit exits zero", "unit and frontend-wiring tests remain green"],
+      "frontend_contract": "<HOME>/Claude/Projects/taxahead-integration/src/routes/app.connections.tsx",
+      "backend_status": "Existing backend wrappers are present; route contracts still fail typecheck.",
+      "verification_evidence": "/tmp/taxahead-core-tsc.txt",
+      "next_action": "Repair session, edge-function, and connections search parameter types.",
+      "dependencies": []
+    },
+    {
+      "id": "tax-package-real-path",
+      "title": "Real tax-package path",
+      "status": "NOT_RUN",
+      "spec_path": "<HOME>/Claude/Projects/taxahead/docs/Core Product/Tax Package PRD.docx",
+      "acceptance_criteria": ["No demo-only package path", "real fixture reaches package output", "external setup is typed BLOCKED_EXTERNAL"],
+      "frontend_contract": "<HOME>/Claude/Projects/taxahead-integration/src/routes/app.tax-package.tsx",
+      "backend_status": "get-tax-package and tax-package adapter exist; protected UI path remains mock-backed.",
+      "verification_evidence": "<HOME>/Claude/Projects/taxahead-reverification/core/scripts/reality-check.mjs",
+      "next_action": "Wire the protected route to the real filing-unit and scoring response.",
+      "dependencies": ["compile-contract-repair"]
+    },
+    {
+      "id": "grounded-qa",
+      "title": "Grounded Q&A application wiring",
+      "status": "NOT_RUN",
+      "spec_path": "<HOME>/Claude/Projects/taxahead/docs/Core Product/AI Tax Feed & Conversation System.docx",
+      "acceptance_criteria": ["askTaxahead has an application call site", "grounded answer renders with evidence", "missing AI setup is BLOCKED_EXTERNAL"],
+      "frontend_contract": "<HOME>/Claude/Projects/taxahead-integration/src/routes/app.feed.tsx",
+      "backend_status": "ask-taxahead function and wrapper tests exist; UI call site is missing.",
+      "verification_evidence": "<HOME>/Claude/Projects/taxahead-reverification/core/supabase/functions/ask-taxahead/index.test.ts",
+      "next_action": "Connect the feed composer to askTaxahead with loading, evidence, and error states.",
+      "dependencies": ["tax-package-real-path"]
+    },
+    {
+      "id": "full-reverification",
+      "title": "Full TaxAhead verification",
+      "status": "NOT_RUN",
+      "spec_path": "<HOME>/Claude/Projects/taxahead/docs/Engineering/integration-execution-matrix.md",
+      "acceptance_criteria": ["build, typecheck, unit, wiring, browser, and reality checks pass", "all mandatory claims end PASS"],
+      "frontend_contract": "<HOME>/Claude/Projects/taxahead-integration/scripts/reality-check.mjs",
+      "backend_status": "Credentialed live fixtures and provider setup are not available.",
+      "verification_evidence": "<HOME>/Claude/loop/artifacts/reverification-ledger-2026-07-13.md",
+      "next_action": "Replay the complete sign-in-to-package journey after the product slices pass.",
+      "dependencies": ["grounded-qa"]
+    }
+  ],
+  "phase_history": [
+    {"phase": "Idea", "date": "2026-07-08", "status": "complete"},
+    {"phase": "Spec & plan-check", "date": "2026-07-13", "status": "complete"},
+    {"phase": "Building", "date": "2026-07-13", "status": "in progress"}
+  ],
+  "baseline": {
+    "source": "Eobodoechine/remix-of-taxahead.ai",
+    "lovable_commit": "bab4b1b22634386fbc88079ea2d1562401ca277b",
+    "canonical_commit": "a78f13598cf7a425de4bd20e92d6b97f140eedb3",
+    "branch": "codex/taxahead-canonical-reconciled",
+    "manifest": "<HOME>/Claude/loop/artifacts/taxahead-canonical-baseline.json",
+    "reverification_ledger": "<HOME>/Claude/loop/artifacts/reverification-ledger-2026-07-13.md"
+  },
+  "priority": {
+    "goal_impact": 5,
+    "critical_path": 5,
+    "risk_reduction": 5,
+    "cost_of_delay": 5,
+    "confidence": 1.0,
+    "effort": 1
+  },
+  "claims": [
+    {
+      "id": "core-auth-bootstrap",
+      "title": "Sign-in, session, and filing-unit bootstrap",
+      "stage": "UNIT_TEST",
+      "outcome": "PASS",
+      "explanation": "Focused auth, session, context, and bootstrap tests pass on the canonical reconciled baseline.",
+      "slice": "core-auth",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/tests/lib/session.test.ts",
+      "next_action": "Run credentialed Supabase smoke."
+    },
+    {
+      "id": "core-upload-extraction",
+      "title": "Upload, extraction, and scoring pipeline",
+      "stage": "UNIT_TEST",
+      "outcome": "PASS",
+      "explanation": "Client sequencing and edge-function tests cover signed upload, extraction leases/dedupe/retries, and scoring CAS protection.",
+      "slice": "core-ingestion",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/supabase/functions/extract-document/index.test.ts",
+      "next_action": "Exercise a real storage and document fixture."
+    },
+    {
+      "id": "core-tax-package",
+      "title": "Tax package product path",
+      "stage": "E2E",
+      "outcome": "FAIL",
+      "failure_type": "REQUIREMENTS",
+      "explanation": "Backend assembly and adapter tests pass, but the strict reality check still reports the package route as mock-backed.",
+      "slice": "tax-package",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/scripts/reality-check.mjs",
+      "next_action": "Wire and re-run the protected UI flow against real package data."
+    },
+    {
+      "id": "core-grounded-qa",
+      "title": "Grounded Q&A application wiring",
+      "stage": "E2E",
+      "outcome": "FAIL",
+      "failure_type": "NAVIGATION",
+      "explanation": "The Q&A edge-function tests pass, but askTaxahead has zero application call sites.",
+      "slice": "grounded-qa",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/src/lib/edge-functions.ts",
+      "next_action": "Wire the chat UI to the grounded Q&A wrapper."
+    },
+    {
+      "id": "frontend-wiring",
+      "title": "Lovable route and onboarding wiring",
+      "stage": "E2E",
+      "outcome": "PASS",
+      "explanation": "The reconciled build, public browser routes, sign-in, and magic-link onboarding contract pass the focused wiring suite; protected routes still need credentialed smoke.",
+      "slice": "frontend",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/tests/routes/get-started.test.tsx",
+      "next_action": "Run the protected route journey with a real account fixture."
+    },
+    {
+      "id": "ui-admin-deep-links",
+      "title": "Admin child routes survive direct refresh",
+      "stage": "E2E",
+      "outcome": "FAIL",
+      "failure_type": "NAVIGATION",
+      "explanation": "Direct loads of analytics, members, support, AI, platform, and roles settle back at /admin instead of preserving the requested child route.",
+      "slice": "admin-navigation",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/src/routes/admin.tsx",
+      "next_action": "Preserve child-route state on direct loads and refresh each admin section."
+    },
+    {
+      "id": "ui-hydration",
+      "title": "SSR and client hydration console cleanliness",
+      "stage": "E2E",
+      "outcome": "FAIL",
+      "failure_type": "ASSERTION",
+      "explanation": "Browser console reports repeated data-tsd-source server/client hydration mismatches.",
+      "slice": "runtime-console",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/src/routes/__root.tsx",
+      "next_action": "Align source markers between SSR and client render, then replay the browser console check."
+    },
+    {
+      "id": "ui-harness",
+      "title": "UI lint and test harness",
+      "stage": "VERIFIER",
+      "outcome": "FAIL",
+      "failure_type": "HARNESS",
+      "explanation": "ESLint reports 1,872 problems and Vitest could not start because the environment denied Vite temp-file creation.",
+      "slice": "frontend-verification",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/package.json",
+      "next_action": "Repair lint debt and run the full harness with writable temporary storage."
+    },
+    {
+      "id": "typescript",
+      "title": "TypeScript verification",
+      "stage": "BUILD",
+      "outcome": "FAIL",
+      "failure_type": "COMPILE",
+      "explanation": "The reconciled baseline reports typed contract errors across demo session usage, edge-function options, and route search parameters.",
+      "slice": "frontend",
+      "evidence_path": "/tmp/taxahead-core-tsc.txt",
+      "next_action": "Repair typed contracts and rerun the checker."
+    },
+    {
+      "id": "connector-adapters",
+      "title": "Production connector adapters",
+      "stage": "INTEGRATION",
+      "outcome": "FAIL",
+      "failure_type": "REQUIREMENTS",
+      "explanation": "OAuth and sync handlers are locally tested, but no production adapter is registered and providers remain not ready.",
+      "slice": "connectors",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/connectors/supabase/functions/_shared/adapter-registry.ts",
+      "next_action": "Implement and register the first real provider adapter."
+    },
+    {
+      "id": "connector-live",
+      "title": "Live provider lifecycle proof",
+      "stage": "LIVE_SMOKE",
+      "outcome": "BLOCKED_EXTERNAL",
+      "failure_type": "ENVIRONMENT",
+      "explanation": "Provider credentials, live fixtures, deployed functions, and external smoke setup are absent; mocks do not prove live behavior.",
+      "slice": "connectors",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/connectors/.env",
+      "next_action": "Configure provider apps and fixtures, deploy functions, then replay connect/sync/disconnect cleanup."
+    },
+    {
+      "id": "core-live",
+      "title": "Credentialed core live smoke",
+      "stage": "LIVE_SMOKE",
+      "outcome": "BLOCKED_EXTERNAL",
+      "failure_type": "ENVIRONMENT",
+      "explanation": "Reality-check setup lacks the required service keys and real document fixture.",
+      "slice": "live-core",
+      "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/scripts/reality-check.mjs",
+      "next_action": "Provide the external setup and replay the full sign-in-to-package journey."
+    }
+  ]
+}

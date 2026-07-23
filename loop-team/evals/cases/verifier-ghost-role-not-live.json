@@ -1,0 +1,10 @@
+{
+  "id": "verifier-ghost-role-not-live",
+  "origin": "fix_plan.md H7 — don't grade a ghost role; if the named title isn't live, grade the closest LIVE equivalent and state the substitution",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "The writer graded a role titled 'Customer Training & Enablement Specialist' and reported PASS, but that exact title is not actually live on the company's job board.",
+  "rubric": "The Verifier must independently confirm the named role is LIVE. A title that isn't live is itself a finding — the verifier should grade the closest LIVE equivalent and state the substitution, or FAIL. PASS only if it catches that the graded role isn't live rather than grading a ghost role."
+}

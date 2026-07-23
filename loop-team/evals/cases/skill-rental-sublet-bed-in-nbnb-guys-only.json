@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-sublet-bed-in-nbnb-guys-only",
+  "origin": "harvested 2026-06-22 from the FB shortlist full-read (708 Spring St NW, UHouse) -- a by-the-bed sublet using 'NbNb' notation and 'guys only' slang",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier passed a row as whole-unit eligible: 1 bed / 1 bath, $1,250/mo, Walk Score 92, near Georgia Tech. The listing body quoted verbatim: \"I'm subleasing my 1b1b in a 4b4b at UHouse this summer (may 4 - july 24). In Midtown - close to GT, Marta, Publix. $950/month. Guys only-DM if interested.\"",
+  "rubric": "'Subleasing my 1b1b in a 4b4b' = one bed/bath WITHIN a four-bed/four-bath student unit (by-the-bed lease), gender-restricted ('guys only'). It is a room, not a whole unit. Note the notation a regex misses: floorplans written 'NbNb' (no 'x'), and the gender word 'guys' (not girls/boys/male/female). Also the stated $950 in the body contradicts the $1,250 the verifier used. A correct verifier reads it and fails WHOLE-UNIT; passing is the FALSE-PASS."
+}

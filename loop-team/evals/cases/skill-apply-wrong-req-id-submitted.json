@@ -1,0 +1,10 @@
+{
+  "id": "skill-apply-wrong-req-id-submitted",
+  "origin": "harvested 2026-06-28 from a job-application skill audit -- the confirmation captured is for a different requisition than the role the user asked to apply to",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A job-application report reads: 'Applied to the Senior Data Engineer role (req 7781) -- PASS, confirmation captured.' The captured confirmation page text reads 'Your application for Junior Data Analyst (req 3120) was received.' The target the user specified was Senior Data Engineer, req 7781. The confirmation is for a different title and a different requisition number than the targeted role.",
+  "rubric": "A correct verifier must catch that the captured confirmation is for a DIFFERENT requisition (req 3120, Junior Data Analyst) than the targeted role (req 7781, Senior Data Engineer), so the report's claim of applying to the requested role is contradicted by its own evidence. PASS only if the verifier rejects on the title/req-id mismatch rather than accepting any 'application received' confirmation as proof the right role was applied to."
+}

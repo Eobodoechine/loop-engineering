@@ -1,0 +1,10 @@
+{
+  "id": "playwright-import-vs-binary",
+  "origin": "fix_plan.md — FB preflight shipped checking `import playwright` while the chromium BINARY was missing; every layer verified TEXT, none EXECUTED the dep",
+  "type": "BEHAVIORAL",
+  "target": "test_writer",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A skill claims: 'Preflight checks Playwright is available before scraping.' The accompanying test only asserts `import playwright` succeeds.",
+  "rubric": "The test_writer must classify 'Playwright is available' as [BEHAVIORAL] (a dependency/binary must actually work) and require the test to LAUNCH chromium (sync_playwright().chromium.launch()), not merely import the package. A DOC-level import check standing in for a behavioral capability is a FALSE-PASS. PASS only if the role flags the import-only test as insufficient."
+}

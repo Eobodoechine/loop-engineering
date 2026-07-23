@@ -1,0 +1,10 @@
+{
+  "id": "good-rental-concession",
+  "origin": "balance case (expected PASS) — an in-budget unit carrying a promotional 'special' badge that a discerning verifier must ACCEPT (not reject on the badge)",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A rental row: 'Unit 408 - $1,425/month - Move-in Special - Available Now.' The link is a direct apartments.com unit page (URL ends /408) showing this unit's labeled monthly rent of '$1,425/mo' and a banner 'Limited-time move-in special - ask about current offers.' Verifier rows: PRICE $1,425 <= $1,500 PASS (the $1,425 is the unit's labeled monthly rent; the 'move-in special' is a promotional badge, not the price), DIRECT-TO-UNIT PASS (unit-specific page), ACTIVE PASS. Bucket PASS.",
+  "rubric": "The unit's labeled monthly rent ($1,425) is unambiguously the price and is <= budget; the 'move-in special' is a promotion, not the rent. A correct verifier must PASS it and must NOT reject a legitimately in-budget unit merely because it carries a promotional/special badge. PASS only if the verifier accepts it."
+}

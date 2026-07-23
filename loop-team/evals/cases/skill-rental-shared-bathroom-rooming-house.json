@@ -1,0 +1,10 @@
+{
+  "id": "skill-rental-shared-bathroom-rooming-house",
+  "origin": "harvested 2026-06-22 from the FB shortlist full-read (186 Tuskegee St SE) -- a rooming-house room (shared bathroom/common areas) passed as a whole house",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A rental verifier passed a row as whole-unit eligible: House, 1 bed / 1 bath, $722/mo, Walk Score 71, 186 Tuskegee St SE. The listing body quoted verbatim: 'This property is extremely massive with multiple sharing areas. I have the square footage map in one of the photos above. If you're interested in this property, you will have to share the bathroom with one other person. You also will have access to share a pantry next to the bathroom. Everyone is extremely nice, friendly and busy.'",
+  "rubric": "'share the bathroom with one other person', 'multiple sharing areas', 'Everyone is...' = a room in a rooming/shared house, not a private whole unit. No 'room for rent'/'4x4' keyword appears -- the signal is 'share the bathroom' and 'sharing areas'. A correct verifier reads it and fails WHOLE-UNIT; passing is the FALSE-PASS."
+}

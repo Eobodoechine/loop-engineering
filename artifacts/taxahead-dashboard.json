@@ -1,0 +1,324 @@
+{
+  "generated_at": "2026-07-13T15:41:12+00:00",
+  "projects": [
+    {
+      "attention": true,
+      "baseline": {
+        "branch": "codex/taxahead-canonical-reconciled",
+        "canonical_commit": "a78f13598cf7a425de4bd20e92d6b97f140eedb3",
+        "lovable_commit": "bab4b1b22634386fbc88079ea2d1562401ca277b",
+        "manifest": "<HOME>/Claude/loop/artifacts/taxahead-canonical-baseline.json",
+        "reverification_ledger": "<HOME>/Claude/loop/artifacts/reverification-ledger-2026-07-13.md",
+        "source": "Eobodoechine/remix-of-taxahead.ai"
+      },
+      "claims": [
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/tests/lib/session.test.ts",
+          "explanation": "Focused auth, session, context, and bootstrap tests pass on the canonical reconciled baseline.",
+          "id": "core-auth-bootstrap",
+          "next_action": "Run credentialed Supabase smoke.",
+          "outcome": "PASS",
+          "signal": "UNIT_TEST_PASS",
+          "slice": "core-auth",
+          "stage": "UNIT_TEST",
+          "title": "Sign-in, session, and filing-unit bootstrap"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/supabase/functions/extract-document/index.test.ts",
+          "explanation": "Client sequencing and edge-function tests cover signed upload, extraction leases/dedupe/retries, and scoring CAS protection.",
+          "id": "core-upload-extraction",
+          "next_action": "Exercise a real storage and document fixture.",
+          "outcome": "PASS",
+          "signal": "UNIT_TEST_PASS",
+          "slice": "core-ingestion",
+          "stage": "UNIT_TEST",
+          "title": "Upload, extraction, and scoring pipeline"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/scripts/reality-check.mjs",
+          "explanation": "Backend assembly and adapter tests pass, but the strict reality check still reports the package route as mock-backed.",
+          "failure_type": "REQUIREMENTS",
+          "id": "core-tax-package",
+          "next_action": "Wire and re-run the protected UI flow against real package data.",
+          "outcome": "FAIL",
+          "signal": "E2E_REQUIREMENTS_FAIL",
+          "slice": "tax-package",
+          "stage": "E2E",
+          "title": "Tax package product path"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/src/lib/edge-functions.ts",
+          "explanation": "The Q&A edge-function tests pass, but askTaxahead has zero application call sites.",
+          "failure_type": "NAVIGATION",
+          "id": "core-grounded-qa",
+          "next_action": "Wire the chat UI to the grounded Q&A wrapper.",
+          "outcome": "FAIL",
+          "signal": "E2E_NAVIGATION_FAIL",
+          "slice": "grounded-qa",
+          "stage": "E2E",
+          "title": "Grounded Q&A application wiring"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/tests/routes/get-started.test.tsx",
+          "explanation": "The reconciled build, public browser routes, sign-in, and magic-link onboarding contract pass the focused wiring suite; protected routes still need credentialed smoke.",
+          "id": "frontend-wiring",
+          "next_action": "Run the protected route journey with a real account fixture.",
+          "outcome": "PASS",
+          "signal": "E2E_PASS",
+          "slice": "frontend",
+          "stage": "E2E",
+          "title": "Lovable route and onboarding wiring"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/src/routes/admin.tsx",
+          "explanation": "Direct loads of analytics, members, support, AI, platform, and roles settle back at /admin instead of preserving the requested child route.",
+          "failure_type": "NAVIGATION",
+          "id": "ui-admin-deep-links",
+          "next_action": "Preserve child-route state on direct loads and refresh each admin section.",
+          "outcome": "FAIL",
+          "signal": "E2E_NAVIGATION_FAIL",
+          "slice": "admin-navigation",
+          "stage": "E2E",
+          "title": "Admin child routes survive direct refresh"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/src/routes/__root.tsx",
+          "explanation": "Browser console reports repeated data-tsd-source server/client hydration mismatches.",
+          "failure_type": "ASSERTION",
+          "id": "ui-hydration",
+          "next_action": "Align source markers between SSR and client render, then replay the browser console check.",
+          "outcome": "FAIL",
+          "signal": "E2E_ASSERTION_FAIL",
+          "slice": "runtime-console",
+          "stage": "E2E",
+          "title": "SSR and client hydration console cleanliness"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/ui/package.json",
+          "explanation": "ESLint reports 1,872 problems and Vitest could not start because the environment denied Vite temp-file creation.",
+          "failure_type": "HARNESS",
+          "id": "ui-harness",
+          "next_action": "Repair lint debt and run the full harness with writable temporary storage.",
+          "outcome": "FAIL",
+          "signal": "VERIFIER_HARNESS_FAIL",
+          "slice": "frontend-verification",
+          "stage": "VERIFIER",
+          "title": "UI lint and test harness"
+        },
+        {
+          "evidence_path": "/tmp/taxahead-core-tsc.txt",
+          "explanation": "The reconciled baseline reports typed contract errors across demo session usage, edge-function options, and route search parameters.",
+          "failure_type": "COMPILE",
+          "id": "typescript",
+          "next_action": "Repair typed contracts and rerun the checker.",
+          "outcome": "FAIL",
+          "signal": "BUILD_COMPILE_FAIL",
+          "slice": "frontend",
+          "stage": "BUILD",
+          "title": "TypeScript verification"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/connectors/supabase/functions/_shared/adapter-registry.ts",
+          "explanation": "OAuth and sync handlers are locally tested, but no production adapter is registered and providers remain not ready.",
+          "failure_type": "REQUIREMENTS",
+          "id": "connector-adapters",
+          "next_action": "Implement and register the first real provider adapter.",
+          "outcome": "FAIL",
+          "signal": "INTEGRATION_REQUIREMENTS_FAIL",
+          "slice": "connectors",
+          "stage": "INTEGRATION",
+          "title": "Production connector adapters"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/connectors/.env",
+          "explanation": "Provider credentials, live fixtures, deployed functions, and external smoke setup are absent; mocks do not prove live behavior.",
+          "failure_type": "ENVIRONMENT",
+          "id": "connector-live",
+          "next_action": "Configure provider apps and fixtures, deploy functions, then replay connect/sync/disconnect cleanup.",
+          "outcome": "BLOCKED_EXTERNAL",
+          "signal": "LIVE_SMOKE_ENVIRONMENT_BLOCKED_EXTERNAL",
+          "slice": "connectors",
+          "stage": "LIVE_SMOKE",
+          "title": "Live provider lifecycle proof"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/taxahead-reverification/core/scripts/reality-check.mjs",
+          "explanation": "Reality-check setup lacks the required service keys and real document fixture.",
+          "failure_type": "ENVIRONMENT",
+          "id": "core-live",
+          "next_action": "Provide the external setup and replay the full sign-in-to-package journey.",
+          "outcome": "BLOCKED_EXTERNAL",
+          "signal": "LIVE_SMOKE_ENVIRONMENT_BLOCKED_EXTERNAL",
+          "slice": "live-core",
+          "stage": "LIVE_SMOKE",
+          "title": "Credentialed core live smoke"
+        }
+      ],
+      "contract_path": "<HOME>/Claude/loop/control-plane/projects/taxahead.json",
+      "focused": true,
+      "goal": "Ship the evidence-backed TaxAhead critical path from the reconciled Lovable frontend through real filing output.",
+      "id": "taxahead",
+      "name": "TaxAhead",
+      "priority": {
+        "class": "P0",
+        "confidence": 1.0,
+        "cost_of_delay": 5,
+        "critical_path": 5,
+        "effort": 1,
+        "goal_impact": 5,
+        "risk_reduction": 5,
+        "score": 65.0
+      },
+      "repo_path": "<HOME>/Claude/Projects/taxahead-integration",
+      "repo_snapshot": {
+        "artifacts": [
+          "package.json",
+          "tsconfig.json",
+          ".output/package.json"
+        ],
+        "branch": "codex/taxahead-canonical-reconciled",
+        "captured_at": "2026-07-13T15:41:12+00:00",
+        "dirty": false,
+        "exists": true,
+        "git_sha": "a78f13598cf7a425de4bd20e92d6b97f140eedb3",
+        "path": "<HOME>/Claude/Projects/taxahead-integration",
+        "scripts": [
+          "scripts/reality-check.baseline.json",
+          "scripts/reality-check.mjs"
+        ]
+      }
+    },
+    {
+      "attention": true,
+      "baseline": {
+        "branch": "codex/pms-reverify",
+        "canonical_commit": "4a396220b598d640e4bea5fb703c24efe83c23c5",
+        "reverification_ledger": "<HOME>/Claude/loop/artifacts/reverification-ledger-2026-07-13.md"
+      },
+      "claims": [
+        {
+          "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-06-27/run_record.md",
+          "explanation": "Historical live smoke cannot be replayed without browser, app server, dependencies, and fixtures.",
+          "failure_type": "ENVIRONMENT",
+          "id": "pms-live-workflow",
+          "next_action": "Supply browser, server, and fixtures.",
+          "outcome": "BLOCKED_EXTERNAL",
+          "signal": "E2E_ENVIRONMENT_BLOCKED_EXTERNAL",
+          "slice": "pms-workflow",
+          "stage": "E2E",
+          "title": "Core PMS workflow and live DOM proof"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/tests/sync-padsplit-tasks.test.ts",
+          "explanation": "The full historical suite is non-green and the initial run lacked a complete reproducible environment; sync and registration claims remain unverified.",
+          "failure_type": "ASSERTION",
+          "id": "pms-sync",
+          "next_action": "Resolve Prisma generation/database setup and rerun focused sync tests.",
+          "outcome": "FAIL",
+          "signal": "INTEGRATION_ASSERTION_FAIL",
+          "slice": "pms-sync",
+          "stage": "INTEGRATION",
+          "title": "PMS sync and extension registration"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/prisma/schema.prisma",
+          "explanation": "No configured database URL or accessible dev database was available; Prisma generation and RLS probes did not complete.",
+          "failure_type": "ENVIRONMENT",
+          "id": "pms-integrity",
+          "next_action": "Provide the configured database and rerun migrations, drift, and RLS probes.",
+          "outcome": "BLOCKED_EXTERNAL",
+          "signal": "DATA_INTEGRITY_ENVIRONMENT_BLOCKED_EXTERNAL",
+          "slice": "pms-integrity",
+          "stage": "DATA_INTEGRITY",
+          "title": "Schema, data integrity, and RLS"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/scripts/verify-unpacked-extension.mjs",
+          "explanation": "The extension harness requires Playwright, extension-capable Chrome, a running app, auth token, and database.",
+          "failure_type": "ENVIRONMENT",
+          "id": "pms-extension",
+          "next_action": "Run the harness with all required inputs.",
+          "outcome": "BLOCKED_EXTERNAL",
+          "signal": "E2E_ENVIRONMENT_BLOCKED_EXTERNAL",
+          "slice": "pms-extension",
+          "stage": "E2E",
+          "title": "Browser and extension proof"
+        },
+        {
+          "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-07-09_pretest-fixes-signout-airbnb502/research_ground_truth.md",
+          "explanation": "Retained evidence records a non-green suite with 6 failures, 1,052 passes, and 11 skips; claims of fully verified/live/ready are unsupported.",
+          "failure_type": "REQUIREMENTS",
+          "id": "pms-readiness",
+          "next_action": "Rerun claim-specific live gates before any readiness statement.",
+          "outcome": "FAIL",
+          "signal": "VERIFIER_REQUIREMENTS_FAIL",
+          "slice": "readiness",
+          "stage": "VERIFIER",
+          "title": "Historical readiness statements"
+        }
+      ],
+      "contract_path": "<HOME>/Claude/loop/control-plane/projects/padsplit-cockpit.json",
+      "focused": false,
+      "goal": "Reverify PMS operations and data integrity in the background without taking human focus from TaxAhead.",
+      "id": "padsplit-cockpit",
+      "name": "PadSplit Cockpit",
+      "priority": {
+        "class": "P3",
+        "confidence": 0.8,
+        "cost_of_delay": 1,
+        "critical_path": 2,
+        "effort": 3,
+        "goal_impact": 2,
+        "risk_reduction": 2,
+        "score": 6.4
+      },
+      "repo_path": "<HOME>/Claude/Projects/padsplit-reverification/pms",
+      "repo_snapshot": {
+        "artifacts": [
+          "package.json",
+          "web/package.json",
+          "web/tsconfig.json",
+          "web/.next/package.json",
+          "web/.next/build/package.json"
+        ],
+        "branch": "codex/pms-reverify",
+        "captured_at": "2026-07-13T15:41:12+00:00",
+        "dirty": false,
+        "exists": true,
+        "git_sha": "4a396220b598d640e4bea5fb703c24efe83c23c5",
+        "path": "<HOME>/Claude/Projects/padsplit-reverification/pms",
+        "scripts": []
+      }
+    }
+  ],
+  "schema_version": 1,
+  "state": {
+    "focus_project_id": "taxahead",
+    "focus_reason": "Keep TaxAhead on the critical path",
+    "pivot_trigger": "dependency failure or blocked external dead-end",
+    "priorities": {
+      "padsplit-cockpit": {
+        "class": "P3",
+        "confidence": 0.8,
+        "cost_of_delay": 1,
+        "critical_path": 2,
+        "effort": 3,
+        "goal_impact": 2,
+        "risk_reduction": 2,
+        "score": 6.4
+      },
+      "taxahead": {
+        "class": "P0",
+        "confidence": 1.0,
+        "cost_of_delay": 5,
+        "critical_path": 5,
+        "effort": 1,
+        "goal_impact": 5,
+        "risk_reduction": 5,
+        "score": 65.0
+      }
+    },
+    "revision": 2,
+    "updated_at": "2026-07-13T15:03:37+00:00"
+  }
+}

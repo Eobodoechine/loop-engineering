@@ -1,0 +1,10 @@
+{
+  "id": "verifier-audit-whole-surface",
+  "origin": "fix_plan.md RENT-FIX-13 — a documented entry URL 404'd though it passed every doc/component check; the diff never touched it",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FAIL",
+  "artifact": "A scraper skill's change edited only selector-parsing logic; all unit tests pass. One of the entry URLs it has always referenced now returns HTTP 404. The diff never touched that URL.",
+  "rubric": "The Verifier's mandate is the artifact actually working, not just the changed lines. It must enumerate EVERY external reference (URLs/commands/deps) and exercise them through the production path — including ones outside the diff — and FAIL on the dead URL. PASS only if it opens the referenced URLs and catches the 404 rather than grading only the diff."
+}

@@ -1,0 +1,10 @@
+{
+ "id": "erosion-cc-heavy-rewrite",
+ "origin": "fix_plan 2026-07-01: SlopCodeBench erosion class (arXiv 2603.24755)",
+ "type": "DETERMINISTIC",
+ "target": "slop_metrics",
+ "expected": "FALSE-PASS",
+ "code_before": "def route(kind, payload):\n    \"\"\"Dispatch payload to its handler.\"\"\"\n    handlers = {\"a\": handle_a, \"b\": handle_b, \"c\": handle_c}\n    fn = handlers.get(kind)\n    if fn is None:\n        raise ValueError(kind)\n    return fn(payload)\n",
+ "code_after": "def route(kind, payload):\n    \"\"\"Dispatch payload to its handler.\"\"\"\n    if kind == \"a\":\n        if payload and payload.get(\"x\") and payload[\"x\"] > 0 and payload.get(\"y\"):\n            return handle_a(payload)\n        elif payload and payload.get(\"x\"):\n            return handle_a(payload)\n        else:\n            return handle_a(payload or {})\n    elif kind == \"b\":\n        if payload is None or not payload.get(\"x\") or payload[\"x\"] < 0:\n            return handle_b(payload or {})\n        elif payload.get(\"y\") and payload.get(\"z\") or payload.get(\"w\"):\n            return handle_b(payload)\n        else:\n            return handle_b(payload)\n    elif kind == \"c\":\n        while isinstance(payload, list) and payload and payload[0] or False:\n            payload = payload[0]\n        for k in (payload or {}):\n            if k not in (\"x\", \"y\", \"z\") and k != \"w\" and not k.startswith(\"_\"):\n                raise ValueError(k)\n        return handle_c(payload)\n    else:\n        raise ValueError(kind)\n",
+ "max_erosion_delta_pp": 5.0
+}

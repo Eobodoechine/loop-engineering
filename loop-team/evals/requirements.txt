@@ -1,0 +1,21 @@
+# Scoped deps for the LLM-JUDGE subset (Sub-phase A4) and the OPTIMIZER
+# (Sub-phase B). The deterministic core -- run_evals.py, acceptor.py, the
+# judge_validate.py math, and the loop_stop_guard regression gate -- needs NONE
+# of these and must stay stdlib-only (matches harness/verify.py's zero-dep design).
+# Install only when wiring an LLM judge or running the optimizer:
+#     python3 -m pip install -r loop-team/evals/requirements.txt
+
+# --- Judge validation / eval substrate (A4) ---
+inspect-ai>=0.3          # epochs=N gives MVVP test-retest for free; model-graded scorers
+scikit-learn>=1.3        # cross-checks judge_validate.cohen_kappa (stdlib fallback exists)
+
+# --- Cross-family judge (true PoLL -- the model-independence fix) ---
+openai>=1.40             # OpenAI judge for the MVVP panel + adversarial gold judge;
+                         # disjoint family from Anthropic -> de-correlated errors
+
+# --- Prompt optimizer (Sub-phase B) ---
+dspy>=3.2.1              # pass the run_evals suite score as the metric fn
+gepa>=0.1.1              # standalone reflective optimizer; or dspy's built-in GEPA
+
+# --- Optional: acceptor cross-reference ---
+# confseq>=0.0.11        # always-valid p-values to validate the PACE wealth update

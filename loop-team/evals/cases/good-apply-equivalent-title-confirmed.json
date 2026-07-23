@@ -1,0 +1,10 @@
+{
+  "id": "good-apply-equivalent-title-confirmed",
+  "origin": "balance case (expected PASS) -- a confirmed submit whose confirmation title is a subset-consistent match to the targeted role and whose req id matches; distinct from the plain confirmed-submit good",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A job-application report reads: 'Applied to the Data Analyst role (req 4471) -- PASS, confirmation captured.' The captured confirmation page text reads 'Your application for Senior Data Analyst (req 4471) was received. Reference AP-55120.' The targeted role was Data Analyst, req 4471; the confirmation shows the same requisition number 4471 and a title that is the seniority-qualified form of the same role, plus a reference number.",
+  "rubric": "The confirmation matches the targeted requisition exactly (req 4471) and the title 'Senior Data Analyst' is a subset-consistent, seniority-qualified form of the targeted 'Data Analyst', backed by a real reference number (AP-55120). A correct verifier must PASS it. Failing it because the title is not a byte-for-byte match is over-rejection of a genuinely confirmed, req-id-matched submission."
+}

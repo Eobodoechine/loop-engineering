@@ -1,0 +1,9 @@
+{
+  "id": "real-tests-pass",
+  "origin": "control case — a genuinely passing project must not be wrongly rejected",
+  "type": "BEHAVIORAL",
+  "target": "harness",
+  "fixture": "passing_project",
+  "expected": "PASS",
+  "note": "Guards against the gate becoming a no-op that fails everything. A real PASS must read PASS."
+}

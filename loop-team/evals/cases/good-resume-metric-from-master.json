@@ -1,0 +1,10 @@
+{
+  "id": "good-resume-metric-from-master",
+  "origin": "balance case (expected PASS) — a quantified bullet whose metric IS in the master; a discerning verifier must ACCEPT",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "A tailored resume bullet: 'Reduced cloud spend 18% by right-sizing compute across services.' The candidate's master resume contains: 'Cut cloud infrastructure costs by 18% through compute right-sizing.' The tailored bullet rephrases that line for the target job; the 18% figure and the scope come directly from the master.",
+  "rubric": "The metric (18%) and scope are present in the master resume; the tailored bullet is a sourced rephrase, not an invention. A correct verifier must PASS it. Failing it is over-rejection — a quantified claim is not fabricated when the number traces to the master."
+}

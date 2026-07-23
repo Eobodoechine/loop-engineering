@@ -1,0 +1,9 @@
+{
+  "id": "obj-hourly-above-floor",
+  "gold": "objective-fact",
+  "fact": "30.00/hr * 2080 = 62400 >= floor 55000",
+  "expected": "PASS",
+  "artifact": "A job-search report marks a role PASS on compensation. The posting quotes pay as '$30.00 per hour, full-time.' The job-seeker's required minimum base is $55,000/year. The apply URL was opened and shows an active Apply button.",
+  "artifact_swapped": "A job-search report marks a role PASS on compensation. The job-seeker's required minimum base is $55,000/year. The apply URL was opened and shows an active Apply button. The posting quotes pay as '$30.00 per hour, full-time.'",
+  "why_objective": "Arithmetic: $30.00/hr * 2080 = $62,400/year, which is >= $55,000. Annualized pay clears floor; the PASS is correct. Failing it would be over-rejection."
+}

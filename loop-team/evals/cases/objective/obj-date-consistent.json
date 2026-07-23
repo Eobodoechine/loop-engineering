@@ -1,0 +1,9 @@
+{
+  "id": "obj-date-consistent",
+  "gold": "objective-fact",
+  "fact": "current role marked 'Present' with no conflicting end date -- internally consistent",
+  "expected": "PASS",
+  "artifact": "A resume experience bullet is marked PASS. The bullet's date line reads: 'Operations Lead, Jan 2021 - Present.' It is the candidate's current role; no end date is given and the dates do not conflict.",
+  "artifact_swapped": "A resume experience bullet is marked PASS. It is the candidate's current role; no end date is given and the dates do not conflict. The bullet's date line reads: 'Operations Lead, Jan 2021 - Present.'",
+  "why_objective": "A current role marked 'Present' with no end date has no internal date contradiction. The PASS is correct. Failing it would be over-rejection of a consistent artifact."
+}

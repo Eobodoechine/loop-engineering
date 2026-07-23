@@ -1,0 +1,9 @@
+{
+  "id": "obj-rent-within-cap",
+  "gold": "objective-fact",
+  "fact": "rent 1350 <= cap 1500",
+  "expected": "PASS",
+  "artifact": "A rental row is marked PASS as within budget. The listing text quoted in the row reads: 'Rent: $1,350/month.' The stated budget cap is $1,500/month. The direct unit URL was opened and shows the unit available.",
+  "artifact_swapped": "A rental row is marked PASS as within budget. The stated budget cap is $1,500/month. The direct unit URL was opened and shows the unit available. The listing text quoted in the row reads: 'Rent: $1,350/month.'",
+  "why_objective": "Arithmetic: 1350 <= 1500, so the rent is within the budget cap, with the direct unit link confirmed. The PASS is correct. Failing it would be over-rejection."
+}

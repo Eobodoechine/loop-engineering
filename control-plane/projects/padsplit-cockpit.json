@@ -1,0 +1,148 @@
+{
+  "id": "padsplit-cockpit",
+  "name": "PadSplit Cockpit",
+  "repo_path": "<HOME>/Claude/Projects/padsplit-reverification/pms",
+  "goal": "Reverify PMS operations and data integrity in the background without taking human focus from TaxAhead.",
+  "current_phase": "Verifying",
+  "progress": {"done": 0, "total": 5, "percent": 0},
+  "estimate": "Background reverification; no human focus transfer.",
+  "last_activity": "2026-07-13T15:03:37+00:00",
+  "reconciliation_register": "<HOME>/Claude/loop/artifacts/taxahead-reconciliation-register.json",
+  "slices": [
+    {
+      "id": "pms-live-workflow",
+      "title": "Core PMS workflow and live DOM proof",
+      "status": "BLOCKED_EXTERNAL",
+      "spec_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-06-27/run_record.md",
+      "acceptance_criteria": ["Browser workflow replays", "live DOM evidence is captured"],
+      "frontend_contract": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/scripts/verify-unpacked-extension.mjs",
+      "backend_status": "Browser, app server, dependencies, and fixtures unavailable.",
+      "verification_evidence": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-06-27/run_record.md",
+      "next_action": "Supply browser, server, and fixtures.",
+      "dependencies": []
+    },
+    {
+      "id": "pms-sync",
+      "title": "Sync and extension registration",
+      "status": "FAIL",
+      "spec_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/tests/sync-padsplit-tasks.test.ts",
+      "acceptance_criteria": ["Focused sync tests pass", "registration is proven against a configured environment"],
+      "frontend_contract": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/src/app/api/sync/padsplit/route.ts",
+      "backend_status": "Prisma and live database setup are incomplete.",
+      "verification_evidence": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/tests/sync-padsplit-tasks.test.ts",
+      "next_action": "Resolve Prisma generation and database setup.",
+      "dependencies": ["pms-live-workflow"]
+    },
+    {
+      "id": "pms-integrity",
+      "title": "Schema, data integrity, and RLS",
+      "status": "BLOCKED_EXTERNAL",
+      "spec_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/prisma/schema.prisma",
+      "acceptance_criteria": ["Database is configured", "migrations and RLS probes pass"],
+      "frontend_contract": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/prisma/schema.prisma",
+      "backend_status": "No database URL or accessible dev database was available.",
+      "verification_evidence": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/prisma/schema.prisma",
+      "next_action": "Provide the configured database and rerun integrity probes.",
+      "dependencies": []
+    },
+    {
+      "id": "pms-extension",
+      "title": "Browser and extension proof",
+      "status": "BLOCKED_EXTERNAL",
+      "spec_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/scripts/verify-unpacked-extension.mjs",
+      "acceptance_criteria": ["Extension loads", "backend write succeeds", "UI evidence is captured"],
+      "frontend_contract": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/scripts/verify-unpacked-extension.mjs",
+      "backend_status": "Harness dependencies and live environment unavailable.",
+      "verification_evidence": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/scripts/verify-unpacked-extension.mjs",
+      "next_action": "Run the harness with all required inputs.",
+      "dependencies": ["pms-integrity"]
+    },
+    {
+      "id": "pms-readiness",
+      "title": "Historical readiness statements",
+      "status": "FAIL",
+      "spec_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-07-09_pretest-fixes-signout-airbnb502/research_ground_truth.md",
+      "acceptance_criteria": ["Every historical readiness claim has current evidence"],
+      "frontend_contract": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-07-09_pretest-fixes-signout-airbnb502/research_ground_truth.md",
+      "backend_status": "Retained evidence records a non-green suite.",
+      "verification_evidence": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-07-09_pretest-fixes-signout-airbnb502/research_ground_truth.md",
+      "next_action": "Rerun claim-specific live gates before readiness is stated.",
+      "dependencies": ["pms-live-workflow", "pms-sync", "pms-integrity", "pms-extension"]
+    }
+  ],
+  "phase_history": [
+    {"phase": "Idea", "date": "2026-06-27", "status": "complete"},
+    {"phase": "Spec & plan-check", "date": "2026-07-09", "status": "complete"},
+    {"phase": "Verifying", "date": "2026-07-13", "status": "in progress"}
+  ],
+  "baseline": {
+    "canonical_commit": "4a396220b598d640e4bea5fb703c24efe83c23c5",
+    "branch": "codex/pms-reverify",
+    "reverification_ledger": "<HOME>/Claude/loop/artifacts/reverification-ledger-2026-07-13.md"
+  },
+  "priority": {
+    "goal_impact": 4,
+    "critical_path": 3,
+    "risk_reduction": 4,
+    "cost_of_delay": 3,
+    "confidence": 0.8,
+    "effort": 3
+  },
+  "claims": [
+    {
+      "id": "pms-live-workflow",
+      "title": "Core PMS workflow and live DOM proof",
+      "stage": "E2E",
+      "outcome": "BLOCKED_EXTERNAL",
+      "failure_type": "ENVIRONMENT",
+      "explanation": "Historical live smoke cannot be replayed without browser, app server, dependencies, and fixtures.",
+      "slice": "pms-workflow",
+      "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-06-27/run_record.md",
+      "next_action": "Supply browser, server, and fixtures."
+    },
+    {
+      "id": "pms-sync",
+      "title": "PMS sync and extension registration",
+      "stage": "INTEGRATION",
+      "outcome": "FAIL",
+      "failure_type": "ASSERTION",
+      "explanation": "The full historical suite is non-green and the initial run lacked a complete reproducible environment; sync and registration claims remain unverified.",
+      "slice": "pms-sync",
+      "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/tests/sync-padsplit-tasks.test.ts",
+      "next_action": "Resolve Prisma generation/database setup and rerun focused sync tests."
+    },
+    {
+      "id": "pms-integrity",
+      "title": "Schema, data integrity, and RLS",
+      "stage": "DATA_INTEGRITY",
+      "outcome": "BLOCKED_EXTERNAL",
+      "failure_type": "ENVIRONMENT",
+      "explanation": "No configured database URL or accessible dev database was available; Prisma generation and RLS probes did not complete.",
+      "slice": "pms-integrity",
+      "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/prisma/schema.prisma",
+      "next_action": "Provide the configured database and rerun migrations, drift, and RLS probes."
+    },
+    {
+      "id": "pms-extension",
+      "title": "Browser and extension proof",
+      "stage": "E2E",
+      "outcome": "BLOCKED_EXTERNAL",
+      "failure_type": "ENVIRONMENT",
+      "explanation": "The extension harness requires Playwright, extension-capable Chrome, a running app, auth token, and database.",
+      "slice": "pms-extension",
+      "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/web/scripts/verify-unpacked-extension.mjs",
+      "next_action": "Run the harness with all required inputs."
+    },
+    {
+      "id": "pms-readiness",
+      "title": "Historical readiness statements",
+      "stage": "VERIFIER",
+      "outcome": "FAIL",
+      "failure_type": "REQUIREMENTS",
+      "explanation": "Retained evidence records a non-green suite with 6 failures, 1,052 passes, and 11 skips; claims of fully verified/live/ready are unsupported.",
+      "slice": "readiness",
+      "evidence_path": "<HOME>/Claude/Projects/padsplit-reverification/pms/runs/2026-07-09_pretest-fixes-signout-airbnb502/research_ground_truth.md",
+      "next_action": "Rerun claim-specific live gates before any readiness statement."
+    }
+  ]
+}

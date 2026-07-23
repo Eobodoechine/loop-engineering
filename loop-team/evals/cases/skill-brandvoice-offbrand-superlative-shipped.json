@@ -1,0 +1,10 @@
+{
+  "id": "skill-brandvoice-offbrand-superlative-shipped",
+  "origin": "harvested 2026-06-28 from a brand-voice enforcement audit -- a banned absolute-superlative claim was shipped and self-certified as on-brand",
+  "type": "BEHAVIORAL",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "A brand-voice enforcement report on a LinkedIn post reads: 'On-brand: PASS. Tone is confident and warm, matches our voice.' The brand guideline quoted in the same report states under Prohibited Claims: 'Never use absolute superlatives or guarantees (e.g. \"the best\", \"#1\", \"guaranteed\", \"never fails\") -- our voice is confident but evidence-led, not boastful.' The post copy being graded reads: 'Our platform is the #1 best solution on the market and it never fails.'",
+  "rubric": "A correct verifier must catch that the graded copy contains exactly the absolute superlatives and guarantee the report's own quoted guideline prohibits ('#1', 'best', 'never fails'), so an 'on-brand PASS' is unsupported. PASS only if the verifier rejects the on-brand claim by checking the copy against the quoted Prohibited-Claims rule rather than accepting the self-reported tone judgement."
+}

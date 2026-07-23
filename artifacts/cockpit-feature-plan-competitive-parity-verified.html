@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html><head><!-- frame-runtime --><base href="/_f/1783903435-46ab/"><script>window.__FRAME_PREAMBLE={"capabilities":{"downloads":"downloads.DUzXFHNF.js","mcp":"mcp.Djj5DQjZ.js","self":"self.DqF_PxOe.js"},"transforms":"_transforms.DYk1Ltlh.js"}</script><script>(function(){"use strict";const X="modulepreload",Y=function(e){return"/"+e},Z={},U=function(t,n,u){let o=Promise.resolve();function i(f){const a=new Event("vite:preloadError",{cancelable:!0});if(a.payload=f,window.dispatchEvent(a),!a.defaultPrevented)throw f}return o.then(f=>{for(const a of f||[])a.status==="rejected"&&i(a.reason);return t().catch(i)})},D=["light","dark","system"];function $(e){if(e==null||typeof e!="object")return!1;const t=e.__frame_init;return t!=null&&typeof t=="object"}function q(e){if(e==null||typeof e!="object")return!1;const t=e.__frame_theme;if(t==null||typeof t!="object")return!1;const n=t.theme;return typeof n=="string"&&D.includes(n)}function M(e){if(window===top||e.type==="auxclick"&&e.button!==1)return;const t=e.composedPath?e.composedPath():[e.target];let n=null;for(let f=0;f<t.length;f++){const a=t[f];if(a&&a.matches&&a.matches("a[href],area[href]")){n=a;break}}if(!n&&e.target&&e.target.closest&&(n=e.target.closest("a[href],area[href]")),!n)return;const u=n.getAttribute("href");if(!u)return;let o,i;try{o=new URL(u,document.baseURI),i=new URL(document.baseURI).origin}catch{return}(o.protocol==="http:"||o.protocol==="https:")&&o.origin!==i&&(e.preventDefault(),parent.postMessage({__frame_nav:!0,url:o.href},"*"))}const L={};function y(e){if(window===top)return;const t=Date.now();t-(L[e]||0)<500||(L[e]=t,parent.postMessage({__frame_engaged:!0,kind:e},"*"))}const F=2e3,T=["wheel","touchstart","touchmove","keydown","pointerdown"];let k=0;function B(e){e.isTrusted&&(k=Date.now())}function z(){addEventListener("click",M,!0),addEventListener("auxclick",M,!0)}function W(){for(let e=0;e<T.length;e++)addEventListener(T[e],B,{capture:!0,passive:!0});addEventListener("scroll",e=>{e.isTrusted&&Date.now()-k<F&&y("scroll")},{capture:!0,passive:!0}),addEventListener("pointermove",e=>{e.isTrusted&&y("pointer")},{capture:!0,passive:!0}),addEventListener("click",e=>{e.isTrusted&&y("click")},{capture:!0,passive:!0})}function x(e,t,n){const u=[...t.values()].filter(o=>o.targets.some(i=>i.startsWith(e+".")));return{wrap(o,i){const f=`${e}.${o}`,a=u.filter(s=>s.targets.includes(f));return a.length===0?(...s)=>{try{return i(...s)}catch(d){return Promise.reject(d)}}:(...s)=>{let d=s;for(const c of a){const l=c.module.parameters;if(l)try{d=l(d)}catch{return Promise.reject({code:"transform_error",id:c.id,scope:e,message:"parameters transform failed"})}}let m;try{m=i(...d)}catch(c){m=Promise.reject(c)}return m.then(c=>{for(let l=a.length-1;l>=0;l--){const h=a[l],p=h.module.returns;if(p)try{c=p(c)}catch{return n({id:h.id,scope:e,leg:"returns"}),c}}return c},c=>{for(let l=a.length-1;l>=0;l--){const h=a[l],p=h.module.throws;if(p)try{c=p(c)}catch{return n({id:h.id,scope:e,leg:"throws"}),Promise.reject(c)}}return Promise.reject(c)})}}}}function H(e,t,n,u=()=>{}){const o=new Set(e.changes??[]),i=new Map;for(const f of o){const a=t[f];a&&i.set(f,a)}return{contract:e.contract,changes:o,flags:new Set(e.flags??[]),capabilities:e.capabilities??{},transforms:i,shellOrigin:n.shellOrigin,mount:n.mount,pipe:f=>x(f,i,u)}}(function(){const e=Object.defineProperty,t=globalThis,n=["RTCPeerConnection","webkitRTCPeerConnection","RTCDataChannel","RTCIceCandidate","RTCSessionDescription","RTCRtpSender","RTCRtpReceiver"];let u=0;for(let o=0;o<n.length;o++){const i=n[o];try{e(t,i,{value:void 0,writable:!1,configurable:!1})}catch{try{delete t[i]}catch{}try{e(t,i,{value:void 0,writable:!1,configurable:!0})}catch{}}typeof t[i]=="function"&&u++}if(u&&window!==top)try{parent.postMessage({__frame_rtc_lockdown_failed:u},"*")}catch{}})();const K=1e4,G=Object.freeze([...window.__FRAME_PREAMBLE?.origins??["https://claude.ai","https://preview.claude.ai"]]);function J(e){for(const t of G)if(t.endsWith(":*"))try{const n=new URL(e);if(`${n.protocol}//${n.hostname}:*`===t)return!0}catch{}else if(e===t)return!0;return!1}const w=Object.freeze({...window.__FRAME_PREAMBLE?.capabilities??{}}),E=window.__FRAME_PREAMBLE?.transforms,C=/^[\w.-]+\.js$/,V=/^[a-z][a-z0-9_-]{0,63}$/;let A=null,g=null;function P(e,t,n){try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!1,enumerable:!0})}catch{try{Object.defineProperty(e,t,{value:n,writable:!1,configurable:!0,enumerable:!0})}catch{}}}let R=!1;function N(e){const t=document.documentElement;e==="light"||e==="dark"?(t.dataset.theme=e,t.style.colorScheme=e,R=!0):R&&(delete t.dataset.theme,t.style.colorScheme="",R=!1)}const _=new Map;function Q(e,t){const n=_.get(e);if(!n)return;Object.assign(n.impl,t),n.impl.__settled=()=>Promise.reject({code:"capability_removed",message:`${e}: method not in this runtime`});const u=n.queue;n.queue=[];for(const o of u){const i=t[o.method];i?i(...o.args).then(o.resolve,o.reject):o.reject({code:"capability_removed",message:`${e}.${o.method} is not in this runtime`})}}function O(e,t){const n=_.get(e);if(!n)return;n.impl.__settled=()=>Promise.reject(t);const u=n.queue;n.queue=[];for(const o of u)o.reject(t)}const j=Object.getOwnPropertyDescriptor(window,"claude");if(window!==top&&!(j&&j.writable===!1)){z(),W();const e=j?.value??{};P(window,"claude",e);const t=s=>{const d={impl:Object.create(null),queue:[]};_.set(s,d);const m=new Proxy(d.impl,{get:(c,l)=>{if(typeof l=="string"&&!(l==="then"||l==="toJSON"||l==="valueOf"))return l==="toString"?Object.prototype.toString:(...h)=>{const p=c[l]??c.__settled;return p?p(...h):new Promise((b,S)=>{d.queue.push({method:l,args:h,resolve:b,reject:S})})}},set:()=>!1});P(e,s,m)};for(const s of Object.keys(w)){if(e[s]!==void 0){P(e,s,e[s]);continue}t(s)}let n=null,u=null,o=0;const i=s=>{s.source!==parent||!J(s.origin)||$(s.data)&&(n=s.data.__frame_init,g=s.origin,removeEventListener("message",i),clearTimeout(o),u?.())};addEventListener("message",i),parent.postMessage({__frame_connect:!0},"*");const f=new Promise(s=>{u=s,o=setTimeout(()=>{removeEventListener("message",i),s()},K)}),a=document.readyState==="loading"?new Promise(s=>document.addEventListener("DOMContentLoaded",()=>s(),{once:!0})):Promise.resolve();f.then(async()=>{if(!n||!g){for(const r of _.keys())O(r,{code:"not_granted",message:"frame initialization did not arrive - capability unavailable"});return}N(n.theme);const s=g;addEventListener("message",r=>{r.source!==parent||r.origin!==s||q(r.data)&&N(r.data.__frame_theme.theme)});const d=r=>U(()=>import("/_runtime/"+r),void 0),m=Object.keys(n.capabilities??{});for(const r of m)Object.hasOwn(w,r)||V.test(r)&&e[r]===void 0&&(t(r),O(r,{code:"capability_disabled",message:"capability not in this runtime generation"}));const c=m.filter(r=>Object.hasOwn(w,r)).map(r=>[r,w[r]]).filter(r=>typeof r[1]=="string"&&C.test(r[1])),[l,...h]=await Promise.allSettled([E&&C.test(E)?d(E):Promise.resolve({}),...c.map(([,r])=>d(r))]),p=g;A=H(n,l.status==="fulfilled"&&l.value?.TRANSFORMS||{},{shellOrigin:p,mount:Q},r=>parent.postMessage({__frame_cap_telemetry:r},p));const b=r=>parent.postMessage({__frame_cap_telemetry:{kind:"cap-load-error",cap:r}},p),S=A;h.forEach((r,v)=>{const I=c[v][0];if(r.status!=="fulfilled"){b(I);return}try{r.value?.install?.(S)}catch{b(I)}});for(const[r,v]of _)v.queue.length===0&&Object.keys(v.impl).length>0||O(r,{code:m.includes(r)?"capability_disabled":"not_granted",message:"capability not available in this session"});await a,parent.postMessage({__frame_ready:!0},g)})}})();</script><!-- /frame-runtime --><meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style><meta name="codex-exported-from" content="https://claude.ai/code/artifact/2da75fa3-7c21-4de4-9c37-b851ea96a93b?org=1f2e9a26-5124-45ff-8d09-37676ecf87c9&open_in_browser=1">
+<style>
+@media print {
+  @page { size: 17in 11in; margin: 0; }
+  html, body, .memo { background: #14171A !important; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-download-note { display: none !important; }
+  footer { break-before: page; }
+}
+</style>
+</head><body>
+<title>Cockpit - Feature, Operations &amp; Competitive Plan</title>
+<style>
+  :root{
+    --bg:#F2F1EA; --bg-raised:#FFFFFF; --ink:#171A1D; --ink-muted:#565A5F; --ink-faint:#83878C;
+    --rule:#DEDBCF; --accent:#2C5A63; --accent-ink:#FFFFFF; --accent-soft:#E3EDEC;
+    --gold:#9A6B22; --gold-soft:#F6EEDF;
+    --good:#3E7A52; --good-soft:#E7F1E9; --warn:#9A6B22; --warn-soft:#F6EEDF;
+    --bad:#A0402F; --bad-soft:#F5E7E2; --shadow:rgba(23,26,29,0.08);
+    --font-display:Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14171A; --bg-raised:#1B1F23; --ink:#EDEEEA; --ink-muted:#A7ABB0; --ink-faint:#767B80;
+      --rule:#2B2F34; --accent:#7EC2CB; --accent-ink:#0E1416; --accent-soft:#1D3438;
+      --gold:#E0B15E; --gold-soft:#2E2416;
+      --good:#6FBE85; --good-soft:#16281C; --warn:#E0B15E; --warn-soft:#2E2416;
+      --bad:#E2917E; --bad-soft:#2E1D18; --shadow:rgba(0,0,0,0.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14171A; --bg-raised:#1B1F23; --ink:#EDEEEA; --ink-muted:#A7ABB0; --ink-faint:#767B80;
+    --rule:#2B2F34; --accent:#7EC2CB; --accent-ink:#0E1416; --accent-soft:#1D3438;
+    --gold:#E0B15E; --gold-soft:#2E2416;
+    --good:#6FBE85; --good-soft:#16281C; --warn:#E0B15E; --warn-soft:#2E2416;
+    --bad:#E2917E; --bad-soft:#2E1D18; --shadow:rgba(0,0,0,0.45);
+  }
+  :root[data-theme="light"]{
+    --bg:#F2F1EA; --bg-raised:#FFFFFF; --ink:#171A1D; --ink-muted:#565A5F; --ink-faint:#83878C;
+    --rule:#DEDBCF; --accent:#2C5A63; --accent-ink:#FFFFFF; --accent-soft:#E3EDEC;
+    --gold:#9A6B22; --gold-soft:#F6EEDF;
+    --good:#3E7A52; --good-soft:#E7F1E9; --warn:#9A6B22; --warn-soft:#F6EEDF;
+    --bad:#A0402F; --bad-soft:#F5E7E2; --shadow:rgba(23,26,29,0.08);
+  }
+  *{box-sizing:border-box;}
+  :root, :root[data-theme="light"], :root[data-theme="dark"]{
+    --bg:#14171A; --bg-raised:#1B1F23; --ink:#EDEEEA; --ink-muted:#A7ABB0; --ink-faint:#767B80;
+    --rule:#2B2F34; --accent:#7EC2CB; --accent-ink:#0E1416; --accent-soft:#1D3438;
+    --gold:#E0B15E; --gold-soft:#2E2416;
+    --good:#6FBE85; --good-soft:#16281C; --warn:#E0B15E; --warn-soft:#2E2416;
+    --bad:#E2917E; --bad-soft:#2E1D18; --shadow:rgba(0,0,0,0.45);
+  }
+  html,body{background:var(--bg); color:var(--ink);}
+  body{margin:0;}
+  .memo{background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:16.5px; line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .wrap{width:min(1480px, calc(100vw - 80px)); margin:0 auto; padding:56px 26px 96px;}
+  h1,h2,h3{font-family:var(--font-display); font-weight:700; text-wrap:balance; color:var(--ink);}
+  p{margin:0 0 1em; max-width:70ch;}
+  strong{color:var(--ink); font-weight:700;}
+  em{font-style:italic;}
+
+  .eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0 0 14px; display:flex; align-items:center; gap:10px;}
+  .eyebrow::before{content:""; width:22px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-size:clamp(30px,4.2vw,44px); line-height:1.1; margin:0 0 14px; letter-spacing:-0.015em;}
+  .subtitle{font-size:18px; color:var(--ink-muted); max-width:66ch; margin:0 0 26px;}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px 22px; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:14px 0;}
+  .meta-row b{color:var(--ink-muted); font-weight:600;}
+  .verification-note{border:1px solid var(--accent); background:var(--accent-soft); border-radius:4px; padding:12px 14px; margin:18px 0 0; font-size:13px; color:var(--ink-muted); max-width:84ch;}
+  .verification-note b{font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:3px;}
+
+  .stat-row{display:flex; flex-wrap:wrap; gap:12px; margin:24px 0;}
+  .stat{flex:1; min-width:135px; border:1px solid var(--rule); border-radius:4px; background:var(--bg-raised); padding:14px 16px;}
+  .stat b{font-family:var(--font-display); font-size:24px; display:block; color:var(--accent); line-height:1;}
+  .stat span{font-size:11.5px; color:var(--ink-muted); display:block; margin-top:5px;}
+
+  section{margin-top:52px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:16px; border-bottom:2px solid var(--accent); padding-bottom:8px;}
+  h2{font-size:23px; margin:0;}
+  .section-num{font-family:var(--font-mono); font-size:12px; color:var(--accent); font-weight:600; white-space:nowrap;}
+  h3{font-size:16.5px; margin:22px 0 8px;}
+
+  .cite{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint);}
+
+  .pill{display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono); font-size:10px; letter-spacing:0.03em; padding:2px 7px; border-radius:20px; font-weight:600; white-space:normal; text-transform:uppercase; max-width:100%; overflow-wrap:anywhere; line-height:1.35;}
+  .pill.good{background:var(--good-soft); color:var(--good);}
+  .pill.warn{background:var(--warn-soft); color:var(--warn);}
+  .pill.bad{background:var(--bad-soft); color:var(--bad);}
+  .pill.neutral{background:var(--accent-soft); color:var(--accent);}
+  .pill.gold{background:var(--gold-soft); color:var(--gold);}
+
+  .table-wrap{overflow-x:auto; border:1px solid var(--rule); border-radius:4px; margin:16px 0;}
+  table{border-collapse:collapse; width:100%; min-width:1160px; table-layout:fixed; font-size:13.5px;}
+  th:nth-child(1),td:nth-child(1){width:34%;}
+  th:nth-child(2),td:nth-child(2){width:18%;}
+  th:nth-child(3),td:nth-child(3){width:48%;}
+  th,td{padding:10px 13px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top;}
+  thead th{font-family:var(--font-mono); font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-faint); background:var(--bg-raised); font-weight:600;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(odd){background:var(--bg-raised);}
+  td.k{font-weight:600; color:var(--ink);}
+  td .sub{display:block; color:var(--ink-faint); font-size:11.5px; margin-top:2px; font-weight:400;}
+  .coverage{font-family:var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .cov-bar{display:inline-block; width:48px; height:7px; background:var(--rule); border-radius:4px; vertical-align:middle; margin-right:6px; overflow:hidden;}
+  .cov-fill{display:block; height:100%; background:var(--accent);}
+
+  .blocker-card{border:1px solid var(--rule); border-radius:4px; background:var(--bg-raised); padding:20px 22px; margin:16px 0;}
+  .blocker-card .bh{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap;}
+  .blocker-card h3{margin:0; font-size:17px;}
+  .blocker-card p{margin:0 0 8px; font-size:14.5px;}
+  .blocker-card .label{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-faint); margin-bottom:2px; display:block;}
+
+  ul.clean{list-style:none; margin:14px 0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  ul.clean li{display:flex; gap:11px; align-items:flex-start; font-size:14.5px; color:var(--ink-muted);}
+  ul.clean li .b{color:var(--accent); font-weight:700; flex:none;}
+  ul.clean.dense li{font-size:14px;}
+
+  .alert{border:1px solid var(--warn); background:var(--warn-soft); border-radius:4px; padding:14px 16px; margin:16px 0; display:flex; gap:11px;}
+  .alert .mark{font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; color:var(--warn); font-weight:700; flex:none; text-transform:uppercase; padding-top:2px;}
+  .alert p{margin:0; font-size:13.5px; max-width:none;}
+  .alert.risk{border-color:var(--bad); background:var(--bad-soft);} .alert.risk .mark{color:var(--bad);}
+  .alert.good{border-color:var(--good); background:var(--good-soft);} .alert.good .mark{color:var(--good);}
+
+  .wedge-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0;}
+  .wedge-item{border:1px solid var(--rule); border-radius:4px; background:var(--bg-raised); padding:14px 16px;}
+  .wedge-item .n{font-family:var(--font-mono); font-size:11px; color:var(--gold); font-weight:700;}
+  .wedge-item h3{margin:6px 0 4px; font-size:14.5px;}
+  .wedge-item p{margin:0; font-size:13px; color:var(--ink-muted);}
+  @media (max-width:640px){.wedge-grid{grid-template-columns:1fr;}}
+
+  .phase{display:grid; grid-template-columns:80px 1fr; gap:16px; padding:18px 0; border-top:1px solid var(--rule);}
+  .phase:first-child{border-top:1px solid var(--rule);}
+  .phase .tag{font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--accent);}
+  .phase h3{margin:0 0 6px; font-size:15.5px;}
+  .phase p{margin:0; font-size:13.5px; color:var(--ink-muted);}
+
+  .ops-flow{display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; margin:18px 0;}
+  .ops-step{border:1px solid var(--rule); border-radius:4px; background:var(--bg-raised); padding:12px; min-height:116px;}
+  .ops-step .n{font-family:var(--font-mono); font-size:10px; color:var(--accent); font-weight:700;}
+  .ops-step h3{font-family:var(--font-body); font-size:13px; margin:5px 0 4px;}
+  .ops-step p{font-size:11.5px; color:var(--ink-muted); margin:0; line-height:1.45;}
+  .state-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:14px 0;}
+  .state{border-left:3px solid var(--accent); background:var(--bg-raised); padding:10px 12px;}
+  .state b{display:block; font-family:var(--font-mono); font-size:10.5px; color:var(--accent); margin-bottom:3px;}
+  .state span{display:block; font-size:11.5px; color:var(--ink-muted); line-height:1.45;}
+  .duo{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0;}
+  .panel{border:1px solid var(--rule); border-radius:4px; background:var(--bg-raised); padding:15px 17px;}
+  .panel h3{margin:0 0 8px; font-size:15px;}
+  .panel ul{margin:0; padding-left:1.1em; color:var(--ink-muted); font-size:13px;}
+  .panel li{margin-bottom:6px;}
+  table.ops th:nth-child(1),table.ops td:nth-child(1){width:19%;}
+  table.ops th:nth-child(2),table.ops td:nth-child(2){width:29%;}
+  table.ops th:nth-child(3),table.ops td:nth-child(3){width:27%;}
+  table.ops th:nth-child(4),table.ops td:nth-child(4){width:25%;}
+  table.competitors th:nth-child(1),table.competitors td:nth-child(1){width:13%;}
+  table.competitors th:nth-child(2),table.competitors td:nth-child(2){width:31%;}
+  table.competitors th:nth-child(3),table.competitors td:nth-child(3){width:27%;}
+  table.competitors th:nth-child(4),table.competitors td:nth-child(4){width:29%;}
+  table.rollout th:nth-child(1),table.rollout td:nth-child(1){width:14%;}
+  table.rollout th:nth-child(2),table.rollout td:nth-child(2){width:34%;}
+  table.rollout th:nth-child(3),table.rollout td:nth-child(3){width:30%;}
+  table.rollout th:nth-child(4),table.rollout td:nth-child(4){width:22%;}
+  @media (max-width:900px){.ops-flow{grid-template-columns:repeat(2,1fr);} .state-grid{grid-template-columns:repeat(2,1fr);} .duo{grid-template-columns:1fr;}}
+
+  footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--rule);}
+  .source-groups{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px 18px; margin-top:16px;}
+  .source-group:nth-child(4){order:-1;}
+  .source-group{border-top:1px solid var(--rule); padding-top:10px;}
+  .source-group h3{font-family:var(--font-mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase; margin:0 0 8px; color:var(--accent);}
+  .sources{font-size:10px; color:var(--ink-faint); font-family:var(--font-mono); padding-left:1.1em; margin:0;}
+  .sources li{margin-bottom:3px; break-inside:avoid;}
+  .sources a{color:var(--ink-muted);}
+  @media (max-width:760px){.source-groups{grid-template-columns:1fr;}}
+  @media (max-width:600px){.sources{columns:1;} .table-wrap{font-size:12px;}}
+</style>
+
+<div class="memo">
+  <div class="wrap">
+
+    <header>
+      <div class="eyebrow">Cockpit · Feature Plan &amp; Competitive Parity</div>
+      <h1 class="title">What competitors operate, how Cockpit works, and where we can win</h1>
+      <p class="subtitle">A source-checked feature map across 8 competitors, a concrete signal-to-resolution operating model, every structural blocker mapped to an honest viability verdict, and a PadSplit-native build path built around verified data paths.</p>
+      <div class="meta-row">
+        <span><b>Companion to</b> the business plan &amp; data-access memo</span>
+        <span><b>Surveyed</b> Hostaway, Guesty, OwnerRez, Hospitable, Lodgify, Uplisting, Hostfully, Smoobu</span>
+        <span><b>Date</b> 2026-07-13 source-checked revision</span>
+      </div>
+      <div class="verification-note"><b>Verification status</b>Competitive and source-system facts are source-checked as of July 13, 2026. Phase 1 data paths are live-validated for PadSplit exports, booking and payment-risk alerts, Messenger routing metadata, and selected Airbnb host-side email classes. The workflow, service levels, and 90-day rollout below are proposed Cockpit operating policy, not claims about current production behavior. Full PadSplit Messenger body sync, universal Airbnb message-body sync, OTA write-back, and active request-queue UI remain explicit exclusions.</div>
+      <div class="stat-row">
+        <div class="stat"><b>8</b><span>full PMS platforms catalogued, category by category</span></div>
+        <div class="stat"><b>5 / 5</b><span>structural blockers, each resolved to a verdict — including 3 honest NOT-VIABLE sub-findings</span></div>
+        <div class="stat"><b>10</b><span>PadSplit-native wedge features, split by data readiness</span></div>
+        <div class="stat"><b>49</b><span>public source links grouped in the appendix</span></div>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="section-num">01</span><h2>The table-stakes checklist</h2></div>
+      <p>Each row was refreshed against current official vendor pages and help docs on July 13, 2026. “Available” includes native, first-party add-on, or named integration; where ownership matters, the row separates those mechanisms. These counts describe advertised/source-supported capability, not identical API depth, implementation parity, or plan tier. The status column is Cockpit's real answer given its no-OTA-API, no-CM-API, email-first constraints (full reasoning for the blocked rows is §02).</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th>Coverage</th><th>Cockpit status</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Channel manager — 2-way sync, Airbnb+Vrbo+Booking min<span class="sub">all eight advertise channel sync, but speed, write depth, and OTA/API dependency vary by platform</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 advertise</td><td><span class="pill bad">Blocked — see §02</span></td></tr>
+            <tr><td class="k">Unified inbox<span class="sub">8/8 central messaging/inbox; not 8/8 identical channel coverage or read/write behavior</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 central inbox</td><td>Build as a unified activity inbox from confirmed email metadata, PadSplit CSV/export data, and host-visible platform records. PadSplit Messenger is validated as sender/subject/member/property/deep-link routing metadata; the inspected emails did not include the member's message body. Phase 1 stores the alert and link for human review, not full body text.</td></tr>
+            <tr><td class="k">Automated/templated guest messaging<span class="sub">competitors commonly support templates/automation; Cockpit must avoid silent platform write-back</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>broadly advertised</td><td><span class="pill warn">Draft-only, host sends — §02</span></td></tr>
+            <tr><td class="k">Multi-calendar view, owner blocks / gap nights<span class="sub">8/8 current sources advertise a central or multi-calendar; owner-block/gap-night semantics are explicitly named only in some</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 calendars</td><td><span class="pill good">Read via iCal + records</span></td></tr>
+            <tr><td class="k">Dynamic-pricing <em>capability</em> (native, add-on, or pricing partner)<span class="sub">Current source refresh: 8/8 available; about 5 native/first-party/add-on, 3 integration-led</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 available</td><td><span class="pill bad">Not building — recommend a partner</span></td></tr>
+            <tr><td class="k">Guest portal / digital guidebook<span class="sub">7/8 source-supported guest-facing portal/guidebook; OwnerRez's checked page lists owner Portal Access but not a standalone guest-facing portal/guidebook. Hostfully explicitly sells a guest guidebook.</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:87%"></span></span>7/8</td><td><span class="pill neutral">Phase 2 — integrate Touch Stay/Duve, no blocker</span></td></tr>
+            <tr><td class="k">Guest ID / screening available (native or integration)<span class="sub">8/8 source-supported through native, add-on, verification flow, or named integration; depth and consent mechanics vary</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 supported</td><td><span class="pill good">Integrable carefully — §02</span></td></tr>
+            <tr><td class="k">Damage / deposit handling<span class="sub">8/8 source-supported through native, add-on, or named integration; direct-booking/OTA/payment mechanics vary</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 supported</td><td><span class="pill bad">Out of scope — money movement unless direct-booking only</span></td></tr>
+            <tr><td class="k">Task / cleaning management<span class="sub">8/8 available; 6 native, 2 integration-led</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 available</td><td><span class="pill neutral">Integrate, don't rebuild</span></td></tr>
+            <tr><td class="k">Team roles / permissions<span class="sub">8/8 advertise team or multi-user access; 5/8+ explicitly document custom roles or permission controls</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 access</td><td><span class="pill good">Build — native, no data blocker</span></td></tr>
+            <tr><td class="k">Direct-booking website + engine</td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8</td><td><span class="pill warn">Phase 3 — the one channel we could fully own</span></td></tr>
+            <tr><td class="k">Payment processing<span class="sub">8/8 advertise payment, payment-link, processor, or deposit capability; this is not equivalent to native control of OTA reservation payments</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 capability</td><td><span class="pill bad">Not becoming a processor — §02</span></td></tr>
+            <tr><td class="k">Owner statements / owner portal<span class="sub">7/8 source-supported in the current pages checked; Smoobu pages checked do not advertise owner portal/statements</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:87%"></span></span>7/8</td><td><span class="pill good">Build — this is the wedge, see §04</span></td></tr>
+            <tr><td class="k">Smart-lock / IoT integration<span class="sub">8/8 available; split between vendor add-ons and partner integrations</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 available</td><td><span class="pill good">Integrate directly — Seam/RemoteLock — §02</span></td></tr>
+            <tr><td class="k">Native mobile app<span class="sub">7/8 native apps in current official pages/help docs; OwnerRez is the checked exception</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:87%"></span></span>7/8 native</td><td><span class="pill gold">Phase 2 — validate target gap first</span></td></tr>
+            <tr><td class="k">Named AI assistant / copilot<span class="sub">8/8 AI capability; 7/8 named AI product/feature. Smoobu's checked official AI capability is message translation rather than a copilot.</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:100%"></span></span>8/8 AI capability</td><td><span class="pill gold">Our natural-language analytics layer — §05</span></td></tr>
+            <tr><td class="k">QuickBooks / accounting integration<span class="sub">4/8 current source-supported: Hostaway, Guesty, Hospitable, and OwnerRez</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:50%"></span></span>4/8 confirmed</td><td><span class="pill good">Build read-side integration</span></td></tr>
+            <tr><td class="k">Trust accounting (named, jurisdiction-specific)<span class="sub">1/8 explicitly markets jurisdiction-specific native trust accounting (Guesty); OwnerRez separately documents a trust/escrow property-management model, which is not counted as jurisdiction-specific compliance</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:25%"></span></span>1 named native</td><td><span class="pill good">Differentiator, not table stakes — §05</span></td></tr>
+            <tr><td class="k">Multi-owner / co-ownership / fractional<span class="sub">1/8 explicitly documents full, co-, and fractional ownership (Guesty); other checked pages document owner management but not fractional semantics</span></td><td class="coverage"><span class="cov-bar"><span class="cov-fill" style="width:13%"></span></span>1/8 explicit</td><td><span class="pill neutral">Watch, don't build yet</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px; color:var(--ink-faint);">Reviews automation is a special case: present in some form on all 8, and Vrbo's Rapid API documents Guest Reviews for select partners, but the checked Airbnb API terms do not document a public reviews scope for non-partners — see §02, explicitly NOT-VIABLE for Cockpit's current access posture.</p>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">02</span><h2>Every blocker, resolved to a verdict</h2></div>
+      <p>Five capabilities are structurally out of Cockpit's reach the incumbent way — no OTA API partnership, no channel-manager API. Each one got checked against current platform/API terms and official connectivity documentation. Three sub-findings came back honestly NOT-VIABLE rather than forcing an answer.</p>
+
+      <div class="blocker-card">
+        <div class="bh"><h3>1. Two-way channel sync (pushing rates/availability out)</h3><span class="pill bad">Not viable to replicate</span></div>
+        <p><span class="label">Chosen pivot</span>Read-only sidecar next to the host's existing publisher — already the architecture. Public precedent exists for analytics products that sit beside the booking platforms rather than replacing a channel manager. No comparable two-way OTA sync, price push, or auto-send without approved platform connectivity. Position Cockpit as read-only plus draft-only assist.</p>
+        <p><span class="label">What it costs us</span>iCal gives availability blocking only — one-way, asymmetric, and throttled. Airbnb says imported calendars automatically update every 3 hours and manual refresh is request-limited; Vrbo supports up to five imported calendars per property, mobile-app sync every 30 minutes, and imported events may take up to 20 minutes to appear. Airbnb's current API terms require an organization/API agreement and scoped program access; Vrbo Rapid is limited to select partners and documents its own approved API surface. Without that onboarding, Cockpit has no supported write path for OTA inventory, rates, messaging, or reviews.</p>
+        <p><span class="label">Honest framing for hosts</span>Cockpit shows the truth; it never becomes a second system that can cause a double-booking — which every incumbent's own users complain about.</p>
+      </div>
+
+      <div class="blocker-card">
+        <div class="bh"><h3>2. Payments (taking a cut, processing bookings)</h3><span class="pill good">Viable pivot</span></div>
+        <p><span class="label">Chosen pivot</span>Flat SaaS plus Plaid Transactions read-side reconciliation. No Plaid Transfer or OTA payment processing; Stripe Connect only for Cockpit-owned direct bookings.</p>
+      </div>
+
+      <div class="blocker-card">
+        <div class="bh"><h3>3. Real-time data without webhooks</h3><span class="pill warn">Viable, with an honest ceiling</span></div>
+        <p><span class="label">Chosen pivot</span>Gmail watch can be a fast mailbox-change trigger, not a webhook payload. Cockpit still fetches/parses messages, and content depends on platform email bodies. For PadSplit Messenger, the inspected emails proved notification/deep-link routing metadata and did not contain the member's message text, so Phase 1 stores the alert and link for human review only. The Airbnb host-side inquiry class inspected in Gmail contained guest-written text; other message classes are outside Phase 1.</p>
+      </div>
+
+      <div class="blocker-card">
+        <div class="bh"><h3>4. Writing back — replying to guests, changing prices</h3><span class="pill warn">Draft-only viable; price write-back not viable</span></div>
+        <p><span class="label">Chosen pivot</span>Draft-only reply assist: generate suggested replies and require the host to review and send inside the platform. No silent auto-send, no automated price changes, and no claim of official platform integration unless separately approved. Airbnb prohibits bots, scrapers, or other automated means unless authorized; no co-host exception was found in the cited language.</p>
+      </div>
+
+      <div class="blocker-card">
+        <div class="bh"><h3>5. Screening, smart locks, reviews</h3><span class="pill good">Locks &amp; screening viable · reviews not viable</span></div>
+        <p><span class="label">Locks &amp; screening</span>Smart-lock integrations can be built through independent providers such as Seam and RemoteLock. Current vendor pages also document screening or identity-verification availability across all eight platforms, through native flows, add-ons, or named partners; implementation depth and consent flows still vary by vendor.</p>
+        <p><span class="label">Reviews</span>The honest failure case. No checked source confirms public Airbnb Reviews API access for non-partners. Do not pitch review automation without approved platform access or a separately verified lawful source.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">03</span><h2>What we're deliberately not building</h2></div>
+      <p>Naming these explicitly so nobody promises them later by accident — each one was researched, not assumed away.</p>
+      <ul class="clean">
+        <li><span class="b">✕</span><span><strong>Automated price-push to any OTA</strong> without approved platform connectivity — assume unsupported and ToS-sensitive.</span></li>
+        <li><span class="b">✕</span><span><strong>Silent auto-send of guest replies</strong> — draft-only suggestions with host review/send inside the platform.</span></li>
+        <li><span class="b">✕</span><span><strong>Native review sourcing/automation</strong> — no confirmed non-partner access to Airbnb's review data.</span></li>
+        <li><span class="b">✕</span><span><strong>Becoming a payment processor by accident</strong> — Plaid Transactions read-side reconciliation only unless money movement is deliberately scoped.</span></li>
+        <li><span class="b">✕</span><span><strong>Two-way channel distribution</strong> — read-only sidecar to the host's existing publisher, by design.</span></li>
+        <li><span class="b">✕</span><span><strong>Moving Airbnb/Vrbo bookings off-platform</strong> — Cockpit can own direct bookings it sources itself, but must not use Airbnb/Vrbo messages or listings to move bookings off-platform.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">04</span><h2>The wedge — a PadSplit-native feature spec</h2></div>
+      <p>Public PadSplit materials confirm room-based hosting, host-visible booking controls, Messenger/maintenance routing metadata, booking-request data availability, member score visibility, limited member balance/upcoming-dues visibility, property ratings, move-out-review direction, and an enhanced earnings CSV summarized by property/month. The live booking-request email verified requester, property, response deadline, auto-approval behavior, and review link; the current host UI showed Request (0), so Phase 1 does not depend on the active request queue. The downloaded earnings CSV verifies property/month financial fields, and the downloaded member ledger verifies member/transaction/lifecycle fields listed in the audit.</p>
+      <div class="wedge-grid">
+        <div class="wedge-item"><span class="n">01</span><h3>Property financial roll-up</h3><p>Verified from the PadSplit earnings CSV for property/month and bank-account reconciliation: gross income, booking fee, service fee, transaction fee, adjustments, and earnings. It does not contain room/member/transaction-date keys, so Phase 1 does not infer room-level P&amp;L from this file.</p></div>
+        <div class="wedge-item"><span class="n">02</span><h3>Independent member AR ledger</h3><p>Verified from the PadSplit member-ledger CSV for date, occupancy window, amount, balance, type, reason, property, move-in/out dates, and member identity. Aging buckets and overdue-status definitions are Cockpit-owned derived logic.</p></div>
+        <div class="wedge-item"><span class="n">03</span><h3>Payout reconciliation</h3><p>Verified from the earnings CSV for property/month, gross income, fees, adjustments, earnings, and bank account. Member-level dated reconciliation uses the separate ledger export; room/member/transaction-date keys are not inferred from the earnings file.</p></div>
+        <div class="wedge-item"><span class="n">04</span><h3>Per-room P&amp;L</h3><p>The verified PadSplit earnings CSV has no room, member, or transaction-date key. Per-room P&amp;L is therefore a Cockpit-owned derived feature requiring explicit expense capture and allocation rules, not a claimed PadSplit source field.</p></div>
+        <div class="wedge-item"><span class="n">05</span><h3>Member lifecycle + payment-risk funnel</h3><p>Booking-request fields and member-ledger lifecycle dates are verified. Gmail also verified PadSplit's host-facing <em>Member Termination Warning</em> and <em>Member Reinstated</em> classes, including the $300 balance threshold, 48-hour post-due-date warning window, property/room/member, and resolution state. Active request-queue UI and universal status-history export are excluded from Phase 1.</p></div>
+        <div class="wedge-item"><span class="n">06</span><h3>Turnover-cost tracking</h3><p>Needs a direct cost-capture mechanism; do not infer costs from platform status labels alone.</p></div>
+        <div class="wedge-item"><span class="n">07</span><h3>Segment-aware ingestion</h3><p>PadSplit path: Chrome Gmail validation confirmed host-side Messenger, booking-request, earnings, member-ledger, and export/report emails. Messenger emails contain sender/subject/member/property/deep-link routing metadata, not the member's message body. Airbnb path: the inspected host-side inquiry contained guest-written text; traveler itinerary, receipt, and payment emails were separately identified and must be excluded. MTR records are bank/Baselane/host-ledger centric, not platform-CSV centric. Keep this separate from PadSplit and OTA ingestion.</p></div>
+        <div class="wedge-item"><span class="n">08</span><h3>Portfolio reputation visibility</h3><p>Supported for member score host visibility, property ratings, and move-out reviews. Portfolio aggregation remains a Cockpit-derived view built from the supported source records; no broader export contract is claimed.</p></div>
+        <div class="wedge-item"><span class="n">09</span><h3>Utility cost-per-room allocation</h3><p>The verified PadSplit email/CSV fields contain no utility-cost field. This is a Cockpit-owned derived feature requiring manual entry or a utility-provider integration.</p></div>
+        <div class="wedge-item"><span class="n">10</span><h3>MTR deposit ledger + vacancy forecasting</h3><p>Proposed Cockpit-owned ledger for direct/MTR records, not a claimed source-system field. Keep it separate from OTA payment rights and off-platform-booking rules.</p></div>
+      </div>
+      <div class="alert">
+        <span class="mark">Data-readiness — split honestly, not all ten are equal</span>
+        <p>Chrome Gmail validation on July 13, 2026, using the connected PadSplit host mailbox found host-side Messenger, booking-request, payout/earnings, member-ledger, export/report, Member Termination Warning, and Member Reinstated emails. Messenger emails are notification/deep-link triggers; the inspected bodies did not include actual member message text. The termination warning verified the member/property/room, balance-above-$300 condition, 48-hour post-due-date window, and follow-up promise. The reinstatement email verified the below-$300 resolution and no-termination state. The earnings CSV was opened and verified for property/month financial and bank-account fields, and the member-ledger CSV was opened and verified for dated member transaction and lifecycle fields.</p>
+        <p>PadSplit host-facing earnings/collections email was opened and verified for member collections, booking fees, service fees, transaction fees, adjustments, total payout, payout account, and the attached earnings export.</p>
+        <p>Chrome Gmail validation on July 13, 2026, using the connected Airbnb host mailbox found host-side reservation, inquiry/request, guest-message, and payout emails separately from traveler itinerary/booking emails. The inspected host-side inquiry contained guest-written text, a host-thread deep link, listing/stay details, and a response deadline. A separate <em>Confirmed: Your reservation</em> result was identified as traveler-side and excluded. Airbnb message-body ingestion remains class-specific rather than universal.</p>
+        <p>Live platform validation: PadSplit /host/dashboard, /host/tasks, /host/members, /host/communication reachable; Airbnb /hosting, /hosting/messages, /hosting/reservations, /hosting/listings, /multicalendar reachable. PadSplit export controls and two downloaded CSV payloads were verified. Airbnb host-side surfaces confirmed, not traveler flows.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">05</span><h2>The specialist layer — how we earn credibility as a cockpit, not a toy PMS</h2></div>
+      <p>Cockpit sits alongside a host's existing setup as a read-side analytics and operations layer — so the features that matter most are the ones that make source-traceable host records more useful without pretending to replace the PMS or channel manager. Phase 1 is source-checked and live-validated as a read-only activity inbox plus portfolio dashboard using verified PadSplit email/CSV fields and filtered Airbnb host-side email classes. Full PadSplit Messenger body sync, universal Airbnb message-body sync, active request-queue UI, OTA write-back, and direct-booking money movement are explicit exclusions.</p>
+      <ul class="clean dense">
+        <li><span class="b">→</span><span><strong>The verified-data trust argument</strong> — platform, export, email, and bank-source traceability is the credibility bar for any read-only analytics layer.</span></li>
+        <li><span class="b">→</span><span><strong>Pacing &amp; forecasting</strong> — booking-pace trend lines against prior periods; a table-stakes requirement for a credible analytics layer, not an optional nicety.</span></li>
+        <li><span class="b">→</span><span><strong>Trust accounting</strong> — Guesty is the only native source-supported platform in the checked set; Hostaway and Uplisting add marketplace-partner evidence. Keep it as a future differentiator, not a table-stakes parity claim.</span></li>
+        <li><span class="b">→</span><span><strong>An opinionated derived health metric</strong> — one number per property/room that rolls up occupancy, arrears, and turnover cost, the kind of judgment call a dashboard of raw numbers doesn't make for the host.</span></li>
+        <li><span class="b">→</span><span><strong>A reconciliation-grade audit trail</strong> — every derived number traceable back to its source email/CSV row, which is what makes the arrears-ledger and per-room P&amp;L features actually trustworthy rather than another dashboard to doubt.</span></li>
+        <li><span class="b">→</span><span><strong>PadSplit-native metrics</strong> — the ten-item wedge spec above, exposed as first-class views, not bolted onto an STR-shaped data model.</span></li>
+        <li><span class="b">→</span><span><strong>Explicit "not a PMS" positioning</strong> — say it outright; this is what makes "read-only" read as a feature instead of an apology.</span></li>
+        <li><span class="b">→</span><span><strong>A disclosed setup posture</strong> — avoid vendor-specific setup-fee comparisons unless sourced in the investor deck; say "low-friction onboarding" until pricing evidence is pinned.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">06</span><h2>Revised build order</h2></div>
+      <div class="phase">
+        <div class="tag">PHASE 1</div>
+        <div><h3>Table-stakes core, buildable today</h3><p>Unified activity inbox: confirmed public email metadata, verified PadSplit CSV fields, and host-visible records first; platform deep-links and human review for PadSplit message threads because the inspected email body did not contain the member text. Multi-calendar view from iCal plus host records, team roles/permissions, property financial roll-up, member AR ledger, and filtered Airbnb host-side email ingestion now; room-level P&amp;L and universal message-body sync are not claimed. Phase 1 is source-checked and live-validated within these boundaries.</p></div>
+      </div>
+      <div class="phase">
+        <div class="tag">PHASE 2</div>
+        <div><h3>Enrichment + differentiation</h3><p>Draft-only reply assist: generate suggested replies and require the host to review and send inside the platform. No silent auto-send, no automated price changes, and no claim of official platform integration unless separately approved. Add accounting read integration, smart-lock/screening/guidebook integrations after vendor review, AI natural-language analytics over source-traceable data, and per-room P&amp;L / turnover-cost / utility-allocation wedge features once a cost-capture mechanism exists (§04).</p></div>
+      </div>
+      <div class="phase">
+        <div class="tag">PHASE 3</div>
+        <div><h3>Owned channel</h3><p>Cockpit can own direct bookings it sources itself, with Stripe Connect scoped specifically to that channel, never as a general OTA-payments substitute. Do not use Airbnb/Vrbo messages or listings to move bookings off-platform. Trust accounting can become a named, sold feature only after the reconciliation-grade audit trail is proven in production.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">07</span><h2>The operating plan — one queue from signal to proven resolution</h2></div>
+      <p>The operating unit is an <strong>Ops Item</strong>, not a message thread. An Ops Item may begin as a guest message, booking request, termination warning, reinstatement, payout, ledger exception, or manual follow-up. Cockpit's job is to identify what needs attention, preserve the source evidence, guide the host to the correct system, and record a truthful resolution.</p>
+
+      <div class="ops-flow">
+        <div class="ops-step"><span class="n">01</span><h3>Capture</h3><p>Ingest only validated email classes, approved exports, iCal availability, extension records, and manual entries.</p></div>
+        <div class="ops-step"><span class="n">02</span><h3>Classify</h3><p>Separate host-side messages from traveler confirmations, financial events, lifecycle events, and unknown classes.</p></div>
+        <div class="ops-step"><span class="n">03</span><h3>Attach</h3><p>Link source, account, property, room, contact, deadline, confidence, and evidence ID. Preserve the original deep-link.</p></div>
+        <div class="ops-step"><span class="n">04</span><h3>Prioritize</h3><p>Rank by external deadline, access/check-in risk, payment exposure, guest impact, and time since arrival.</p></div>
+        <div class="ops-step"><span class="n">05</span><h3>Act</h3><p>Read, decide, draft, copy, or open the source platform. Keep money movement and platform delivery outside Cockpit.</p></div>
+        <div class="ops-step"><span class="n">06</span><h3>Prove</h3><p>Resolve only with a source event or explicit host confirmation. Failed ingestion and unconfirmed sends stay visible.</p></div>
+      </div>
+
+      <div class="alert risk">
+        <div class="mark">Launch blocker</div>
+        <p><strong>The current app's “Copy &amp; Mark Sent” action is not truthful enough for production.</strong> It can record <span class="pill bad">Sent</span> after copying a draft even though Airbnb or PadSplit has not delivered it. Clipboard failure is also not surfaced. Split this into <span class="pill neutral">Copied</span>, <span class="pill warn">Awaiting host confirmation</span>, and <span class="pill good">Confirmed sent</span>; only the last state may close the response item.</p>
+      </div>
+
+      <h3>Required workflow states</h3>
+      <div class="state-grid">
+        <div class="state"><b>NEW</b><span>Captured, not yet triaged.</span></div>
+        <div class="state"><b>ACTION_REQUIRED</b><span>A human decision or source-platform action is due.</span></div>
+        <div class="state"><b>DRAFT_READY</b><span>A body-present message has a host-reviewable draft.</span></div>
+        <div class="state"><b>COPIED</b><span>Draft copied; delivery has not been proven.</span></div>
+        <div class="state"><b>AWAITING_CONFIRMATION</b><span>Host acted in the source platform but has not confirmed the result.</span></div>
+        <div class="state"><b>RESOLVED</b><span>Source evidence or explicit host confirmation closes the item.</span></div>
+        <div class="state"><b>SNOOZED</b><span>Deferred until a named time with ownership retained.</span></div>
+        <div class="state"><b>BLOCKED_SOURCE</b><span>Required body, permission, export, or platform access is unavailable.</span></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="ops">
+          <thead><tr><th>Signal</th><th>What Cockpit shows</th><th>Host action</th><th>Resolution evidence</th></tr></thead>
+          <tbody>
+            <tr><td class="k">PadSplit Messenger email</td><td>Sender/routing metadata and the PadSplit deep-link. The inspected email did <strong>not</strong> contain the member's message body.</td><td>Open PadSplit, read the message, and reply there. No Cockpit draft from missing content.</td><td>Explicit host confirmation or a later source event; never “sent” from link-open alone.</td></tr>
+            <tr><td class="k">PadSplit booking request</td><td>Requester, property/room context, deadline, auto-approval warning, and review link.</td><td>Open PadSplit and approve or decline before the external deadline.</td><td>Observed follow-up status/email or explicit host confirmation of the decision.</td></tr>
+            <tr><td class="k">Termination / reinstatement</td><td>Payment-risk item with member, property, room, balance condition, and timing.</td><td>Review ledger/member context and follow up where necessary.</td><td>A verified reinstatement event automatically resolves the matching warning; otherwise host resolution is required.</td></tr>
+            <tr><td class="k">Airbnb host inquiry</td><td>Guest-written body, stay/listing context, response deadline, and thread link only for validated host-side classes.</td><td>Review draft, copy, open Airbnb, paste/edit, and send in Airbnb.</td><td>Separate host confirmation after source-platform send; traveler booking emails are excluded.</td></tr>
+            <tr><td class="k">Airbnb reservation / payout</td><td>Operational or financial event with source class and property/reservation link.</td><td>Review exception or reconcile; do not route it to the conversation composer.</td><td>Matching platform event, reconciled record, or explicit host resolution.</td></tr>
+            <tr><td class="k">CSV / bank / manual</td><td>Ledger, earnings, payout, or manually reported exception with row-level provenance.</td><td>Reconcile, assign, or document the decision. Cockpit never initiates a payment.</td><td>Matched source rows, imported correction, or named human attestation.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="duo">
+        <div class="panel"><h3>Daily operating surface</h3><ul><li><strong>Now:</strong> one ranked queue for messages, booking deadlines, payment risk, access issues, and reconciliation exceptions.</li><li><strong>Proof:</strong> source record, body-availability status, confidence, evidence ID, failed ingestion, and unconfirmed send attempts.</li><li><strong>Archive:</strong> resolved history with owner, timestamps, action, and resolution evidence.</li><li><strong>Layout:</strong> queue on the left, source/thread in the center, action and proof on the right.</li></ul></div>
+        <div class="panel"><h3>Proposed service policy</h3><ul><li>Access/check-in issue: acknowledge within 15 minutes; human escalation within 30.</li><li>Booking request: triage within 1 hour; reminders six and two hours before its external deadline.</li><li>Normal guest/member message: triage within 4 hours.</li><li>Payment risk: review within 2 hours; same-day follow-up when action is required.</li><li>Payout/reconciliation exception: next-business-day review.</li></ul><p class="cite" style="margin-top:10px;">These are proposed operating targets, not competitor claims or externally verified benchmarks.</p></div>
+      </div>
+
+      <p><strong>Operating rhythm:</strong> clear or assign the <em>Now</em> queue daily; review blocked sources, parser exceptions, and unconfirmed sends weekly; review statements, portfolio performance, and reconciliation quality monthly. The queue owner is accountable for triage, while the assigned host/operator is accountable for source-platform action and confirmation.</p>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">08</span><h2>How competitors operate — and where Cockpit is better or worse</h2></div>
+      <p>The eight checked competitors operate primarily as systems of record: they centralize reservations and conversations, automate recurring messages, synchronize channels, and increasingly own direct bookings, payments, tasks, and owner reporting. Cockpit should enter as a <strong>complementary operations sidecar</strong> for fragmented PadSplit + STR/MTR portfolios, not as a smaller imitation of a mature PMS.</p>
+      <div class="table-wrap">
+        <table class="competitors">
+          <thead><tr><th>Competitor</th><th>How it operates</th><th>Where it beats Cockpit</th><th>Cockpit opening</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Hostaway</td><td>Full PMS/channel manager with OTA-centered inbox, automation, reservation-triggered tasks, broad integrations, and role controls.</td><td>Native channel connectivity, write actions, mature automation, ecosystem depth.</td><td>Cross-segment PadSplit/room-level payment risk and source-evidence queue without PMS migration.</td></tr>
+            <tr><td class="k">Guesty</td><td>Enterprise PMS combining multi-channel operations, AI-assisted messaging, tasks, owner portal, accounting, and trust-accounting workflows.</td><td>Financial depth, enterprise controls, owner operations, direct platform relationships.</td><td>Lower-friction sidecar for operators who need decisions across tools rather than another system migration.</td></tr>
+            <tr><td class="k">OwnerRez</td><td>Highly configurable PMS with templates/triggers, direct channel partnerships, owner statements, accounting tools, and transparent feature depth.</td><td>Configurability, direct-booking control, channel-native messaging, proven statements.</td><td>Opinionated exception handling and rent-by-room lifecycle signals with less setup complexity.</td></tr>
+            <tr><td class="k">Hospitable</td><td>Automation-first product for small hosts with unified inbox, Copilot, smart-device workflows, direct booking, and owner tools.</td><td>Fast messaging workflow, automation polish, smart-device execution, established user experience.</td><td>PadSplit-specific member/payment events and portfolio-wide proof rather than STR messaging alone.</td></tr>
+            <tr><td class="k">Lodgify</td><td>Channel manager/PMS built around direct-booking websites and booking-engine ownership.</td><td>Owned-channel conversion, website tooling, reservations and payment collection.</td><td>Operational exception queue across existing channels where rebuilding the booking stack is unnecessary.</td></tr>
+            <tr><td class="k">Uplisting</td><td>Operations-heavy PMS with automated messaging, multi-calendar, cleaning, deposits, and client/owner reporting.</td><td>Native operational actions, deposit mechanics, cleaning workflows, statements.</td><td>Read-side evidence, room economics, and PadSplit member lifecycle across a mixed portfolio.</td></tr>
+            <tr><td class="k">Hostfully</td><td>PMS plus strong standalone digital guidebooks and guest-experience products, with inbox, tasks, and owner management.</td><td>Guest experience, guidebooks, mature PMS workflows and partner ecosystem.</td><td>Financial/risk triage and source-proven action queue rather than content-led guest experience.</td></tr>
+            <tr><td class="k">Smoobu</td><td>SMB all-in-one with channel manager, inbox, booking engine, automation, and mobile access.</td><td>Simple bundled baseline, channel sync, mobile execution, owned booking flow.</td><td>Deeper mixed-model decisions and evidence for operators whose portfolio does not fit one STR-shaped system.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="duo">
+        <div class="panel"><h3>Competitive advantages</h3><ul><li><strong>PadSplit and rent-by-room are first-class:</strong> room, member, arrears, termination, reinstatement, and turnover are modeled as core operations.</li><li><strong>One exception queue:</strong> messages, deadlines, payment risk, and reconciliation sit in the same ranked work surface.</li><li><strong>Evidence-grade truth:</strong> every claim and resolution carries source, confidence, timestamp, and evidence ID.</li><li><strong>No forced migration:</strong> the host can keep existing PMS/channel systems while Cockpit organizes cross-system work.</li><li><strong>Lower action risk:</strong> read-side operation avoids accidental price pushes, double-booking writes, and off-platform booking movement.</li><li><strong>Distinct wedge:</strong> member lifecycle and room-level economics are not the center of the checked STR products.</li></ul></div>
+        <div class="panel"><h3>Competitive disadvantages</h3><ul><li><strong>No native send or write-back:</strong> hosts must switch to the source platform and confirm the outcome.</li><li><strong>Incomplete bodies:</strong> PadSplit Messenger email cannot support reply drafting when the member text is absent.</li><li><strong>Latency and fragility:</strong> email, export, and extension signals can lag or change format.</li><li><strong>External dependency:</strong> source-platform access, permissions, and availability remain outside Cockpit's control.</li><li><strong>Less ecosystem depth:</strong> competitors have mature integrations, brands, support, and operating history.</li><li><strong>Proof adds friction:</strong> Cockpit cannot truthfully claim delivery or resolution without source evidence or host confirmation.</li></ul></div>
+      </div>
+
+      <div class="alert good"><div class="mark">Positioning</div><p><strong>“The operations cockpit for fragmented rental portfolios.”</strong> Do not sell “a cheaper PMS” or “all-in-one property management.” Lead with PadSplit/rent-by-room depth, a cross-system exception queue, and an evidence trail that tells the operator what needs action now and what was actually resolved.</p></div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="section-num">09</span><h2>90-day operational rollout — prove the wedge before expanding scope</h2></div>
+      <div class="table-wrap">
+        <table class="rollout">
+          <thead><tr><th>Window</th><th>Ship</th><th>Operating change</th><th>Release gate</th></tr></thead>
+          <tbody>
+            <tr><td class="k">Days 0–14</td><td>Split copy from send confirmation; add source links, body-availability labels, deadlines, ingest status, and evidence IDs. Allow only validated email classes.</td><td>Every action shows whether Cockpit knows the body, can draft, and can prove delivery. Unknown classes are quarantined.</td><td><strong>Zero</strong> traveler-email leakage into host conversations and <strong>zero</strong> false-sent states.</td></tr>
+            <tr><td class="k">Days 15–30</td><td>Launch the unified Ops Item queue with owner, priority, deadline, SLA clock, and termination-to-reinstatement matching.</td><td>A named operator clears <em>Now</em> daily and reviews <em>Proof</em> weekly; alerts stop living in separate screens.</td><td>≥95% classification accuracy on validated classes; 100% booking-request deadline capture; every item source-linked.</td></tr>
+            <tr><td class="k">Days 31–60</td><td>Add body-present draft assist, stale-draft protection, explicit send confirmation, and CSV finance/reconciliation exceptions.</td><td>Host reviews every draft and sends in the source platform; finance items route outside the composer.</td><td>No auto-send; every resolved reply has confirmation evidence; parser failures remain visible.</td></tr>
+            <tr><td class="k">Days 61–90</td><td>Pilot with 3–5 hosts spanning PadSplit-only, mixed PadSplit + Airbnb, and STR/MTR operations.</td><td>Run daily queue, weekly proof review, and monthly portfolio review; interview operators on missed context and duplicate work.</td><td>Measure time-to-triage, missed-deadline rate, parser exceptions, unconfirmed sends, and weekly active use.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert"><div class="mark">Do not build yet</div><p>OTA write-back, automated price changes, payment processing, review automation, and unverified parser classes remain outside the first 90 days. Expansion is earned only after the read-side queue has accurate classification, truthful resolution states, and repeated operator use.</p></div>
+      <p><strong>Investor interpretation:</strong> the near-term business is not won by matching 8/8 PMS feature grids. It is won by proving that a host with fragmented PadSplit + STR/MTR operations resolves high-value exceptions faster, misses fewer deadlines, and can trace every decision back to source evidence. Native channel actions are the largest disadvantage; rent-by-room operational depth and cross-system truth are the defensible advantages.</p>
+    </section>
+
+    <footer>
+      <p class="cite" style="margin-bottom:16px;">Source appendix — current public sources, repo research, and bounded live validation checked July 13, 2026. Use these as investor-facing support with the explicit Phase 1 boundaries above.</p>
+      <div class="source-groups">
+        <div class="source-group"><h3>Email, PadSplit, and Data Access</h3><ul class="sources">
+          <li><a href="https://developers.google.com/workspace/gmail/api/guides/push">Gmail push notifications</a></li>
+          <li><a href="https://developers.google.com/workspace/gmail/api/reference/rest/v1/Format">Gmail message format</a></li>
+          <li><a href="https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages">Gmail message resource</a></li>
+          <li><a href="https://www.padsplit.com/help/article/915641-messaging-your-host">PadSplit: Messaging your Host</a></li>
+          <li><a href="https://www.padsplit.com/help/article/575791-messaging-your-members">PadSplit: Messaging your Members</a></li>
+          <li><a href="https://www.padsplit.com/host-resources/host-success/new-updates-give-padsplit-hosts-more-control-than-ever/">PadSplit host updates</a></li>
+          <li><a href="https://www.padsplit.com/help/article/how-can-i-approve-member-bookings-10715968352020">PadSplit booking requests</a></li>
+          <li><a href="https://www.padsplit.com/terms-of-use">PadSplit Terms</a></li>
+          <li>Repo research: research/email-ingestion-channel-2026-07-12.md</li>
+          <li>Repo research: research/gate-verification-2026-07-12.md</li>
+          <li>Repo research: research/padsplit-mtr-feature-needs-2026-07-12.md</li>
+          <li>Live validation: Chrome Gmail on the connected PadSplit and Airbnb host mailboxes; host platform surfaces for PadSplit and Airbnb</li>
+        </ul></div>
+        <div class="source-group"><h3>OTA Rules and Connectivity</h3><ul class="sources">
+          <li><a href="https://www.airbnb.com/terms">Airbnb Terms</a></li>
+          <li><a href="https://www.airbnb.com/help/article/2799">Airbnb Off-Platform Policy</a></li>
+          <li><a href="https://www.airbnb.com/help/article/3418">Airbnb API Terms</a></li>
+          <li><a href="https://www.airbnb.com/help/article/99">Airbnb calendar sync</a></li>
+          <li><a href="https://help.vrbo.com/articles/How-do-I-import-my-iCal-or-Google-calendar">Vrbo calendar import</a></li>
+          <li><a href="https://developers.expediagroup.com/">Expedia/Vrbo Developer Hub</a></li>
+          <li><a href="https://developers.expediagroup.com/supply/lodging">Expedia Connectivity Hub</a></li>
+          <li><a href="https://developers.expediagroup.com/rapid/lodging/vacation-rentals/about-vacation-rentals-api">Vrbo Vacation Rentals API</a></li>
+          <li><a href="https://help.vrbo.com/articles/About-Vrbo-integration">Vrbo integration</a></li>
+          <li><a href="https://www.airbnb.com/help/article/13">Airbnb reviews help</a></li>
+          <li><a href="https://www.airbnb.com/help/article/2673">Airbnb reviews policy</a></li>
+        </ul></div>
+        <div class="source-group"><h3>Payments and Reconciliation</h3><ul class="sources">
+          <li><a href="https://plaid.com/products/transactions/">Plaid Transactions</a></li>
+          <li><a href="https://plaid.com/products/transfer/">Plaid Transfer</a></li>
+          <li><a href="https://docs.stripe.com/connect">Stripe Connect docs</a></li>
+          <li><a href="https://stripe.com/connect">Stripe Connect product</a></li>
+        </ul></div>
+        <div class="source-group"><h3>Integrations and Competitor Claims</h3><ul class="sources">
+          <li><a href="https://www.seam.co/">Seam</a></li>
+          <li><a href="https://remotelock.com/">RemoteLock</a></li>
+          <li><a href="https://www.autohost.ai/">Autohost</a></li>
+          <li><a href="https://docs.autohost.ai/">Autohost docs</a></li>
+          <li><a href="https://www.airdna.co/">AirDNA</a></li>
+          <li><a href="https://www.hostaway.com/features/">Hostaway features</a></li>
+          <li><a href="https://www.guesty.com/features/">Guesty features</a></li>
+          <li><a href="https://www.guesty.com/features/homeowners-portal/">Guesty homeowners portal</a></li>
+          <li><a href="https://help.guesty.com/hc/en-gb/articles/24565295293725-Assigning-fractional-ownership-to-properties">Guesty fractional ownership</a></li>
+          <li><a href="https://www.ownerrez.com/features">OwnerRez features</a></li>
+          <li><a href="https://www.ownerrez.com/rezzy">OwnerRez Rezzy AI</a></li>
+          <li><a href="https://hospitable.com/features">Hospitable features</a></li>
+          <li><a href="https://www.uplisting.io/features">Uplisting features</a></li>
+          <li><a href="https://www.lodgify.com/property-management-software/">Lodgify PMS</a></li>
+          <li><a href="https://www.hostfully.com/property-management-software-features/">Hostfully features</a></li>
+          <li><a href="https://www.hostfully.com/screen-and-protect/">Hostfully Screen &amp; Protect</a></li>
+          <li><a href="https://support.hostaway.com/hc/en-us/articles/10351861667867-Create-an-Automated-Pre-Authorization-for-Refundable-Damage-Deposit">Hostaway damage-deposit pre-authorization</a></li>
+          <li><a href="https://www.smoobu.com/en/">Smoobu home</a></li>
+          <li><a href="https://www.smoobu.com/en/channel-manager/">Smoobu channel manager</a></li>
+          <li><a href="https://www.smoobu.com/en/pricing/">Smoobu pricing and mobile app</a></li>
+          <li><a href="https://support.smoobu.com/hc/en-us/articles/360007270279-Smoobu-for-mobile-phones">Smoobu mobile app help</a></li>
+          <li><a href="https://www.uplisting.io/blog/introducing-the-uplisting-mobile-application">Uplisting mobile application</a></li>
+          <li><a href="https://support.hostaway.com/hc/en-us/articles/27435712307739-QuickBooks-Online-Integration-Guide">Hostaway QuickBooks integration</a></li>
+          <li><a href="https://help.guesty.com/hc/en-gb/articles/32607649416349-Connecting-QuickBooks-via-Guesty-Connect">Guesty QuickBooks integration</a></li>
+          <li><a href="https://help.hospitable.com/en/articles/11594965-understanding-your-hospitable-financials-with-quickbooks">Hospitable QuickBooks integration</a></li>
+          <li><a href="https://www.ownerrez.com/support/articles/quickbooks-integration-overview">OwnerRez QuickBooks integration</a></li>
+        </ul></div>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+</body></html>

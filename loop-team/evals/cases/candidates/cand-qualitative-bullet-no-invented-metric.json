@@ -1,0 +1,11 @@
+{
+  "id": "cand-qualitative-bullet-no-invented-metric",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Tailored resume bullet: 'Led the migration of the team's reporting stack to a new BI platform, improving stakeholder access to self-serve dashboards.' Source provided alongside: the master resume reads 'Led migration to a new BI platform; built self-serve dashboards for stakeholders.' The master contains no percentage, dollar, or time figure for this work, and the tailored bullet adds none. A note in the artifact records that the JD asked for 'data-driven, metrics-oriented' candidates.",
+  "failure_mode": "over-rejection of a deliberately-qualitative bullet (reads as weak/unquantified, but adding a metric would be fabrication)",
+  "source": "loop-team/roles/verifier.md L8 -- a bullet that is a traceable rephrase of the master should PASS. ; fix_plan.md H-RESUME-4 -- \"never invent/estimate a metric; ... else keep the bullet qualitative.\"",
+  "why_hard": "The bullet has no numbers despite a JD that explicitly wants metrics, so it looks weak and incomplete; but the master has no figure for this work, so staying qualitative is the correct (non-fabricating) behavior, not a defect.",
+  "objective_fact": "The master contains no quantitative figure for this work and the tailored bullet adds none; keeping the bullet qualitative rather than inventing a metric is the required anti-fabrication behavior, so it is a correct PASS, not a gap."
+}

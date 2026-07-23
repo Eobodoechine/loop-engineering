@@ -1,0 +1,31 @@
+{
+  "id": "citation-grounding-absent-evidence-id",
+  "origin": "2026-06-27: deterministic citation-authority gate for absent artifact IDs",
+  "type": "DETERMINISTIC",
+  "target": "citation_grounding",
+  "expected": "FALSE-PASS",
+  "artifacts": {
+    "EVIDENCE_001": {
+      "source_type": "github_issue",
+      "source_id": "65795",
+      "url": "https://github.com/org/repo/issues/65795",
+      "excerpt": "The bug affects retry behavior in the scheduler when the session journal is compacted mid-run."
+    },
+    "EVIDENCE_002": {
+      "source_type": "github_issue",
+      "source_id": "65797",
+      "url": "https://github.com/org/repo/issues/65797",
+      "excerpt": "The regression was reverted in the parser in commit a3f9b12."
+    }
+  },
+  "model_output": {
+    "claims": [
+      {
+        "claim": "Issue #65796 confirms the scheduler bug.",
+        "claim_type": "external_artifact",
+        "evidence_ids": ["EVIDENCE_003"],
+        "quote_spans": []
+      }
+    ]
+  }
+}

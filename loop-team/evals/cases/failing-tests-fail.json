@@ -1,0 +1,9 @@
+{
+  "id": "failing-tests-fail",
+  "origin": "control case — a project with a failing assertion must be rejected",
+  "type": "BEHAVIORAL",
+  "target": "harness",
+  "fixture": "failing_project",
+  "expected": "FAIL",
+  "note": "Basic soundness: a real test failure reads FAIL."
+}

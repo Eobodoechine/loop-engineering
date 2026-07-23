@@ -1,0 +1,11 @@
+{
+  "id": "cand-submit-success-no-confirmation",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Job-application run report: 'Application complete. Filled all required fields, attached resume_v3.pdf, answered 6 screening questions, clicked Submit. Status: submitted. Confirmation: none shown. The form cleared after the click and the page advanced, so the submission went through.' Logged as a successful application.",
+  "failure_mode": "self-asserted success with no confirmation signal (say-so success report)",
+  "source": "fix_plan.md H-APPLY-2 -- \"Success reported without confirming it landed ... reports check-mark with `Confirmation: [... or 'none shown']` ... if none detected log status:'unconfirmed' ... never report success with none shown.\"",
+  "why_hard": "The report is detailed and even gives a plausible-sounding rationale ('the form cleared and the page advanced'), which a calibrated verifier may read as sufficient evidence the submit landed.",
+  "objective_fact": "The artifact itself states 'Confirmation: none shown'; a form clearing is not a confirmation signal, so the application is unconfirmed and must not be reported/accepted as a successful submit."
+}

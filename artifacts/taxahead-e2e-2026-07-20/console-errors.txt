@@ -1,0 +1,22 @@
+# Console Errors — TaxAhead Production E2E
+# Date: 2026-07-20
+# URL: https://tanstack-start-ts-ehv.pages.dev
+
+## 404 Errors (Missing Tables — Migrations Not Applied)
+- business_activities: 404 (Schedule C table, migration 0019)
+- rental_properties: 404 (Schedule E table, migration 0020)
+- depreciation_assets: 404 (Schedule E table, migration 0020)
+
+## 400 Errors (Column/RLS Issues)
+- filing_units: 400 on select=id,filing_status,primary_state,primary_address
+- filing_unit_members: 400 on select=id,display_name,relationship,date_of_birth,ssn_last4 where role=dependent
+
+## React Hydration Error
+- Error #418: Text content mismatch between server and client render
+- Commit 18d0ee9 was supposed to fix this but 1 instance remains
+
+## Impact Assessment
+- Dashboard: WORKS (uses documents, scores, feed — all present)
+- Tax Package: WORKS (uses tax_estimate, facts — present)
+- Profile Schedule C/E sections: BROKEN (tables don't exist in prod Supabase)
+- Profile filing status/dependents: PARTIALLY BROKEN (400 errors on filing_units/members)

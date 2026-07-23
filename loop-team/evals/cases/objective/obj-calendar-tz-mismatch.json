@@ -1,0 +1,9 @@
+{
+  "id": "obj-calendar-tz-mismatch",
+  "gold": "objective-fact",
+  "fact": "9:00 America/New_York equals 6:00 America/Los_Angeles (a 3-hour offset), not 9:00 Pacific as the invite claims",
+  "expected": "FAIL",
+  "artifact": "A meeting-scheduling report marks an invite PASS as time-correct. The organizer requested '9:00 AM Eastern'. The invite sent to the Los Angeles attendee states the start as '9:00 AM Pacific (America/Los_Angeles)'. The report says the local time was converted correctly for the attendee.",
+  "artifact_swapped": "A meeting-scheduling report marks an invite PASS as time-correct. The invite sent to the Los Angeles attendee states the start as '9:00 AM Pacific (America/Los_Angeles)'. The organizer requested '9:00 AM Eastern'. The report says the local time was converted correctly for the attendee.",
+  "why_objective": "Eastern is 3 hours ahead of Pacific, so 9:00 AM Eastern is 6:00 AM Pacific. Labeling the Pacific local start as 9:00 AM keeps the wall-clock number instead of converting it, a 3-hour error. The 'converted correctly' PASS is wrong by fixed timezone-offset arithmetic. Incontestable."
+}

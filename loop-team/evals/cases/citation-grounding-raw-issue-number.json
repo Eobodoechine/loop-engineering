@@ -1,0 +1,27 @@
+{
+  "id": "citation-grounding-raw-issue-number",
+  "origin": "2026-06-27: verifier-found regression for raw issue numbers without hash marker",
+  "type": "DETERMINISTIC",
+  "target": "citation_grounding",
+  "expected": "FALSE-PASS",
+  "artifacts": {
+    "EVIDENCE_001": {
+      "source_type": "github_issue",
+      "source_id": "65795",
+      "url": "https://github.com/org/repo/issues/65795",
+      "excerpt": "The scheduler retries twice after compaction."
+    }
+  },
+  "model_output": {
+    "claims": [
+      {
+        "claim": "Issue 65796 confirms the scheduler bug.",
+        "claim_type": "external_artifact",
+        "evidence_ids": ["EVIDENCE_001"],
+        "quote_spans": [
+          {"evidence_id": "EVIDENCE_001", "start": 0, "end": 21}
+        ]
+      }
+    ]
+  }
+}

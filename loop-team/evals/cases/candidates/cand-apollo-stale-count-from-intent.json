@@ -1,0 +1,11 @@
+{
+  "id": "cand-apollo-stale-count-from-intent",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "FALSE-PASS",
+  "artifact": "Prospecting load report: 'PASS. Pulled 200 ICP matches and enrolled them into the sequence. Added count = 200 (printed by the enroll loop after the last iteration). Sequence is active. Done.' The enroll loop incremented a local counter once per attempted add; the API returned a 'duplicate, already in sequence' response for 26 of the 200 rows (the same contacts were already enrolled from a prior run), which the loop counted as adds anyway. No call re-queried the sequence's actual membership after the load.",
+  "failure_mode": "count-from-intent (reporting the local add-loop counter as the live membership, not re-querying) -- over-acceptance of a stale derived number",
+  "source": "loop-team/roles/verifier.md -- a lead load whose count was re-queried from the live system should PASS; a count reported from the local intent-side counter must not. ; fix_plan.md H-LEM-2 (the fail case is a count reported from intent, NOT re-queried).",
+  "why_hard": "The report shows a concrete number (200) and a clear provenance ('printed by the enroll loop'), which reads as evidence, but the loop counted 26 duplicate-rejections as successful adds, so the true distinct membership is at most 174 and the figure was never re-queried.",
+  "objective_fact": "26 of the 200 attempted adds returned 'duplicate, already in sequence', so at most 174 distinct members were newly enrolled; the reported 200 is the local intent counter, not a re-queried live count, so the PASS on '200 enrolled' is unsupported and the correct verdict is FALSE-PASS."
+}

@@ -1,0 +1,129 @@
+
+ RUN  v4.1.10 <HOME>/Claude/Projects/taxahead
+
+ ❯ src/routes/app.feed.upload-format-honesty.test.ts (3 tests | 1 failed) 101ms
+     × [DOC] AC5: no other UI surface or doc in the repo still advertises a removed upload format, besides the known admin.members.tsx CSV-export false positive 92ms
+ ❯ src/routes/api/tts.test.ts (5 tests | 5 failed) 268ms
+     × 1. missing LOVABLE_API_KEY (L34-37): 500, traced failed 257ms
+     × 2. invalid JSON body (L40-44): 400, traced failed 2ms
+     × 3. missing `text` field (L46-47): 400, traced failed 1ms
+     × 4. upstream-call-failure (L65-70): passes through upstream status, traced failed 3ms
+     × returns the exact upstream audio bytes with Content-Type audio/mpeg, and finishes succeeded 2ms
+ ❯ src/lib/tracing.server.test.ts (6 tests | 1 failed) 352ms
+     × /api/tts's POST handler still returns its normal HTTP response (not an unhandled exception) when tracing construction throws 167ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/tracing.server.test.ts > AC-7 item 6: construction-failure test (mandatory) > /api/tts's POST handler still returns its normal HTTP response (not an unhandled exception) when tracing construction throws
+TypeError: postHandler is not a function
+ ❯ src/lib/tracing.server.test.ts:153:25
+    151|       });
+    152|       // Must resolve to the route's own normal response, not reject/t…
+    153|       const res = await postHandler({ request });
+       |                         ^
+    154|       expect(res.status).toBe(500);
+    155|       const text = await res.text();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  src/routes/app.feed.upload-format-honesty.test.ts > [Part A] upload format honesty (spec-partAC-v1.md) > [DOC] AC5: no other UI surface or doc in the repo still advertises a removed upload format, besides the known admin.members.tsx CSV-export false positive
+AssertionError: expected exactly the one known unrelated hit; found: [
+  {
+    "file": "src/lib/kb-chunker.test.ts",
+    "line": 19,
+    "text": "source_file: \"test/doc.docx\","
+  },
+  {
+    "file": "src/lib/kb-chunker.test.ts",
+    "line": 60,
+    "text": "source_file: \"federal/income.docx\","
+  },
+  {
+    "file": "src/routes/admin.members.tsx",
+    "line": 399,
+    "text": "a.download = `users-${status}-${stamp}.csv`;"
+  }
+]: expected [ { …(3) }, { …(3) }, { …(3) } ] to have a length of 1 but got 3
+
+- Expected
++ Received
+
+- 1
++ 3
+
+ ❯ src/routes/app.feed.upload-format-honesty.test.ts:217:7
+    215|       hits,
+    216|       `expected exactly the one known unrelated hit; found: ${JSON.str…
+    217|     ).toHaveLength(1);
+       |       ^
+    218|     expect(hits[0].file).toBe("src/routes/admin.members.tsx");
+    219|     expect(hits[0].text).toMatch(/\.download\s*=.*\.csv/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  src/routes/api/tts.test.ts > 4 real failure points, each traced finish('failed', {error_code: non-empty}) > 1. missing LOVABLE_API_KEY (L34-37): 500, traced failed
+TypeError: postHandler is not a function
+ ❯ src/routes/api/tts.test.ts:69:23
+     67|     delete process.env.LOVABLE_API_KEY;
+     68|     const { postHandler } = await import("./tts");
+     69|     const res = await postHandler({ request: req({ text: "hello" }) });
+       |                       ^
+     70|     expect(res.status).toBe(500);
+     71|     const text = await res.text();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  src/routes/api/tts.test.ts > 4 real failure points, each traced finish('failed', {error_code: non-empty}) > 2. invalid JSON body (L40-44): 400, traced failed
+TypeError: postHandler is not a function
+ ❯ src/routes/api/tts.test.ts:80:23
+     78|   it("2. invalid JSON body (L40-44): 400, traced failed", async () => {
+     79|     const { postHandler } = await import("./tts");
+     80|     const res = await postHandler({ request: req(undefined, { rawBody:…
+       |                       ^
+     81|     expect(res.status).toBe(400);
+     82|     const text = await res.text();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  src/routes/api/tts.test.ts > 4 real failure points, each traced finish('failed', {error_code: non-empty}) > 3. missing `text` field (L46-47): 400, traced failed
+TypeError: postHandler is not a function
+ ❯ src/routes/api/tts.test.ts:91:23
+     89|   it("3. missing `text` field (L46-47): 400, traced failed", async () …
+     90|     const { postHandler } = await import("./tts");
+     91|     const res = await postHandler({ request: req({ voice: "alloy" }) }…
+       |                       ^
+     92|     expect(res.status).toBe(400);
+     93|     const text = await res.text();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  src/routes/api/tts.test.ts > 4 real failure points, each traced finish('failed', {error_code: non-empty}) > 4. upstream-call-failure (L65-70): passes through upstream status, traced failed
+TypeError: postHandler is not a function
+ ❯ src/routes/api/tts.test.ts:105:25
+    103|     try {
+    104|       const { postHandler } = await import("./tts");
+    105|       const res = await postHandler({ request: req({ text: "hello" }) …
+       |                         ^
+    106|       expect(res.status).toBe(503);
+    107|       const text = await res.text();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  src/routes/api/tts.test.ts > success path: streamed response body/headers must survive the finish('succeeded', ...) wiring undisturbed > returns the exact upstream audio bytes with Content-Type audio/mpeg, and finishes succeeded
+TypeError: postHandler is not a function
+ ❯ src/routes/api/tts.test.ts:137:25
+    135|     try {
+    136|       const { postHandler } = await import("./tts");
+    137|       const res = await postHandler({ request: req({ text: "hello" }) …
+       |                         ^
+    138|       expect(res.status).toBe(200);
+    139|       expect(res.headers.get("Content-Type")).toBe("audio/mpeg");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  3 failed | 11 passed (14)
+      Tests  7 failed | 161 passed (168)
+   Start at  12:35:05
+   Duration  1.26s (transform 1.42s, setup 0ms, import 1.67s, tests 1.26s, environment 390ms)
+

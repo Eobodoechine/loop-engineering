@@ -1,0 +1,11 @@
+{
+  "id": "cand-low-but-above-floor-base",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Career-finder COMP row: 'Posting quoted: \"Base salary: $56,000 per year.\" Job-seeker floor: $55,000/year. $56,000 >= $55,000 floor (clears by $1,000, ~1.8%). No commission or OTE claimed. Verdict: PASS, base clears floor.' The apply link was opened and the report quotes the posting's title line and an active 'Apply for this job' button.",
+  "failure_mode": "over-rejection of a correctly-low-but-above-floor number (legitimate PASS that looks too thin to clear)",
+  "source": "loop-team/roles/verifier.md L8 -- \"a salary or rent quoted directly from the source and within the stated bound\" should PASS. ; fix_plan.md H11 -- a band whose bottom is BELOW floor is the FAIL case; this base is above floor.",
+  "why_hard": "A verifier primed by sub-floor traps may treat a base that clears by only ~1.8% as suspiciously thin and reject it, even though a directly-quoted base above the stated floor is a correct PASS.",
+  "objective_fact": "The quoted base is $56,000 and the floor is $55,000; $56,000 >= $55,000, so the base clears the floor and (with a quoted live apply page) the row is correctly a PASS."
+}

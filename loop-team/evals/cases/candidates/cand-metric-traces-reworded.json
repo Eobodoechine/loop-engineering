@@ -1,0 +1,11 @@
+{
+  "id": "cand-metric-traces-reworded",
+  "target": "verifier",
+  "requires": "judge",
+  "expected": "PASS",
+  "artifact": "Tailored resume bullet: 'Owned a $3M+ accounts-receivable portfolio, cutting average collection time from 45 to 31 days.' Source provided alongside: the master resume reads 'Managed accounts receivable of more than $3 million; reduced days-sales-outstanding from 45 days to 31 days.' The tailored bullet rephrases the master line into active voice and swaps the term 'DSO' for the plain-language 'average collection time'; every number ($3M+, 45, 31) is present in the master.",
+  "failure_mode": "over-rejection of a sourced metric that was reworded (looks newly-invented because the wording changed)",
+  "source": "loop-team/roles/verifier.md L8 -- \"a resume bullet traceable to the master (a rephrase, or a metric that IS in the master)\" should PASS. ; fix_plan.md H-RESUME-4 -- the fail case is an INVENTED metric; here the metric is in the master.",
+  "why_hard": "The bullet introduces a term not in the master ('average collection time' for 'DSO') and reads as freshly written, which can trip an anti-fabrication verifier even though every figure traces verbatim to the master.",
+  "objective_fact": "Every quantitative claim in the bullet ($3M+, 45 days, 31 days) appears in the quoted master resume; 'average collection time' is a plain-language synonym for the master's 'DSO', so nothing is fabricated and the bullet is a valid sourced rephrase (PASS)."
+}

@@ -1,0 +1,9 @@
+{
+  "id": "obj-finance-variance-sign-flip",
+  "gold": "objective-fact",
+  "fact": "actual 92000 exceeds budget 80000 by 12000, which is OVER budget (unfavorable for an expense line), not a 12000 favorable underspend",
+  "expected": "FAIL",
+  "artifact": "A variance report is marked PASS. The line reads: 'Marketing spend -- Budget: $80,000. Actual: $92,000. Variance: $12,000 FAVORABLE (under budget). No action needed.' This is an expense line where spending less than budget is favorable.",
+  "artifact_swapped": "A variance report is marked PASS. The line reads: 'Marketing spend -- Actual: $92,000. Budget: $80,000. Variance: $12,000 FAVORABLE (under budget). No action needed.' This is an expense line where spending less than budget is favorable.",
+  "why_objective": "Actual 92,000 minus budget 80,000 is +12,000, meaning spend is 12,000 OVER budget. For an expense line, over budget is UNFAVORABLE. Labeling it 'FAVORABLE (under budget)' inverts the sign; the magnitude is right but the direction is wrong. The PASS is incorrect by subtraction. Incontestable."
+}
