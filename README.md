@@ -3280,3 +3280,7 @@ yet — run each with `--help` or read its module docstring for usage.
 - fix: remove fix_plan.md from tracking, restore ledger to disk
 - fix(cod): resolve select_action UNIQUE collision and ASK FK violation
 - P0+P1: COD operationalization — policy templates + transactional state machine
+
+## Recent changes (auto-published 2026-07-26)
+
+- fix(cod): enforce capability consumption, ASK resolution, idempotent replay, terminal APPROVED

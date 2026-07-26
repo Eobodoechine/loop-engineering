@@ -354,7 +354,36 @@ class CODState:
                 (family_id, new_gen, new_hash, parent_spec_sha256,
                  cod, cod_reason, change_kind, reg_ev_id),
             )
-            # Consume the action receipt
+            # Consume the action receipt — verify it exists, is ISSUED, and belongs to this family
+            cur2 = self._conn.execute(
+                "SELECT ar.state, o.round_id, r.family_id FROM action_receipts ar "
+                "JOIN source_outcomes o ON ar.outcome_id = o.outcome_id "
+                "JOIN rounds r ON o.round_id = r.round_id "
+                "WHERE ar.action_id=?",
+                (consuming_action_id,),
+            )
+            receipt_row = cur2.fetchone()
+            if not receipt_row:
+                raise CapabilityNotFoundError(
+                    f"Action receipt {consuming_action_id} not found or does not belong to family {family_id}"
+                )
+            receipt_state, _, receipt_family = receipt_row
+            if receipt_family != family_id:
+                raise CapabilityNotFoundError(
+                    f"Action receipt {consuming_action_id} belongs to family {receipt_family}, not {family_id}"
+                )
+            if receipt_state == 'CONSUMED':
+                raise CapabilityConsumedError(
+                    f"Action receipt {consuming_action_id} already consumed"
+                )
+            if receipt_state == 'INVALIDATED':
+                raise CapabilityConsumedError(
+                    f"Action receipt {consuming_action_id} was invalidated (generation advance)"
+                )
+            if receipt_state != 'ISSUED':
+                raise CapabilityConsumedError(
+                    f"Action receipt {consuming_action_id} in unexpected state {receipt_state}"
+                )
             self._conn.execute(
                 "UPDATE action_receipts SET state='CONSUMED' WHERE action_id=? AND state='ISSUED'",
                 (consuming_action_id,),
@@ -503,8 +532,37 @@ class CODState:
 
             dispatch_id = uuid.uuid4().hex
 
-            # Consume capability if provided
+            # Consume capability if provided — verify it exists, is ISSUED, and belongs to this round's family
             if consuming_action_id:
+                cur3 = self._conn.execute(
+                    "SELECT ar.state, r.family_id FROM action_receipts ar "
+                    "JOIN source_outcomes o ON ar.outcome_id = o.outcome_id "
+                    "JOIN rounds r ON o.round_id = r.round_id "
+                    "WHERE ar.action_id=? AND r.round_id=?",
+                    (consuming_action_id, round_id),
+                )
+                receipt_row = cur3.fetchone()
+                if not receipt_row:
+                    raise CapabilityNotFoundError(
+                        f"Action receipt {consuming_action_id} not found for round {round_id}"
+                    )
+                receipt_state, receipt_family = receipt_row
+                if receipt_family != family_id:
+                    raise CapabilityNotFoundError(
+                        f"Action receipt {consuming_action_id} belongs to family {receipt_family}, not {family_id}"
+                    )
+                if receipt_state == 'CONSUMED':
+                    raise CapabilityConsumedError(
+                        f"Action receipt {consuming_action_id} already consumed"
+                    )
+                if receipt_state == 'INVALIDATED':
+                    raise CapabilityConsumedError(
+                        f"Action receipt {consuming_action_id} was invalidated (generation advance)"
+                    )
+                if receipt_state != 'ISSUED':
+                    raise CapabilityConsumedError(
+                        f"Action receipt {consuming_action_id} in unexpected state {receipt_state}"
+                    )
                 self._conn.execute(
                     "UPDATE action_receipts SET state='CONSUMED', "
                     "consumed_by_dispatch_id=? WHERE action_id=? AND state='ISSUED'",
@@ -697,6 +755,26 @@ class CODState:
                 raise CODError(f"Outcome {outcome_id} not found")
             outcome_kind, round_id, family_id, gen, spec_hash, lr, lenses_json, rstate = row
 
+            # Bug 4 fix: idempotent replay — if receipts already exist for this outcome, return them
+            cur_existing = self._conn.execute(
+                "SELECT action_id, action, lens_id, attempt, capability_idempotency_key "
+                "FROM action_receipts WHERE outcome_id=? AND state='ISSUED'",
+                (outcome_id,),
+            )
+            existing = cur_existing.fetchall()
+            if existing:
+                self._conn.execute("COMMIT")
+                return [
+                    {
+                        "action_id": r[0],
+                        "action": r[1],
+                        "lens_id": r[2],
+                        "attempt": r[3],
+                        "capability_idempotency_key": r[4],
+                    }
+                    for r in existing
+                ]
+
             if rstate in ("APPROVED", "ACTION_SELECTED", "ACTION_CONSUMED"):
                 raise InvalidTransitionError(
                     f"Round {round_id} in state {rstate} — cannot select actions"
@@ -751,10 +829,17 @@ class CODState:
                         "capability_idempotency_key": cap_key,
                     })
 
-            self._conn.execute(
-                "UPDATE rounds SET state='ACTION_SELECTED' WHERE round_id=?",
-                (round_id,),
-            )
+            # Bug 5 fix: PASS outcomes transition round to APPROVED terminal state
+            if outcome_kind == "PASS":
+                self._conn.execute(
+                    "UPDATE rounds SET state='APPROVED' WHERE round_id=?",
+                    (round_id,),
+                )
+            else:
+                self._conn.execute(
+                    "UPDATE rounds SET state='ACTION_SELECTED' WHERE round_id=?",
+                    (round_id,),
+                )
             self._write_event(
                 family_id=family_id, generation=gen, logical_round=lr,
                 event_type="ACTIONS_SELECTED", actor_origin="hook",
@@ -950,6 +1035,12 @@ class CODState:
             if not row:
                 raise CODError(f"Ask {ask_id} not found")
             round_id, state, fallback_action, family_id, gen, lr = row
+
+            # Bug 3 fix: reject already-answered ASKs
+            if state == 'ANSWERED':
+                raise InvalidTransitionError(
+                    f"Ask {ask_id} is already ANSWERED, cannot resolve as unanswered"
+                )
 
             resolved_ev_id = self._new_event_id()
             self._conn.execute(
