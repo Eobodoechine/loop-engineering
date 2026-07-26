@@ -147,10 +147,11 @@ Oga (spec + plan-check dispatch)
   └─► Oga writes run log; lessons checkpoint
 ```
 
-### Plan-check only (step 1 escape: ≤2 DOC-type ACs)
+### Plan-check only (no self-review escape)
 
-- Oga may self-review the spec instead of dispatching Verifier, but must state that it is doing so and why.
-- All other escapes still require Verifier dispatch.
+- Every spec requires an independent plan-check Verifier before Coder dispatch.
+- A spec with <=2 DOC-type ACs may use the fast plan-check path defined in
+  `orchestrator.md`, but Oga self-review never grants credit.
 
 ### Mode D — domain research (pre-build or mid-build)
 

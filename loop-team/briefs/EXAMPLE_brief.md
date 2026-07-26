@@ -2,6 +2,15 @@
 
 > Copy this file, fill it in, and hand it to Oga to start a build.
 
+## planning_economics
+COST_OF_DELAY: HIGH | MEDIUM | LOW
+COD_REASON: <one clause naming what concretely degrades while this waits>
+COD_FAMILY: UNREGISTERED
+
+`COD_FAMILY` is a non-authorizing registration marker. Leave it as `UNREGISTERED`;
+the plan-check hook mints and stores the opaque family identity. Never copy an ID from
+another brief. `COST_OF_DELAY` and `COD_REASON` are mandatory; no default is inferred.
+
 ## goal
 One or two sentences: what to build and why.
 *Example: Build a Python function that parses human duration strings like "1h30m" into total seconds.*

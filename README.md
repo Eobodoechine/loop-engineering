@@ -9,7 +9,7 @@ backed by a deterministic check that can say *no*.
 > **Propose → verify → feed back → repeat. The loop is only as good as its verifier,
 > and a rule only counts if a check enforces it.**
 
-_Status as of 2026-07-23._
+_Status as of 2026-07-26._
 
 ## What is built and verified (today, on this tree)
 
@@ -3274,3 +3274,9 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-07-23)
 
 - fix(hooks): tolerant repo-health classification default when markers missing
+
+## Recent changes (auto-published 2026-07-26)
+
+- fix: remove fix_plan.md from tracking, restore ledger to disk
+- fix(cod): resolve select_action UNIQUE collision and ASK FK violation
+- P0+P1: COD operationalization — policy templates + transactional state machine

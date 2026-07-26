@@ -90,6 +90,15 @@ Valid aliases: `haiku`, `sonnet`, `opus`. These map to Claude's current model ti
 ## The loop
 
 1. **Restate & plan.** Echo the goal and acceptance criteria back in your own words. If `new_project`, scaffold the directory. Produce a short spec: the public interface + the acceptance criteria as a checklist.
+
+Every plan-check spec must declare exactly one `COST_OF_DELAY: HIGH | MEDIUM | LOW`,
+exactly one non-empty `COD_REASON:`, and `COD_FAMILY: UNREGISTERED`. The family marker
+is not authority: the hook registry owns the opaque family ID, generation, logical
+round, and current raw-byte spec hash. `plan_check_log.md`, clock JSONL, prompt text,
+and visible round labels are derived/non-authorizing. Until the P1 COD hook is
+installed and its containment preflight passes, report COD as instructional only.
+
+_INSTRUCTIONAL_ONLY marker — P0 phase is instructional-only, never enforcement._
    - **Classify the task intent** as `new` (building something that doesn't exist yet) vs `modify/fix/continue` (changing existing functionality, fixing a bug, or picking up work in progress). For `modify/fix/continue`, identify the specific files the Coder must read and list them explicitly in the spec under a "Files to read" heading. Do NOT default all existing-repo tasks to `modify/fix/continue` — only classify as such when the goal is to change or debug existing logic, not when adding a new capability to an existing repo. For `existing_repo + new capability` tasks, Oga must ensure the Coder receives repo-convention context and relevant entry-point paths through the handoff, but Oga does not do repo archaeology inline; dispatch a Researcher first if that context requires source/documentation discovery before planning.
    - **After producing the spec, run a plan-check: dispatch the Verifier** (`roles/verifier.md`) on the PLAN before dispatching the Coder. The Verifier's job here is to catch a mis-aimed spec — does each acceptance criterion test the right thing? Is anything likely to pass green while the goal remains broken?
    - **When to dispatch parallel adversarial-lens plan-check Verifiers instead of one generalist (conditional, NOT unconditional — see `96693f8` for the earlier attempt that mandated this always and was reverted for landing unvetted).** The default remains ONE generalist plan-check Verifier. Dispatch N parallel lenses (e.g. state-completeness, concurrency-isolation, regression-audit, precision-of-instruction) instead, only when the spec exhibits at least one cross-cutting risk indicator:
@@ -125,6 +134,20 @@ Valid aliases: `haiku`, `sonnet`, `opus`. These map to Claude's current model ti
    **A mechanical `git checkout`/revert to a known prior committed state does NOT qualify for any bypass of this rule.** A fast plan-check clears such cases in well under a minute — "urgent" is not itself a valid reason to skip.
 
    This rule exists because Oga's own "this is safe/trivial enough to skip" judgment was directly, adversarially wrong twice in one session (2026-07-08). A fix_plan.md entry logging this open follow-up, and the credit-mechanism tightening follow-up below, must be filed alongside this change before it is considered complete — not asserted as already existing here. This prose addition is the immediate fix; both structural gates (PreToolUse-level blocking, credit-mechanism spec-identity binding) are open, not-yet-built hardening.
+
+**Cost-of-delay transition rule.** Every `PLAN_FAIL`, no-verdict retry, Researcher
+detour, ASK, REPAIR, or CUT must be recorded against the hook-owned current
+family/generation/logical round before another plan-check dispatch. An ordinary
+HIGH-COD failure defaults to CUT; MEDIUM/LOW default to REPAIR. KNOWLEDGE and
+mechanism-level DESIGN findings keep their existing mandatory Researcher route.
+`SHIP_NARROW_PLAN` remains a governor-owned mandatory CUT and `STOP_PROSE_REVIEW`
+remains a saturation-owned redirect; COD does not manufacture either verdict.
+If an ASK receives no runtime-authenticated human reply, record `ASK_UNANSWERED`
+and take the hook's deterministic fallback (HIGH -> CUT, MEDIUM/LOW -> REPAIR;
+a retryable no-verdict -> RETRY in the same logical round). The fallback redirects
+and retries; it never terminates. A selected action is valid only when the
+PreToolUse hook consumes its one-use transition capability for the actual matching
+next dispatch.
 
    On `LOOP_GATE: PLAN_FAIL`, read the structured gap record the Verifier emits (see `roles/verifier.md`). Branch on `gap_type`:
    - **`DESIGN`** — Verifier identified the fix. **Before applying `proposed_fix` as-is, consider whether it's a genuine architectural/mechanism-level fix (a new design, not a wording/citation/line-number correction) — if so, dispatch a Researcher (Mode A or D) to check whether a BETTER solution exists beyond whatever the lens(es) proposed, rather than defaulting to the first option on the table.** A single lens (or even several lenses converging on the same root cause) tends to propose the fix that's easiest to see from within the spec's own existing framing — it is not the same as having actually surveyed the solution space. Real precedent: `H-REVIEW-COMMIT-1` (2026-07-03) — plan-check found a target-resolution race with exactly 2 candidate fixes on the table (accept a narrower residual; change a tested function's return contract); a Researcher dispatch found a 3rd option (a module-level cache) that was STRICTLY better than both — zero the residual, zero the contract change — and was validated against real precedent already in the codebase. This is not required for mechanical fixes (a wrong citation, a stale line number, a narrower regex bound) — reserve it for fixes that introduce or change a real mechanism. Then revise the spec using the best available fix (the lens's original `proposed_fix`, or the Researcher's better one) as the starting point, adapting it as needed. Re-run the plan-check. Max 2 direct revisions; track count in `runs/<timestamp>/plan_check_log.md`.

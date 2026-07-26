@@ -175,6 +175,14 @@ individually?" A spec naming 3 of 6 members of an obvious class is an incomplete
 enumeration gap (`gap_type: DESIGN`), even if the 3 named members are each individually
 well-specified.
 
+**Cost-of-delay anti-understatement.** In plan-check mode, review the declared
+`COST_OF_DELAY` and `COD_REASON` in both directions. HIGH with no concrete
+degradation is a DESIGN finding. LOW or MEDIUM is also a DESIGN finding when the
+goal, constraints, incident history, deadline, or named user harm establishes a
+higher delay cost. Do not accept understatement merely because it reduces ASK/CUT
+pressure. This review changes policy classification only; it never skips the
+independent Verifier.
+
 ## LOOP-M6 — INDEPENDENT ADVERSARIAL-ORACLE MUTATION RE-RUN (added 2026-07-08)
 Per DESIGN_CHECKLIST.md gate 9 and `roles/adversarial_test_writer.md` Phase 3.5: do not
 accept the Adversarial Test-writer's claim that a `[SECURITY-ORACLE]`-labeled AC's test
