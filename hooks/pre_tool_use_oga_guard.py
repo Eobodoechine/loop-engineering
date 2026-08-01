@@ -947,43 +947,66 @@ def _codex_first_session_meta(events):
     return None
 
 
-def _codex_dispatch_retired_anywhere(events):
-    """A real, terminal event_msg (task_complete or turn_aborted -- Codex's
-    two confirmed real terminal shapes) ANYWHERE in the child transcript
-    retires this dispatch. Scanned whole-file, not only the last line, so a
-    transcript with content appended after its own terminal event is still
-    caught."""
-    for e in events:
-        if not isinstance(e, dict) or e.get("type") != "event_msg":
-            continue
-        payload = e.get("payload")
-        if isinstance(payload, dict) and payload.get("type") in ("task_complete", "turn_aborted"):
-            return True
-    return False
-
-
-def _codex_timestamp_parseable(ts):
+def _codex_timestamp_epoch(ts):
     """Mirrors _is_stale()'s own parse attempt (an int/float epoch, or an
-    ISO-8601 "Z"-suffixed string) WITHOUT reusing its event-count fallback
+    ISO-8601 "Z"-suffixed string), returning a normalized epoch WITHOUT
+    reusing its event-count fallback
     -- that fallback is an Oga-direct-call-turn-count proxy tuned for the
     Claude-Code path, and gives the wrong answer for a single, usually-short
     Codex child transcript: a missing/malformed timestamp must deny
     outright, not fall through to a small-file event-count heuristic that
     would misreport it as fresh."""
-    if not ts:
-        return False
+    if ts is None or isinstance(ts, bool):
+        return None
     try:
         if isinstance(ts, (int, float)):
-            float(ts)
+            epoch = float(ts)
         else:
             s = str(ts)
             if s.endswith("Z"):
                 s = s[:-1] + "+00:00"
             import datetime
-            datetime.datetime.fromisoformat(s)
-        return True
+            parsed = datetime.datetime.fromisoformat(s)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+            epoch = parsed.timestamp()
+        import math
+        return epoch if math.isfinite(epoch) else None
     except Exception:
+        return None
+
+
+def _codex_dispatch_retired_anywhere(events, first_meta, child_start_epoch):
+    """Fail closed on child retirement while tolerating one inherited event.
+
+    A Codex fork can prepend one terminal event from its parent before the
+    child's authoritative first session_meta. Ignore exactly that narrow
+    shape only when the terminal's own top-level timestamp is parseable and
+    strictly earlier than the first session_meta timestamp. Physical
+    reordering, equality/post-start timestamps, multiple terminal events,
+    malformed timestamps, and terminals after child start all retire.
+    Nested terminal-like payload text is never considered."""
+    first_meta_index = None
+    terminals = []
+    for index, e in enumerate(events):
+        if e is first_meta and first_meta_index is None:
+            first_meta_index = index
+        if not isinstance(e, dict) or e.get("type") != "event_msg":
+            continue
+        payload = e.get("payload")
+        if isinstance(payload, dict) and payload.get("type") in ("task_complete", "turn_aborted"):
+            terminals.append((index, e))
+
+    if not terminals:
         return False
+    if first_meta_index is None or len(terminals) != 1:
+        return True
+
+    terminal_index, terminal = terminals[0]
+    terminal_epoch = _codex_timestamp_epoch(terminal.get("timestamp"))
+    if terminal_index >= first_meta_index or terminal_epoch is None:
+        return True
+    return not terminal_epoch < child_start_epoch
 
 
 def _classify_codex_task_name(task_name):
@@ -1041,17 +1064,17 @@ def _codex_exact_worker_identity_allows(transcript_path, events):
         # Claude-Code no-agent_id case already uses.
         return False
 
-    if _codex_dispatch_retired_anywhere(events):
-        return False
-
     # Staleness: reuses _is_stale()'s own parser/STALE_SECONDS comparison
-    # unmodified; _codex_timestamp_parseable() exists ONLY so a missing/
-    # malformed timestamp denies directly, rather than silently falling
-    # into _is_stale()'s own event-count fallback.
+    # unmodified. Normalizing first denies a missing/malformed timestamp
+    # directly instead of falling into _is_stale()'s event-count fallback.
     ts = first_meta.get("timestamp")
-    if not _codex_timestamp_parseable(ts):
+    child_start_epoch = _codex_timestamp_epoch(ts)
+    if child_start_epoch is None:
         return False
     if _is_stale({"timestamp": ts, "index": 0}):
+        return False
+
+    if _codex_dispatch_retired_anywhere(events, first_meta, child_start_epoch):
         return False
 
     # Guard agent_path before extracting task_name: the real, live

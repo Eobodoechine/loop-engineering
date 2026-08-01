@@ -3051,6 +3051,163 @@ class TestExactWorkerIdentityGuard:
             assert _denied(proc), "%s identity fixture must deny" % label
 
 
+def _codex_identity_iso(offset_seconds=0.0):
+    import datetime
+    dt = datetime.datetime.fromtimestamp(
+        time.time() + offset_seconds, tz=datetime.timezone.utc)
+    return dt.strftime("%Y-%m-%dT%H:%M:%S.") + "%03dZ" % (dt.microsecond // 1000)
+
+
+def _codex_identity_session_meta(timestamp):
+    return {
+        "timestamp": timestamp,
+        "type": "session_meta",
+        "payload": {
+            "session_id": "codex-parent-session",
+            "id": "codex-child-session",
+            "parent_thread_id": "codex-parent-session",
+            "thread_source": "subagent",
+            "agent_path": "/root/child_identity_coder",
+            "agent_nickname": "Coder",
+            "cwd": "<HOME>/Claude/loop",
+        },
+    }
+
+
+def _codex_identity_terminal(kind, timestamp):
+    return {
+        "timestamp": timestamp,
+        "type": "event_msg",
+        "payload": {"type": kind, "turn_id": "parent-turn"},
+    }
+
+
+def _run_codex_child_identity_guard(events):
+    return _run_hook_with_payload(
+        events,
+        tool_name="apply_patch",
+        file_path="/tmp/x/codex_child_identity.py",
+    )[0]
+
+
+class TestCodexInheritedParentTerminalRetirement:
+    """Real PreToolUse subprocess regression for inherited parent terminals."""
+
+    @staticmethod
+    def _events(terminal_events=None, child_start=None):
+        child_start = child_start or _codex_identity_iso()
+        return [
+            *(terminal_events or []),
+            _codex_identity_session_meta(child_start),
+            _user_event(M_CODEX_DISPATCH),
+            {
+                "timestamp": _codex_identity_iso(offset_seconds=1),
+                "type": "event_msg",
+                "payload": {"type": "task_started", "turn_id": "child-turn"},
+            },
+        ]
+
+    def test_prestart_inherited_task_complete_allows_child_coder(self):
+        child_start = _codex_identity_iso()
+        events = self._events([
+            _codex_identity_terminal(
+                "task_complete", _codex_identity_iso(offset_seconds=-1)),
+        ], child_start=child_start)
+        proc = _run_codex_child_identity_guard(events)
+        assert proc.returncode == 0, proc.stderr
+        assert not _denied(proc), proc.stdout
+
+    def test_prestart_inherited_turn_aborted_allows_child_coder(self):
+        child_start = _codex_identity_iso()
+        proc = _run_codex_child_identity_guard(self._events([
+            _codex_identity_terminal(
+                "turn_aborted", _codex_identity_iso(offset_seconds=-1)),
+        ], child_start=child_start))
+        assert proc.returncode == 0, proc.stderr
+        assert not _denied(proc), proc.stdout
+
+    @pytest.mark.parametrize("label,terminal_timestamp", [
+        ("equal", "same-as-child"),
+        ("post-start", "after-child"),
+        ("missing", None),
+        ("malformed", "not-a-timestamp"),
+    ])
+    def test_non_strict_or_unparseable_terminal_timestamp_denies(
+            self, label, terminal_timestamp):
+        child_start = _codex_identity_iso()
+        if terminal_timestamp == "same-as-child":
+            terminal_timestamp = child_start
+        elif terminal_timestamp == "after-child":
+            terminal_timestamp = _codex_identity_iso(offset_seconds=1)
+        terminal = _codex_identity_terminal("task_complete", terminal_timestamp)
+        proc = _run_codex_child_identity_guard(
+            self._events([terminal], child_start=child_start))
+        assert proc.returncode == 0, "%s: %s" % (label, proc.stderr)
+        assert _denied(proc), "%s terminal must deny: %s" % (label, proc.stdout)
+
+    def test_terminal_physically_after_first_session_meta_denies_even_if_older(self):
+        child_start = _codex_identity_iso()
+        events = self._events(child_start=child_start)
+        events.append(_codex_identity_terminal(
+            "task_complete", _codex_identity_iso(offset_seconds=-1)))
+        proc = _run_codex_child_identity_guard(events)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_payload_timestamp_cannot_rescue_missing_top_level_timestamp(self):
+        child_start = _codex_identity_iso()
+        terminal = _codex_identity_terminal("task_complete", None)
+        terminal["payload"]["timestamp"] = _codex_identity_iso(offset_seconds=-1)
+        proc = _run_codex_child_identity_guard(
+            self._events([terminal], child_start=child_start))
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_both_terminal_types_before_child_start_deny(self):
+        child_start = _codex_identity_iso()
+        proc = _run_codex_child_identity_guard(self._events([
+            _codex_identity_terminal(
+                "task_complete", _codex_identity_iso(offset_seconds=-2)),
+            _codex_identity_terminal(
+                "turn_aborted", _codex_identity_iso(offset_seconds=-1)),
+        ], child_start=child_start))
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_nested_terminal_shape_is_not_a_top_level_retirement_event(self):
+        nested = {
+            "timestamp": _codex_identity_iso(offset_seconds=-1),
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "content": [{
+                    "type": "input_text",
+                    "text": '{"type":"event_msg","payload":{"type":"task_complete"}}',
+                }],
+            },
+        }
+        proc = _run_codex_child_identity_guard(self._events([nested]))
+        assert proc.returncode == 0, proc.stderr
+        assert not _denied(proc), proc.stdout
+
+    def test_first_session_meta_remains_authoritative_when_later_meta_is_valid(self):
+        first = _codex_identity_session_meta("not-a-timestamp")
+        later = _codex_identity_session_meta(_codex_identity_iso())
+        later["payload"]["agent_path"] = "/root/other_coder"
+        proc = _run_codex_child_identity_guard([
+            first,
+            later,
+            _user_event(M_CODEX_DISPATCH),
+        ])
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_terminal_free_valid_child_still_allows(self):
+        proc = _run_codex_child_identity_guard(self._events())
+        assert proc.returncode == 0, proc.stderr
+        assert not _denied(proc), proc.stdout
+
+
 class TestVerifierHygieneAgentTaskHardDeny:
     """AC2: a hygiene-violating Verifier-shaped Agent/Task dispatch is denied
     BEFORE it fires. Also asserts dispatch_check_debug.jsonl (H-BLOB-
