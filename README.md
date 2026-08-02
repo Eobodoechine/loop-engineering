@@ -3300,3 +3300,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-02)
 
 - docs: add agent runtime benchmark protocol
+
+## Recent changes (auto-published 2026-08-02)
+
+- research: document agent benchmark methods
