@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cases": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "case_id": {"minLength": 1, "type": "string"},
+          "extracted_record_count": {"minimum": 1, "type": "integer"},
+          "manifest_version": {"const": 1},
+          "seal_binding_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+          "sealed_prefix_raw_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"},
+          "source_path": {"minLength": 1, "type": "string"},
+          "source_sha256": {"pattern": "^[0-9a-f]{64}$", "type": "string"}
+        },
+        "required": ["case_id", "source_path", "source_sha256", "manifest_version", "extracted_record_count", "sealed_prefix_raw_sha256", "seal_binding_sha256"],
+        "type": "object"
+      },
+      "maxItems": 5,
+      "minItems": 5,
+      "type": "array"
+    },
+    "manifest_version": {"const": 1},
+    "schema": {"const": "pace_topology_replay_manifest.v1"}
+  },
+  "required": ["schema", "manifest_version", "cases"],
+  "type": "object"
+}

@@ -1,0 +1,51 @@
+{
+  "manifest_version": 1,
+  "cases": [
+    {
+      "case_id": "trusted-origins-repair",
+      "extracted_record_count": 1686,
+      "manifest_version": 1,
+      "seal_binding_sha256": "3678a6feed758bb8eca847c35f2bb8be1ace5982f8946a3177f6faf8d657f211",
+      "sealed_prefix_raw_sha256": "7ccd563928be9a23c67f43003dc4fc586863357cfe0c57f1f36af8a78d7c9d96",
+      "source_path": "<HOME>/.codex/sessions/2026/07/31/rollout-2026-07-31T17-50-37-019fba28-66aa-7cc1-a9fe-0777200fa6af.jsonl",
+      "source_sha256": "7ccd563928be9a23c67f43003dc4fc586863357cfe0c57f1f36af8a78d7c9d96"
+    },
+    {
+      "case_id": "hospitable-mapper-repair",
+      "extracted_record_count": 2037,
+      "manifest_version": 1,
+      "seal_binding_sha256": "5b8d27cf37f65ec7aada6715809c822157f938872b497d97c2db009182de6a38",
+      "sealed_prefix_raw_sha256": "d34463cf45acf44ea621a95f5abadbe770dace9b861e1e6e3149ec552cce49d1",
+      "source_path": "<HOME>/.codex/sessions/2026/07/31/rollout-2026-07-31T17-49-39-019fba27-83c2-7ee2-82c9-785cd65cd733.jsonl",
+      "source_sha256": "d34463cf45acf44ea621a95f5abadbe770dace9b861e1e6e3149ec552cce49d1"
+    },
+    {
+      "case_id": "ci-triage-repair",
+      "extracted_record_count": 2143,
+      "manifest_version": 1,
+      "seal_binding_sha256": "aa79fbf62e09a0be5aab07a6621ca686a5cc76cf72a82a204310a46c72eea995",
+      "sealed_prefix_raw_sha256": "ea668bce1e488aad986e6b6d0bab572e5bccc6d47b0b5615116e9fc0fe25d336",
+      "source_path": "<HOME>/.codex/sessions/2026/07/31/rollout-2026-07-31T17-49-33-019fba27-6b6f-7d90-a2ca-b16045df8e28.jsonl",
+      "source_sha256": "ea668bce1e488aad986e6b6d0bab572e5bccc6d47b0b5615116e9fc0fe25d336"
+    },
+    {
+      "case_id": "named-test-debt-repair",
+      "extracted_record_count": 1731,
+      "manifest_version": 1,
+      "seal_binding_sha256": "a1ba0c739aa74502b69f8411bd7ffd380814845d29a634df039ae73e1c8e824b",
+      "sealed_prefix_raw_sha256": "4fd32e0d08d31a432ec3bcaf5f159484f0507b11d6b0e8220a7a5f45914cb6d9",
+      "source_path": "<HOME>/.codex/sessions/2026/07/31/rollout-2026-07-31T17-49-34-019fba27-70e2-7e83-b0d5-ea7d9508c936.jsonl",
+      "source_sha256": "4fd32e0d08d31a432ec3bcaf5f159484f0507b11d6b0e8220a7a5f45914cb6d9"
+    },
+    {
+      "case_id": "full-pms-production-readiness",
+      "extracted_record_count": 4866,
+      "manifest_version": 1,
+      "seal_binding_sha256": "adc489690057f7d31b196036a5360aa6ecf43474953910242c340829c162e5d3",
+      "sealed_prefix_raw_sha256": "fe402b4295ae238957243ec9b9ea16a6faf6dfa8d1239bab580c919f620b98ad",
+      "source_path": "<HOME>/.codex/sessions/2026/07/31/rollout-2026-07-31T12-51-02-019fb916-203a-71f2-a300-a9f7e6180579.jsonl",
+      "source_sha256": "fe402b4295ae238957243ec9b9ea16a6faf6dfa8d1239bab580c919f620b98ad"
+    }
+  ],
+  "schema": "pace_topology_replay_manifest.v1"
+}

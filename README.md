@@ -3292,3 +3292,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-02)
 
 - fix(hooks): verify Codex copied terminal provenance
+
+## Recent changes (auto-published 2026-08-02)
+
+- experiment: add source-sealed PACE topology replay

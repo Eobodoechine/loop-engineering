@@ -1,0 +1,1337 @@
+{
+  "cases": [
+    {
+      "action_reduction_fraction": 0.6384976525821596,
+      "action_savings": 136,
+      "baseline_actions": 213,
+      "case_id": "trusted-origins-repair",
+      "poll_block_duration_saved_ms": 0,
+      "safety_passed": false,
+      "safety_reasons": [
+        "missing_independent_verifier_pass_evidence"
+      ],
+      "safety_status": "UNMEASURABLE",
+      "simulation_verdict": "INSUFFICIENT_EVIDENCE",
+      "time_savings_ms": null,
+      "timing_result": "INSUFFICIENT_TELEMETRY",
+      "topology_evaluation": {
+        "allowed": true,
+        "independent_verification_retained": true,
+        "product_failure": false,
+        "quarantined": true,
+        "reporting_graph": {
+          "edges": [
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ci_independent_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ci_environment_inventory"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/plane_status_update"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ci_seed_reviewer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ci_seed_spec_writer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_plan_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_researcher_mode_d"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_spec_reviser"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_plan_verifier_round2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_researcher_mode_d_round2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_spec_reviser_round2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_plan_verifier_round3"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_spec_reviser_round3"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/release_delta_spec_writer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/release_delta_plan_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/release_delta_test_writer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/release_delta_researcher_mode_b"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/loop_framework_owner"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_repair_plan_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_repair_spec_reviser"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_repair_plan_verifier_round2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_repair_spec_reviser_round2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_repair_plan_verifier_round3"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_repair_test_writer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/framework_checkpoint_monitor"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/pms_release_test_writer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/post_checkpoint_failure_arbiter"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/framework_owner_mode_d_v2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/framework_v2_checkpoint_monitor"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/framework_v2_validator"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/pms_release_test_writer_v2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/pms_post_v2_failure_arbiter"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/testwriter_patch_handoff"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "/root",
+              "parent": null,
+              "role": "scheduler"
+            },
+            {
+              "id": "/root/ci_independent_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/ci_environment_inventory",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/plane_status_update",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/ci_seed_reviewer",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/ci_seed_spec_writer",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/canonical_plan_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/canonical_researcher_mode_d",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/canonical_spec_reviser",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/canonical_plan_verifier_round2",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/canonical_researcher_mode_d_round2",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/canonical_spec_reviser_round2",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/canonical_plan_verifier_round3",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/canonical_spec_reviser_round3",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/release_delta_spec_writer",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/release_delta_plan_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/release_delta_test_writer",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/release_delta_researcher_mode_b",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/loop_framework_owner",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/guard_repair_plan_verifier",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/guard_repair_spec_reviser",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/guard_repair_plan_verifier_round2",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/guard_repair_spec_reviser_round2",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/guard_repair_plan_verifier_round3",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/guard_repair_test_writer",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/framework_checkpoint_monitor",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/pms_release_test_writer",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/post_checkpoint_failure_arbiter",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/framework_owner_mode_d_v2",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/framework_v2_checkpoint_monitor",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/framework_v2_validator",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/pms_release_test_writer_v2",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/pms_post_v2_failure_arbiter",
+              "parent": "/root",
+              "role": "framework_repair"
+            },
+            {
+              "id": "/root/testwriter_patch_handoff",
+              "parent": "/root",
+              "role": "worker"
+            }
+          ]
+        },
+        "violations": [],
+        "worker_dispatch_blocked": false
+      },
+      "variant_actions": 77
+    },
+    {
+      "action_reduction_fraction": 0.6341463414634146,
+      "action_savings": 182,
+      "baseline_actions": 287,
+      "case_id": "hospitable-mapper-repair",
+      "poll_block_duration_saved_ms": 0,
+      "safety_passed": false,
+      "safety_reasons": [
+        "missing_independent_verifier_pass_evidence",
+        "missing_preflight_pass_evidence",
+        "unclassified_dispatch"
+      ],
+      "safety_status": "UNMEASURABLE",
+      "simulation_verdict": "INSUFFICIENT_EVIDENCE",
+      "time_savings_ms": null,
+      "timing_result": "INSUFFICIENT_TELEMETRY",
+      "topology_evaluation": {
+        "allowed": true,
+        "independent_verification_retained": true,
+        "product_failure": null,
+        "quarantined": false,
+        "reporting_graph": {
+          "edges": [
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/hospitable_mapper"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/hospitable_independent_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/offline_plan_checker"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/hospitable_final_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/hospitable_postfix_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/hospitable_truly_blind_verifier"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "/root",
+              "parent": null,
+              "role": "scheduler"
+            },
+            {
+              "id": "/root/hospitable_mapper",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/hospitable_independent_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/offline_plan_checker",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/hospitable_final_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/hospitable_postfix_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/hospitable_truly_blind_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            }
+          ]
+        },
+        "violations": [],
+        "worker_dispatch_blocked": false
+      },
+      "variant_actions": 105
+    },
+    {
+      "action_reduction_fraction": 0.8047337278106509,
+      "action_savings": 272,
+      "baseline_actions": 338,
+      "case_id": "ci-triage-repair",
+      "poll_block_duration_saved_ms": 0,
+      "safety_passed": false,
+      "safety_reasons": [
+        "missing_independent_verifier_pass_evidence",
+        "missing_preflight_pass_evidence",
+        "unclassified_dispatch"
+      ],
+      "safety_status": "UNMEASURABLE",
+      "simulation_verdict": "INSUFFICIENT_EVIDENCE",
+      "time_savings_ms": null,
+      "timing_result": "INSUFFICIENT_TELEMETRY",
+      "topology_evaluation": {
+        "allowed": true,
+        "independent_verification_retained": true,
+        "product_failure": null,
+        "quarantined": false,
+        "reporting_graph": {
+          "edges": [
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ci_triage"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/baseline_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/report_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/monitoring_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/push_ci_capture"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/draft_pr_ci"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/plane_liaison"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/plane_create_direct"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/canonical_loop"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/blind_release_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/release_researcher"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/release_spec_author"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "/root",
+              "parent": null,
+              "role": "scheduler"
+            },
+            {
+              "id": "/root/ci_triage",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/baseline_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/report_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/monitoring_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/push_ci_capture",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/draft_pr_ci",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/plane_liaison",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/plane_create_direct",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/canonical_loop",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/blind_release_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/release_researcher",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/release_spec_author",
+              "parent": "/root",
+              "role": "worker"
+            }
+          ]
+        },
+        "violations": [],
+        "worker_dispatch_blocked": false
+      },
+      "variant_actions": 66
+    },
+    {
+      "action_reduction_fraction": 0.7105263157894737,
+      "action_savings": 189,
+      "baseline_actions": 266,
+      "case_id": "named-test-debt-repair",
+      "poll_block_duration_saved_ms": 0,
+      "safety_passed": false,
+      "safety_reasons": [
+        "missing_independent_verifier_pass_evidence"
+      ],
+      "safety_status": "UNMEASURABLE",
+      "simulation_verdict": "INSUFFICIENT_EVIDENCE",
+      "time_savings_ms": null,
+      "timing_result": "INSUFFICIENT_TELEMETRY",
+      "topology_evaluation": {
+        "allowed": true,
+        "independent_verification_retained": true,
+        "product_failure": null,
+        "quarantined": false,
+        "reporting_graph": {
+          "edges": [
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/named_test_debt_gate"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/rebase_plan_check"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/delta_plan_check"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/delta_plan_check_retry"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/delta_test_writer"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/delivery_mode_d"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/guard_mode_b"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ac3_test_retry"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/blind_delta_verifier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/ac3_test_retry_v2"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "/root",
+              "parent": null,
+              "role": "scheduler"
+            },
+            {
+              "id": "/root/named_test_debt_gate",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/rebase_plan_check",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/delta_plan_check",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/delta_plan_check_retry",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/delta_test_writer",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/delivery_mode_d",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/guard_mode_b",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/ac3_test_retry",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/blind_delta_verifier",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/ac3_test_retry_v2",
+              "parent": "/root",
+              "role": "worker"
+            }
+          ]
+        },
+        "violations": [],
+        "worker_dispatch_blocked": false
+      },
+      "variant_actions": 77
+    },
+    {
+      "action_reduction_fraction": 0.8070444104134763,
+      "action_savings": 527,
+      "baseline_actions": 653,
+      "case_id": "full-pms-production-readiness",
+      "poll_block_duration_saved_ms": 0,
+      "safety_passed": false,
+      "safety_reasons": [
+        "missing_independent_verifier_pass_evidence"
+      ],
+      "safety_status": "UNMEASURABLE",
+      "simulation_verdict": "INSUFFICIENT_EVIDENCE",
+      "time_savings_ms": null,
+      "timing_result": "INSUFFICIENT_TELEMETRY",
+      "topology_evaluation": {
+        "allowed": true,
+        "independent_verification_retained": true,
+        "product_failure": null,
+        "quarantined": false,
+        "reporting_graph": {
+          "edges": [
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/urgent_prereqs_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/production_tasks_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/yc_demo_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/close_nna8"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/linear_nna8_update"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_deployment_dossier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/google_oauth_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/cloudflare_target_discovery"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/cloudflare_deploy_truth"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/monitoring_dossier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna38_guard_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna38_guard_dossier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/build_identity_dossier"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna38_guard_replancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna25_monitoring_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna38_exhaustive_guard_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_identity_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_identity_gap_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna25_monitoring_gap_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna38_guard_plancheck_r3"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_identity_plancheck_r2"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/linear_priority_status"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_release_mechanics_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_local_mechanics"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna22_identity_plancheck_r3"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna38_broad_mock_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/nna25_alert_receiver_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/broad_mock_inventory"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/alert_receiver_plan"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/oauth_account_repo_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/google_oauth_doc_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/write_google_oauth_ops_record"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/verify_google_oauth_ops_record"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/oauth_tester_doc_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/update_oauth_tester_ops_record"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/verify_oauth_tester_ops_record"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/oauth_publish_readiness_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/oauth_legal_pages_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/legal_content_lineage_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/linear_truth_reconciliation_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/remix_privacy_port_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/remix_privacy_port_plancheck_retry"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/verify_remix_privacy_port"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/branch_coordination_audit"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/meetless_fit_research"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/coordination_protocol_plan"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/coordination_protocol_critic"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/coordination_plan_reconcile"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/verify_coordination_prototype"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/coordination_repair_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/coordination_final_gap_plancheck"
+            },
+            {
+              "kind": "dispatch",
+              "source": "/root",
+              "target": "/root/verify_coordination_final_delta"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "/root",
+              "parent": null,
+              "role": "scheduler"
+            },
+            {
+              "id": "/root/urgent_prereqs_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/production_tasks_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/yc_demo_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/close_nna8",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/linear_nna8_update",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna22_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna22_deployment_dossier",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/google_oauth_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/cloudflare_target_discovery",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/cloudflare_deploy_truth",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/monitoring_dossier",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna38_guard_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna38_guard_dossier",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/build_identity_dossier",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna38_guard_replancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna25_monitoring_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna38_exhaustive_guard_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna22_identity_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna22_identity_gap_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna25_monitoring_gap_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna38_guard_plancheck_r3",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna22_identity_plancheck_r2",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/linear_priority_status",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna22_release_mechanics_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna22_local_mechanics",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna22_identity_plancheck_r3",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/nna38_broad_mock_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/nna25_alert_receiver_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/broad_mock_inventory",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/alert_receiver_plan",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/oauth_account_repo_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/google_oauth_doc_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/write_google_oauth_ops_record",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/verify_google_oauth_ops_record",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/oauth_tester_doc_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/update_oauth_tester_ops_record",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/verify_oauth_tester_ops_record",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/oauth_publish_readiness_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/oauth_legal_pages_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/legal_content_lineage_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/linear_truth_reconciliation_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/remix_privacy_port_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/remix_privacy_port_plancheck_retry",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/verify_remix_privacy_port",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/branch_coordination_audit",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/meetless_fit_research",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/coordination_protocol_plan",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/coordination_protocol_critic",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/coordination_plan_reconcile",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/verify_coordination_prototype",
+              "parent": "/root",
+              "role": "worker"
+            },
+            {
+              "id": "/root/coordination_repair_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/coordination_final_gap_plancheck",
+              "parent": "/root",
+              "role": "verifier"
+            },
+            {
+              "id": "/root/verify_coordination_final_delta",
+              "parent": "/root",
+              "role": "worker"
+            }
+          ]
+        },
+        "violations": [],
+        "worker_dispatch_blocked": false
+      },
+      "variant_actions": 126
+    }
+  ],
+  "schema": "pace_topology_replay_result.v1",
+  "score": {
+    "action_reduction_fraction": 0.7433124644280023,
+    "action_savings": 1306,
+    "adoption_verdict": "NOT_APPLICABLE",
+    "baseline_actions": 1757,
+    "case_count": 5,
+    "measurable_timing_cases": 0,
+    "pace_acceptance": false,
+    "simulation_verdict": "INSUFFICIENT_EVIDENCE",
+    "statistical_verdict": "NOT_APPLICABLE",
+    "timing_result": "INSUFFICIENT_TELEMETRY",
+    "variant_actions": 451
+  }
+}
