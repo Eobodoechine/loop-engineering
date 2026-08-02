@@ -17,6 +17,7 @@ Run: python3 -m pytest hooks/test_pre_tool_use_oga_guard.py -q
 import json
 import hashlib
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -3206,6 +3207,215 @@ class TestCodexInheritedParentTerminalRetirement:
         proc = _run_codex_child_identity_guard(self._events())
         assert proc.returncode == 0, proc.stderr
         assert not _denied(proc), proc.stdout
+
+
+CODEX_V2_FIXTURE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "fixtures", "codex_child_identity_v2")
+
+
+def _read_jsonl_events(path):
+    with open(path, encoding="utf-8") as f:
+        return [json.loads(line) for line in f if line.strip()]
+
+
+def _write_jsonl_events(path, events):
+    with open(path, "w", encoding="utf-8") as f:
+        for event in events:
+            f.write(json.dumps(event, separators=(",", ":")) + "\n")
+
+
+def _run_codex_v2_fixture(child_path):
+    gate_dir = tempfile.mkdtemp(prefix="codex-child-v2-gate-")
+    payload = {
+        "tool_name": "apply_patch",
+        "tool_input": {"file_path": "/tmp/x/codex_child_identity_v2.py"},
+        "transcript_path": str(child_path),
+    }
+    env = os.environ.copy()
+    env["LOOP_GATE_DIR"] = gate_dir
+    return subprocess.run(
+        [sys.executable, HOOK], input=json.dumps(payload),
+        capture_output=True, text=True, timeout=30, env=env)
+
+
+class TestCodexCopiedParentTerminalProvenanceV2:
+    """Grounded parent/child rollout pair through the real PreToolUse hook."""
+
+    @staticmethod
+    def _copy_pair(tmp_path):
+        parent = tmp_path / "rollout-parent-session.jsonl"
+        child = tmp_path / "rollout-child-session.jsonl"
+        shutil.copyfile(
+            os.path.join(CODEX_V2_FIXTURE_DIR, "rollout-parent-session.jsonl"),
+            parent)
+        shutil.copyfile(
+            os.path.join(CODEX_V2_FIXTURE_DIR, "rollout-child-session.jsonl"),
+            child)
+        child_events = _read_jsonl_events(child)
+        child_events[0]["timestamp"] = _codex_identity_iso()
+        child_events.append({
+            "timestamp": _codex_identity_iso(offset_seconds=1),
+            "type": "response_item",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": M_CODEX_DISPATCH}],
+            },
+        })
+        _write_jsonl_events(child, child_events)
+        return parent, child
+
+    def test_grounded_multiple_distinct_parent_copies_allow(self, tmp_path):
+        _parent, child = self._copy_pair(tmp_path)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert not _denied(proc), proc.stdout
+
+    def test_missing_parent_rollout_denies(self, tmp_path):
+        parent, child = self._copy_pair(tmp_path)
+        parent.unlink()
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_ambiguous_parent_rollout_filename_match_denies(self, tmp_path):
+        parent, child = self._copy_pair(tmp_path)
+        shutil.copyfile(parent, tmp_path / "rollout-copy-parent-session.jsonl")
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_symlink_parent_rollout_denies(self, tmp_path):
+        parent, child = self._copy_pair(tmp_path)
+        target = tmp_path / "authoritative-parent.jsonl"
+        parent.rename(target)
+        parent.symlink_to(target)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_malformed_or_wrong_identity_parent_denies(self, tmp_path):
+        for label in ("malformed", "wrong-id"):
+            case_dir = tmp_path / label
+            case_dir.mkdir()
+            parent, child = self._copy_pair(case_dir)
+            if label == "malformed":
+                with open(parent, "a", encoding="utf-8") as f:
+                    f.write("{not-json\n")
+            else:
+                events = _read_jsonl_events(parent)
+                events[0]["payload"]["id"] = "different-parent"
+                _write_jsonl_events(parent, events)
+            proc = _run_codex_v2_fixture(child)
+            assert proc.returncode == 0, "%s: %s" % (label, proc.stderr)
+            assert _denied(proc), "%s must deny: %s" % (label, proc.stdout)
+
+    @pytest.mark.parametrize("mutation", ["payload", "turn-id", "unmatched"])
+    def test_changed_or_unmatched_child_terminal_denies(self, tmp_path, mutation):
+        _parent, child = self._copy_pair(tmp_path)
+        events = _read_jsonl_events(child)
+        terminal = next(e for e in events if e.get("type") == "event_msg"
+                        and e.get("payload", {}).get("type") == "task_complete")
+        if mutation == "payload":
+            terminal["payload"]["last_agent_message"] = "changed child payload"
+        elif mutation == "turn-id":
+            terminal["payload"]["turn_id"] = "changed-child-turn"
+        else:
+            terminal["payload"] = {
+                "type": "task_complete", "turn_id": "never-in-parent"}
+        _write_jsonl_events(child, events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_duplicate_child_signature_or_parent_reuse_denies(self, tmp_path):
+        _parent, child = self._copy_pair(tmp_path)
+        events = _read_jsonl_events(child)
+        terminal = next(e for e in events if e.get("type") == "event_msg"
+                        and e.get("payload", {}).get("type") == "task_complete")
+        duplicate = json.loads(json.dumps(terminal))
+        duplicate["timestamp"] = _codex_identity_iso(offset_seconds=1)
+        events.insert(3, duplicate)
+        _write_jsonl_events(child, events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_unexpected_child_top_level_field_denies(self, tmp_path):
+        _parent, child = self._copy_pair(tmp_path)
+        events = _read_jsonl_events(child)
+        terminal = next(e for e in events if e.get("type") == "event_msg"
+                        and e.get("payload", {}).get("type") == "task_complete")
+        terminal["verifier_probe"] = True
+        _write_jsonl_events(child, events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_ambiguous_duplicate_parent_signature_denies(self, tmp_path):
+        parent, child = self._copy_pair(tmp_path)
+        events = _read_jsonl_events(parent)
+        terminal = next(e for e in events if e.get("type") == "event_msg"
+                        and e.get("payload", {}).get("type") == "task_complete")
+        duplicate = json.loads(json.dumps(terminal))
+        duplicate["timestamp"] = _codex_identity_iso(offset_seconds=-10)
+        events.append(duplicate)
+        _write_jsonl_events(parent, events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    @pytest.mark.parametrize("parent_timestamp", [
+        "same-as-child", "after-child", "not-a-timestamp"])
+    def test_non_prestart_authoritative_parent_timestamp_denies(
+            self, tmp_path, parent_timestamp):
+        parent, child = self._copy_pair(tmp_path)
+        child_start = _read_jsonl_events(child)[0]["timestamp"]
+        events = _read_jsonl_events(parent)
+        terminal = next(e for e in events if e.get("type") == "event_msg"
+                        and e.get("payload", {}).get("type") == "task_complete")
+        if parent_timestamp == "same-as-child":
+            terminal["timestamp"] = child_start
+        elif parent_timestamp == "after-child":
+            terminal["timestamp"] = _codex_identity_iso(offset_seconds=1)
+        else:
+            terminal["timestamp"] = parent_timestamp
+        _write_jsonl_events(parent, events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_mixed_child_terminal_types_deny(self, tmp_path):
+        _parent, child = self._copy_pair(tmp_path)
+        events = _read_jsonl_events(child)
+        events.insert(3, {
+            "timestamp": _codex_identity_iso(),
+            "type": "event_msg",
+            "payload": {"type": "turn_aborted", "turn_id": "parent-turn-01"},
+        })
+        _write_jsonl_events(child, events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
+
+    def test_nested_parent_terminal_cannot_prove_unmatched_child(self, tmp_path):
+        parent, child = self._copy_pair(tmp_path)
+        child_events = _read_jsonl_events(child)
+        terminal = next(e for e in child_events if e.get("type") == "event_msg"
+                        and e.get("payload", {}).get("type") == "task_complete")
+        terminal["payload"]["turn_id"] = "nested-only-turn"
+        _write_jsonl_events(child, child_events)
+        parent_events = _read_jsonl_events(parent)
+        parent_events.append({
+            "timestamp": "2026-07-31T21:00:00.000Z",
+            "type": "response_item",
+            "payload": {"type": "message", "embedded": terminal},
+        })
+        _write_jsonl_events(parent, parent_events)
+        proc = _run_codex_v2_fixture(child)
+        assert proc.returncode == 0, proc.stderr
+        assert _denied(proc), proc.stdout
 
 
 class TestVerifierHygieneAgentTaskHardDeny:

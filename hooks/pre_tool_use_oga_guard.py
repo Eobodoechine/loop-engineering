@@ -976,37 +976,155 @@ def _codex_timestamp_epoch(ts):
         return None
 
 
-def _codex_dispatch_retired_anywhere(events, first_meta, child_start_epoch):
-    """Fail closed on child retirement while tolerating one inherited event.
-
-    A Codex fork can prepend one terminal event from its parent before the
-    child's authoritative first session_meta. Ignore exactly that narrow
-    shape only when the terminal's own top-level timestamp is parseable and
-    strictly earlier than the first session_meta timestamp. Physical
-    reordering, equality/post-start timestamps, multiple terminal events,
-    malformed timestamps, and terminals after child start all retire.
-    Nested terminal-like payload text is never considered."""
-    first_meta_index = None
+def _codex_terminal_events(events):
     terminals = []
     for index, e in enumerate(events):
-        if e is first_meta and first_meta_index is None:
-            first_meta_index = index
         if not isinstance(e, dict) or e.get("type") != "event_msg":
             continue
         payload = e.get("payload")
         if isinstance(payload, dict) and payload.get("type") in ("task_complete", "turn_aborted"):
             terminals.append((index, e))
+    return terminals
+
+
+def _codex_terminal_signature(event):
+    """Canonical complete copied record, excluding only wrapper timestamp."""
+    try:
+        canonical = dict(event)
+        canonical.pop("timestamp", None)
+        return json.dumps(
+            canonical,
+            sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    except Exception:
+        return None
+
+
+def _codex_read_jsonl_strict(path):
+    result = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                event = json.loads(line)
+                if not isinstance(event, dict):
+                    return None
+                result.append(event)
+    except Exception:
+        return None
+    return result
+
+
+def _codex_parent_proves_copied_task_completions(
+        transcript_path, events, first_meta, child_start_epoch, terminals):
+    """Prove copied task_complete records against one authoritative parent.
+
+    Parent lookup is restricted to an exact, unique, non-symlink rollout
+    filename in the child's own directory, corroborated by that rollout's
+    first session_meta identity. Child records must map one-to-one to unique
+    parent events after canonicalizing only the child wrapper timestamp.
+    """
+    meta_payload = first_meta.get("payload")
+    parent_id = (meta_payload.get("parent_thread_id")
+                 if isinstance(meta_payload, dict) else None)
+    if (not isinstance(parent_id, str) or not parent_id
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", parent_id)):
+        return False
+    if not isinstance(transcript_path, str) or not transcript_path:
+        return False
+
+    child_path = os.path.abspath(transcript_path)
+    parent_dir = os.path.dirname(child_path)
+    suffix = "-%s.jsonl" % parent_id
+    try:
+        candidates = [
+            os.path.join(parent_dir, name)
+            for name in os.listdir(parent_dir)
+            if name.startswith("rollout-") and name.endswith(suffix)
+        ]
+    except Exception:
+        return False
+    if len(candidates) != 1:
+        return False
+
+    parent_path = candidates[0]
+    if (os.path.abspath(parent_path) == child_path
+            or os.path.islink(parent_path)
+            or not os.path.isfile(parent_path)):
+        return False
+    parent_events = _codex_read_jsonl_strict(parent_path)
+    if not parent_events:
+        return False
+
+    parent_meta = _codex_first_session_meta(parent_events)
+    parent_payload = (parent_meta.get("payload")
+                      if isinstance(parent_meta, dict) else None)
+    if (not isinstance(parent_payload, dict)
+            or parent_payload.get("id") != parent_id
+            or parent_payload.get("session_id") != parent_id):
+        return False
+
+    first_meta_index = next(
+        (i for i, event in enumerate(events) if event is first_meta), None)
+    if first_meta_index is None:
+        return False
+    if any(index <= first_meta_index for index, _event in terminals):
+        return False
+    if any(event.get("payload", {}).get("type") != "task_complete"
+           for _index, event in terminals):
+        return False
+
+    child_signatures = []
+    for _index, event in terminals:
+        signature = _codex_terminal_signature(event)
+        if signature is None or signature in child_signatures:
+            return False
+        child_signatures.append(signature)
+
+    parent_by_signature = {}
+    for parent_index, event in _codex_terminal_events(parent_events):
+        payload = event.get("payload")
+        if not isinstance(payload, dict) or payload.get("type") != "task_complete":
+            continue
+        signature = _codex_terminal_signature(event)
+        if signature is None:
+            return False
+        parent_by_signature.setdefault(signature, []).append((parent_index, event))
+
+    used_parent_indices = set()
+    for signature in child_signatures:
+        matches = parent_by_signature.get(signature, [])
+        if len(matches) != 1:
+            return False
+        parent_index, parent_event = matches[0]
+        if parent_index in used_parent_indices:
+            return False
+        used_parent_indices.add(parent_index)
+        parent_epoch = _codex_timestamp_epoch(parent_event.get("timestamp"))
+        if parent_epoch is None or not parent_epoch < child_start_epoch:
+            return False
+    return True
+
+
+def _codex_dispatch_retired_anywhere(
+        transcript_path, events, first_meta, child_start_epoch):
+    """Fail closed except for v1 pre-start or v2 parent-proven copies."""
+    first_meta_index = next(
+        (i for i, event in enumerate(events) if event is first_meta), None)
+    terminals = _codex_terminal_events(events)
 
     if not terminals:
         return False
-    if first_meta_index is None or len(terminals) != 1:
-        return True
-
-    terminal_index, terminal = terminals[0]
-    terminal_epoch = _codex_timestamp_epoch(terminal.get("timestamp"))
-    if terminal_index >= first_meta_index or terminal_epoch is None:
-        return True
-    return not terminal_epoch < child_start_epoch
+    if first_meta_index is not None and len(terminals) == 1:
+        terminal_index, terminal = terminals[0]
+        terminal_epoch = _codex_timestamp_epoch(terminal.get("timestamp"))
+        if (terminal_index < first_meta_index and terminal_epoch is not None
+                and terminal_epoch < child_start_epoch):
+            return False
+    if _codex_parent_proves_copied_task_completions(
+            transcript_path, events, first_meta, child_start_epoch, terminals):
+        return False
+    return True
 
 
 def _classify_codex_task_name(task_name):
@@ -1074,7 +1192,8 @@ def _codex_exact_worker_identity_allows(transcript_path, events):
     if _is_stale({"timestamp": ts, "index": 0}):
         return False
 
-    if _codex_dispatch_retired_anywhere(events, first_meta, child_start_epoch):
+    if _codex_dispatch_retired_anywhere(
+            transcript_path, events, first_meta, child_start_epoch):
         return False
 
     # Guard agent_path before extracting task_name: the real, live
