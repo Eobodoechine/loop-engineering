@@ -3296,3 +3296,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-02)
 
 - experiment: add source-sealed PACE topology replay
+
+## Recent changes (auto-published 2026-08-02)
+
+- docs: add agent runtime benchmark protocol
