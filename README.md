@@ -3304,3 +3304,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-02)
 
 - research: document agent benchmark methods
+
+## Recent changes (auto-published 2026-08-02)
+
+- plan: certify expanded agent runtime benchmark
