@@ -3320,3 +3320,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-03)
 
 - feat(registry): add verified credit-gate contract lineage
+
+## Recent changes (auto-published 2026-08-03)
+
+- docs(loop-team): reconcile B2 trailer plan lineage

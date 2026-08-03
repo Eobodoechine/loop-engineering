@@ -83,6 +83,9 @@ registry implementation and provenance artifacts that make these projections rep
 - `loop-team/harness/testdata/gate_contract_registry/**`
 - `loop-team/contract_registry/v1/scope_manifest.v1.json`
 - `loop-team/GATE_CONTRACT_REGISTRY_IMPLEMENTATION_PLAN_2026-08-02.md`
+- `loop-team/CREDIT_GATE_MULTIPART_TRAILER_REPAIR_PLAN_2026-08-03.md`, the reviewed B1
+  semantic acceptance authority, because B1 does not commit it and B2 must carry its
+  self-contained lineage.
 - `loop-team/FRAMEWORK_OWNER_CONTINUATION_RECEIPT_2026-08-02.md`, only after it is
   reconciled to the repair's actual receipts and commit topology;
 - `loop-team/specs/gate-diagnosis-phase1-contract-registry.md`, if its current content
@@ -302,6 +305,10 @@ run cannot replace the separate semantic or AC6 receipts; it corroborates them a
 overlay and generated files are refreshed. The receipt also lists the B2 staged paths and
 asserts exact equality with this allow-list (after the explicit ledger disposition):
 
+Correction (2026-08-03): the original B2 allow-list omitted this repair plan even though
+B2 commit `2b3725b` carried it. This plan is the reviewed B1 semantic acceptance authority,
+but B1 did not commit it, so B2's self-contained lineage carries it.
+
 ```text
 loop-team/harness/gate_contract_registry.py
 loop-team/harness/test_gate_contract_registry.py
@@ -311,6 +318,7 @@ loop-team/contract_registry/v1/manual_overlays/spec_bound_verifier_credit.v1.jso
 loop-team/contract_registry/v1/gate_contracts.v1.json
 loop-team/contract_registry/v1/gate_contract_coverage.v1.md
 loop-team/GATE_CONTRACT_REGISTRY_IMPLEMENTATION_PLAN_2026-08-02.md
+loop-team/CREDIT_GATE_MULTIPART_TRAILER_REPAIR_PLAN_2026-08-03.md
 loop-team/FRAMEWORK_OWNER_CONTINUATION_RECEIPT_2026-08-02.md (only if reconciled)
 loop-team/specs/gate-diagnosis-phase1-contract-registry.md (only if ledger-included)
 ```
