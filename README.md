@@ -3312,3 +3312,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-03)
 
 - chore(provenance): track pinned credit-gate dossier
+
+## Recent changes (auto-published 2026-08-03)
+
+- fix(credit-gate): require multipart agentId provenance

@@ -58,6 +58,24 @@ VERIFIER_FALLBACK_RE = re.compile(
 # hijack vector. A bare fence is exactly ``` optionally followed by a language
 # tag, with no other content on the line.
 CODE_FENCE_RE = re.compile(r"^```(?:[A-Za-z0-9_+-]*)$")
+# A standalone agentId trailer is trusted only when the original tool-result
+# content boundary proves it was emitted as runtime metadata. This grammar is
+# deliberately complete: it binds the repeated recipient ID and consumes the
+# whole metadata part rather than accepting an agentId-looking prefix.
+MULTIPART_AGENTID_RE = re.compile(
+    r"agentId:[ \t]*([0-9A-Za-z-]+)[ \t]*"
+    r"\(use SendMessage with to:[ \t]*'\1',[ \t]*"
+    r"summary:[ \t]*'[^'\r\n]+'[ \t]*to continue this agent\.?\)"
+)
+MULTIPART_USAGE_RE = re.compile(
+    r"(?:"
+    r"<usage><subagent_tokens>[0-9]+</subagent_tokens><tool_uses>[0-9]+</tool_uses>"
+    r"<duration_ms>[0-9]+</duration_ms></usage>"
+    r"|"
+    r"<usage>subagent_tokens:[ \t]*[0-9]+\ntool_uses:[ \t]*[0-9]+\n"
+    r"duration_ms:[ \t]*[0-9]+</usage>"
+    r")"
+)
 VERIFIER_ROLE_MODE_RE = re.compile(
     r"(?ims)^\s*#?\s*role\s*:\s*verifier\b"
     r"(?:(?!^\s*#?\s*role\s*:).)*"
@@ -371,6 +389,66 @@ def tool_result_text(tool_result):
     return str(value)
 
 
+def _multipart_agentid_trailer_provenance(tool_result):
+    """Classify a standalone-agentId trailer before content is flattened.
+
+    ``True`` means the original value was exactly the trusted runtime shape:
+    a model text part ending at the clean gate, followed by one complete
+    canonical agentId text part and an optional complete canonical usage text
+    part. ``False`` is a fail-closed malformed/non-text post-gate multipart
+    boundary; ``None`` has no standalone-agentId provenance claim and must be
+    parsed under the ordinary text rules.
+    """
+    value = tool_result.get("content", "")
+    if not isinstance(value, list) or not value:
+        return None
+
+    texts = []
+    for part in value:
+        if (
+            not isinstance(part, dict)
+            or not isinstance(part.get("text"), str)
+            or part.get("type") not in (None, "text", "output_text")
+        ):
+            # Only fail this closed when it occurs after a text part that
+            # conclusively ends in the gate; elsewhere normal parsing still
+            # decides the result from the available text.
+            if texts and texts[0].endswith("LOOP_GATE: PLAN_PASS"):
+                return False
+            return None
+        texts.append(part["text"])
+
+    if not texts[0].endswith("LOOP_GATE: PLAN_PASS"):
+        return None
+    trailing_parts = texts[1:]
+    if not trailing_parts:
+        return None
+    if any(not part.strip() for part in trailing_parts):
+        return False
+
+    agent_part = trailing_parts[0]
+    if MULTIPART_AGENTID_RE.fullmatch(agent_part) is None:
+        return None
+    if any(
+            token in agent_part
+            for token in ("PLAN_SUPPORT_JSON=", "REVIEWED_SPEC_SHA256=")) or re.search(
+                r'loop_gate["\']?\s*[:=]', agent_part, re.I):
+        return False
+
+    if len(trailing_parts) == 1:
+        return True
+    if len(trailing_parts) != 2:
+        return False
+    usage_part = trailing_parts[1]
+    if (
+            MULTIPART_USAGE_RE.fullmatch(usage_part) is None
+            or "PLAN_SUPPORT_JSON=" in usage_part
+            or "REVIEWED_SPEC_SHA256=" in usage_part
+            or re.search(r'loop_gate["\']?\s*[:=]', usage_part, re.I)):
+        return False
+    return True
+
+
 def is_pretooluse_deny_result(tool_result):
     txt = tool_result_text(tool_result).strip().lower()
     return (
@@ -455,6 +533,10 @@ def classify_plan_result_for_hash(tool_result, reviewed_hash, cwd=None):
     if tool_result.get("is_error") is True or is_pretooluse_deny_result(tool_result):
         return (PlanResultOutcome.OTHER_INVALID_OR_AMBIGUOUS,
                 "tool result is an error or PreToolUse deny")
+    multipart_agentid_trailer = _multipart_agentid_trailer_provenance(tool_result)
+    if multipart_agentid_trailer is False:
+        return (PlanResultOutcome.OTHER_INVALID_OR_AMBIGUOUS,
+                "unexpected content after final gate line")
     text = tool_result_text(tool_result)
     lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
 
@@ -503,15 +585,11 @@ def classify_plan_result_for_hash(tool_result, reviewed_hash, cwd=None):
                         "unterminated <usage> block after final gate line")
             i += 1  # consume the line containing </usage>
             continue
-        # agentId-harness-metadata tolerance (2026-07-19): the Agent tool
-        # harness appends "agentId: <id> (use SendMessage with to: '<id>',
-        # summary: '<recap>' to continue this agent.)" as a separate line
-        # between the gate line and the <usage> block. This is harness
-        # metadata the model does not control — tolerate exactly one such
-        # line with a deterministic shape anchor (same as the glued-suffix
-        # tolerance at line ~540).
-        if not seen_agent_id and re.match(
-                r"^agentId:\s*[0-9a-zA-Z-]+\s*\(use SendMessage", trailing[i]):
+        # A separate agentId is a runtime-only exception. It is accepted
+        # only when the helper above established the original multipart
+        # content boundary; a flattened plain string can never supply that
+        # provenance.
+        if multipart_agentid_trailer is True and not seen_agent_id:
             seen_agent_id = True
             i += 1
             continue

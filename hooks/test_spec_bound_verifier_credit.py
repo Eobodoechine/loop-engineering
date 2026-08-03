@@ -1172,6 +1172,15 @@ def plain_result(text, is_error=False):
     return {"type": "tool_result", "content": text, "is_error": is_error}
 
 
+def multipart_result(*texts, is_error=False):
+    """A raw tool_result with retained, distinct runtime text-part boundaries."""
+    return {
+        "type": "tool_result",
+        "content": [{"text": text} for text in texts],
+        "is_error": is_error,
+    }
+
+
 def _clean_pass_sibling_events(vid, spec, h, run_in_background=False):
     """A resolved, genuine, clean PLAN_PASS for hash h -- the 'sibling 1'
     half of every Section C multi-dispatch AC-C-4* fixture below."""
@@ -3086,9 +3095,10 @@ class TrailingDecoyAfterGateRejectedAC3(unittest.TestCase):
 
 
 class NonUsageTrailingContentRejectedAC4(unittest.TestCase):
-    """[BEHAVIORAL] AC4: with an otherwise-valid rebound support body and a
-    clean gate, any trailing content that is not exactly one well-formed
-    <usage>...</usage> block must be rejected."""
+    """[BEHAVIORAL] AC4: ordinary text keeps rejecting a standalone
+    agentId trailer. The sole exception is an original, canonical multipart
+    (model-gate, agentId, optional usage) sequence; flattening identical
+    visible bytes never establishes that runtime boundary."""
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp(prefix="ac4-non-usage-trailing-")
@@ -3109,6 +3119,86 @@ class NonUsageTrailingContentRejectedAC4(unittest.TestCase):
         self.assertFalse(
             ok, "AC4(b): a SEPARATE-LINE agentId: trailer is not "
             "tolerated -- only the on-gate-line glue is")
+
+    def test_canonical_multipart_agentid_trailer_is_accepted_but_same_string_is_rejected(self):
+        model_part = self.prefix + "LOOP_GATE: PLAN_PASS"
+        multipart = multipart_result(model_part, CAPTURE_A_AGENTID_SEPARATE_LINE)
+        raw_string = "\n".join((model_part, CAPTURE_A_AGENTID_SEPARATE_LINE))
+        ok, reason = sb.result_plan_pass_status_for_hash(
+            multipart, self.spec_hash, cwd=self.tmpdir)
+        self.assertTrue(ok, reason)
+        raw_ok, _reason = sb.result_plan_pass_status_for_hash(
+            plain_result(raw_string), self.spec_hash, cwd=self.tmpdir)
+        self.assertFalse(
+            raw_ok, "AC4: the multipart exception must not be inferred from "
+            "the identical flattened plain string")
+
+    def test_canonical_multipart_agentid_with_each_real_usage_format_is_accepted(self):
+        model_part = self.prefix + "LOOP_GATE: PLAN_PASS"
+        for label, usage_part in (
+            ("capture_b_single_line", CAPTURE_B_USAGE_SINGLE_LINE),
+            ("capture_a_multi_line", CAPTURE_A_USAGE_MULTI_LINE),
+        ):
+            with self.subTest(usage=label):
+                ok, reason = sb.result_plan_pass_status_for_hash(
+                    multipart_result(
+                        model_part, CAPTURE_A_AGENTID_SEPARATE_LINE, usage_part),
+                    self.spec_hash, cwd=self.tmpdir)
+                self.assertTrue(ok, reason)
+
+    def test_multipart_agentid_boundary_negative_matrix_is_rejected(self):
+        model_part = self.prefix + "LOOP_GATE: PLAN_PASS"
+        valid_usage = CAPTURE_B_USAGE_SINGLE_LINE
+        malformed_id = CAPTURE_A_AGENTID_SEPARATE_LINE.replace(
+            "a44af2e1a6acca237',", "different-id',")
+        missing_sendmessage = CAPTURE_A_AGENTID_SEPARATE_LINE.replace(
+            "use SendMessage", "use DispatchMessage")
+        trailing_agent_text = CAPTURE_A_AGENTID_SEPARATE_LINE + " tail"
+        embedded_decoy = CAPTURE_A_AGENTID_SEPARATE_LINE.replace(
+            "<5-10 word recap>", "LOOP_GATE: PLAN_FAIL")
+        cases = {
+            "agentid_in_model_part": multipart_result(
+                model_part + "\n" + CAPTURE_A_AGENTID_SEPARATE_LINE),
+            "raw_flattened_sequence": plain_result("\n".join(
+                (model_part, CAPTURE_A_AGENTID_SEPARATE_LINE, valid_usage))),
+            "malformed_id": multipart_result(
+                model_part, CAPTURE_A_AGENTID_SEPARATE_LINE.replace(
+                    "a44af2e1a6acca237", "not/a/valid/id")),
+            "mismatched_repeated_id": multipart_result(model_part, malformed_id),
+            "changed_sendmessage_marker": multipart_result(model_part, missing_sendmessage),
+            "agentid_trailing_characters": multipart_result(model_part, trailing_agent_text),
+            "duplicate_agentid_parts": multipart_result(
+                model_part, CAPTURE_A_AGENTID_SEPARATE_LINE,
+                CAPTURE_A_AGENTID_SEPARATE_LINE),
+            "duplicate_usage_parts": multipart_result(
+                model_part, CAPTURE_A_AGENTID_SEPARATE_LINE,
+                valid_usage, valid_usage),
+            "usage_before_agentid": multipart_result(
+                model_part, valid_usage, CAPTURE_A_AGENTID_SEPARATE_LINE),
+            "extra_tail_after_usage": multipart_result(
+                model_part, CAPTURE_A_AGENTID_SEPARATE_LINE, valid_usage, "tail"),
+            "embedded_loop_gate_decoy": multipart_result(model_part, embedded_decoy),
+            "embedded_support_decoy": multipart_result(
+                model_part, CAPTURE_A_AGENTID_SEPARATE_LINE.replace(
+                    "<5-10 word recap>", "PLAN_SUPPORT_JSON=decoy")),
+            "embedded_reviewed_hash_decoy": multipart_result(
+                model_part, CAPTURE_A_AGENTID_SEPARATE_LINE.replace(
+                    "<5-10 word recap>",
+                    "REVIEWED_SPEC_SHA256=%s" % self.spec_hash)),
+            "non_text_part": {
+                "type": "tool_result",
+                "content": [
+                    {"text": model_part},
+                    {"type": "image", "source": "not text"},
+                ],
+                "is_error": False,
+            },
+        }
+        for label, result in cases.items():
+            with self.subTest(case=label):
+                ok, _reason = sb.result_plan_pass_status_for_hash(
+                    result, self.spec_hash, cwd=self.tmpdir)
+                self.assertFalse(ok, "AC4: multipart negative %s must reject" % label)
 
     def test_two_usage_blocks_rejected(self):
         body = (self.prefix + "LOOP_GATE: PLAN_PASS\n"
@@ -3141,9 +3231,10 @@ class NonUsageTrailingContentRejectedAC4(unittest.TestCase):
 
 
 class ProductionAuthorizationBoundaryAC6(unittest.TestCase):
-    """[BEHAVIORAL] AC6: the AC1 real fixture (Capture B's glued </result>
-    gate + single-line <usage> trailer, hermetically rebound support) must
-    grant credit at the PRODUCTION authorization boundary --
+    """[BEHAVIORAL] AC6: the canonical multipart fixture (model result
+    ending at the clean gate, real agentId metadata, and Capture B's real
+    single-line usage part), hermetically rebound support, must grant credit
+    at the PRODUCTION authorization boundary --
     authorize_coder_from_transcript() (which reaches
     result_plan_pass_status_for_hash via prior_verifier_credit, source line
     552) -- not only at the leaf function, via a FOREGROUND
@@ -3177,14 +3268,18 @@ class ProductionAuthorizationBoundaryAC6(unittest.TestCase):
 
     def test_ac1_fixture_authorizes_coder_via_production_boundary(self):
         prefix, spec_hash, spec, _support = _rebound_support_prefix(self.tmpdir)
-        body = prefix + CAPTURE_B_GATE_LINE + "\n" + CAPTURE_B_USAGE_SINGLE_LINE
+        multipart_body = multipart_result(
+            prefix + "LOOP_GATE: PLAN_PASS",
+            CAPTURE_A_AGENTID_SEPARATE_LINE,
+            CAPTURE_B_USAGE_SINGLE_LINE,
+        )["content"]
         events = [
             human_event(),
             assistant_event(agent_tool_use(
                 "v-ac6", description="plan-check verifier for creditgate usage trailer fix",
                 prompt="SPEC: %s\nSPEC_SHA256=%s" % (spec, spec_hash),
                 run_in_background=False)),  # AC6: FOREGROUND, per the spec's own requirement
-            tool_result_event("v-ac6", body),
+            tool_result_event("v-ac6", multipart_body),
             assistant_event(agent_tool_use(
                 "c-ac6", description="Coder for creditgate usage trailer fix",
                 subagent_type="coder", prompt=coder_prompt(spec, spec_hash))),
@@ -3193,7 +3288,7 @@ class ProductionAuthorizationBoundaryAC6(unittest.TestCase):
             self.tmpdir, events, "Agent",
             coder_input(spec, spec_hash, "Coder for creditgate usage trailer fix"))
         self.assertTrue(
-            ok, "AC6: the real Capture B trailer, delivered via a "
+            ok, "AC6: the canonical multipart agentId + real Capture B usage trailer, delivered via a "
             "FOREGROUND Verifier dispatch's paired tool_result, must "
             "authorize the Coder dispatch through "
             "authorize_coder_from_transcript() end-to-end; reason=%r" % (reason,))
