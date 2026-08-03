@@ -1,0 +1,1 @@
+raise RuntimeError("this fixture must never be imported")

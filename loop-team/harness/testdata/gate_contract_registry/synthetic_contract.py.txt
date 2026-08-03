@@ -1,0 +1,17 @@
+import argparse
+import re
+import sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--spec")
+PATTERN = re.compile(r"^SPEC:[a-z]+$")
+
+def evaluate(payload):
+    required = payload["spec"]
+    optional = payload.get("mode")
+    if not required:
+        return False, "missing spec"
+    if optional == "deny":
+        sys.exit(3)
+    dynamic = f"{required}:{optional}"
+    return {"status": "ok", "path": "loop-team/specs/example.md", "dynamic": dynamic}

@@ -3316,3 +3316,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-03)
 
 - fix(credit-gate): require multipart agentId provenance
+
+## Recent changes (auto-published 2026-08-03)
+
+- feat(registry): add verified credit-gate contract lineage
