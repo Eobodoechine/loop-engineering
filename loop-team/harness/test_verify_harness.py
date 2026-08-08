@@ -380,3 +380,49 @@ class AC7FullSuiteCrossCheck(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MultiDirDiscoveryMustNotShortCircuit(unittest.TestCase):
+    """Per-directory Python discovery is COMPLEMENTARY, not a fallback chain.
+
+    Regression guard: when discovery start dirs are derived from where test
+    files live, running only the first one reports green while a failing
+    directory is never executed -- a false green in the harness itself. Both
+    layouts matter: a plain directory (no __init__.py, which the root sweep
+    could never reach) and an importable package (which the root sweep DID
+    handle correctly before, so a regression here is strictly worse).
+    """
+
+    def _make(self, importable):
+        d = tempfile.mkdtemp()
+        for name, body in (
+            ("alpha", "    def test_ok(self): self.assertTrue(True)\n"),
+            ("zeta", "    def test_fail(self): self.assertTrue(False, 'genuine')\n"),
+        ):
+            sub = os.path.join(d, name)
+            os.makedirs(sub)
+            if importable:
+                open(os.path.join(sub, "__init__.py"), "w").close()
+            with open(os.path.join(sub, "test_%s.py" % name), "w") as f:
+                f.write("import unittest\n\n\nclass T(unittest.TestCase):\n" + body)
+        return d
+
+    def _assert_failing_dir_surfaces(self, importable):
+        result = _run_harness(self._make(importable))
+        tests = result.get("tests", result)
+        self.assertFalse(
+            tests.get("passed"),
+            "a project with a failing test directory must not pass; got %r "
+            "(runner=%r). The alphabetically-first directory passing does not "
+            "make the project green." % (tests.get("summary"), tests.get("runner")),
+        )
+        self.assertIn(
+            "zeta", str(tests.get("summary")) + str(tests.get("runner")),
+            "the failing directory must actually have been executed, not skipped",
+        )
+
+    def test_plain_dirs_failing_dir_is_not_skipped(self):
+        self._assert_failing_dir_surfaces(importable=False)
+
+    def test_importable_packages_failing_dir_is_not_skipped(self):
+        self._assert_failing_dir_surfaces(importable=True)

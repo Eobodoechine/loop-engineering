@@ -3332,3 +3332,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-08)
 
 - fix(harness): discover Python tests where they actually live
+
+## Recent changes (auto-published 2026-08-08)
+
+- fix(harness): aggregate per-directory discovery instead of short-circuiting

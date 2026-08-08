@@ -212,6 +212,48 @@ def _run_one(label, argv, project, env, _attempt_log):
     }
 
 
+def _run_python(candidates, aggregate, project, env, _attempt_log):
+    """Run the Python side and return (label, result) or (None, None).
+
+    Two DIFFERENT semantics, which is the whole point of this function:
+
+      aggregate=False -- candidates are ALTERNATIVE runners for the same
+        tests (pytest, else unittest). First one that executes at all wins;
+        a missing binary falls through to the next. Historical behavior.
+
+      aggregate=True -- candidates are per-directory discovery runs that each
+        cover a DIFFERENT subset of the tests. They are complementary, not
+        alternatives, so every one must run and every one must pass. Returning
+        on the first (the fallback-chain shape) would run only the
+        alphabetically-first directory and report green while a failing
+        directory was never executed -- a false green in the one component
+        whose entire value is being hard to fake.
+    """
+    results = []
+    for label, argv in candidates:
+        res = _run_one(label, argv, project, env, _attempt_log)
+        if res is None:
+            continue  # runner binary missing; try the next candidate
+        if not aggregate:
+            return label, res
+        results.append((label, res))
+    if not results:
+        return None, None
+    if len(results) == 1:
+        return results[0]
+    return (
+        "unittest[%s]" % ",".join(l.split("[", 1)[1].rstrip("]") for l, _ in results),
+        {
+            "passed": all(r["passed"] for _, r in results),
+            # Only a total absence of tests is the false-green case; one empty
+            # directory among several real ones is not.
+            "zero": all(r["zero"] for _, r in results),
+            "summary": "; ".join("%s: %s" % (l, r["summary"]) for l, r in results),
+            "output": "\n".join(r["output"] for _, r in results)[-8000:],
+        },
+    )
+
+
 def detect_and_run(project):
     _attempt_log = []  # list of (label, cmd_str, exit_code, duration_s)
     _start = time.monotonic()
@@ -239,6 +281,7 @@ def detect_and_run(project):
 
     # -- Python candidates (content-aware gate; see has_python_tests) -----
     python_candidates = []
+    python_aggregate = False
     if has_python_tests(project):
         if has_module("pytest", project):
             py_runner = "pytest" if shutil.which("pytest") else None
@@ -250,16 +293,24 @@ def detect_and_run(project):
             # Start discovery where the test files actually live. Rooting at "."
             # silently collects 0 whenever the tests sit in a non-importable
             # directory (no __init__.py), which this harness then reports as a
-            # forced fail -- indistinguishable from a genuine failure. Try the
-            # real dirs first, deepest-specific to most-general, and keep the
-            # historical root sweep last so nothing that worked before breaks.
-            for _d in python_test_dirs(project):
-                python_candidates.append(("unittest[%s]" % _d,
+            # forced fail -- indistinguishable from a genuine failure.
+            #
+            # These per-directory runs are COMPLEMENTARY (each covers a
+            # different subset), so they are aggregated with AND, never treated
+            # as a fallback chain. The root sweep is used ONLY when no test
+            # directory was identified: mixing it in would contribute a
+            # guaranteed "0 tests collected" and fail every project.
+            _dirs = python_test_dirs(project)
+            if _dirs:
+                python_aggregate = True
+                for _d in _dirs:
+                    python_candidates.append(("unittest[%s]" % _d,
+                                              [sys.executable, "-m", "unittest", "discover",
+                                               "-s", _d, "-t", _d, "-p", "test_*.py", "-v"]))
+            else:
+                python_candidates.append(("unittest",
                                           [sys.executable, "-m", "unittest", "discover",
-                                           "-s", _d, "-t", _d, "-p", "test_*.py", "-v"]))
-            python_candidates.append(("unittest",
-                                      [sys.executable, "-m", "unittest", "discover",
-                                       "-s", ".", "-p", "test_*.py", "-v"]))
+                                           "-s", ".", "-p", "test_*.py", "-v"]))
 
     # -- Node candidate: only a KNOWN runner (vitest/jest) is used; a
     #    package.json with no known runner declared is handled below as
@@ -280,14 +331,11 @@ def detect_and_run(project):
     # -- Single-ecosystem paths (existing fallback-chain behavior, now also
     #    covering the pure-Node case) ---------------------------------
     if python_candidates and not node_candidate:
-        last_err = None
-        for label, argv in python_candidates:
-            res = _run_one(label, argv, project, _env, _attempt_log)
-            if res is None:
-                last_err = "runner not found: %s" % label
-                continue
-            return _finish(res["passed"], label, res["summary"], res["output"])
-        return _finish(False, None, "No usable test runner found.", last_err or "")
+        label, res = _run_python(python_candidates, python_aggregate,
+                                 project, _env, _attempt_log)
+        if res is None:
+            return _finish(False, None, "No usable test runner found.", "")
+        return _finish(res["passed"], label, res["summary"], res["output"])
 
     if node_candidate and not python_candidates:
         label, argv = node_candidate
@@ -301,8 +349,8 @@ def detect_and_run(project):
     #    value was found in the repo (grepped before writing this), but the
     #    safe branch is followed anyway -- `runner` stays a single primary
     #    name and the pair is exposed additively via `runners`. -----------
-    py_label, py_argv = python_candidates[0]
-    py_res = _run_one(py_label, py_argv, project, _env, _attempt_log)
+    py_label, py_res = _run_python(python_candidates, python_aggregate,
+                                   project, _env, _attempt_log)
     node_label, node_argv = node_candidate
     node_res = _run_one(node_label, node_argv, project, _env, _attempt_log)
 
