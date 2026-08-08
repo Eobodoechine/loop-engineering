@@ -1,7 +1,7 @@
 {
   "schema_version": "gate-contract-registry-manual-overlay.v1",
   "target_relative_path": "hooks/spec_bound_verifier_credit.py",
-  "target_source_sha256": "8f161c1ca12f3a99a57e0c30845841eededa70efa5eb576593bcf796ee9fa7fa",
+  "target_source_sha256": "dc46d65843d83442d4c9c38d92ae9e5b812fd017d84845c7782257a8ada04c03",
   "dossier_relative_path": "research/spec-bound-verifier-coder-credit-gate-marker-2026-07-29.md",
   "dossier_sha256": "19199513bc80239d8c81bc2cf7e930e1b7353134a60c6ba7930f89c26a2cad81",
   "scope": "All distinct literal reason strings returned anywhere by the module's contract functions at this pinned source revision; grant-side annotations are excluded.",
@@ -37,8 +37,8 @@
       "value": "SPEC_SHA256 does not match current spec bytes",
       "source_spans": [
         {
-          "line_start": 930,
-          "line_end": 930
+          "line_start": 961,
+          "line_end": 961
         }
       ]
     },
@@ -171,8 +171,8 @@
       "value": "reviewed spec hash mismatch",
       "source_spans": [
         {
-          "line_start": 686,
-          "line_end": 686
+          "line_start": 684,
+          "line_end": 684
         }
       ]
     },
@@ -189,13 +189,22 @@
       "value": "transcript JSONL was not strictly readable",
       "source_spans": [
         {
+          "line_start": 754,
+          "line_end": 755
+        }
+      ]
+    },
+    {
+      "value": "current-window dispatch ids are missing, duplicate, or non-string",
+      "source_spans": [
+        {
           "line_start": 756,
           "line_end": 757
         }
       ]
     },
     {
-      "value": "current-window dispatch ids are missing, duplicate, or non-string",
+      "value": "current spec bytes do not match the Coder SPEC_SHA256",
       "source_spans": [
         {
           "line_start": 758,
@@ -204,20 +213,11 @@
       ]
     },
     {
-      "value": "current spec bytes do not match the Coder SPEC_SHA256",
-      "source_spans": [
-        {
-          "line_start": 760,
-          "line_end": 761
-        }
-      ]
-    },
-    {
       "value": "a qualifying Verifier dispatch for this spec hash returned an explicit PLAN_FAIL (veto)",
       "source_spans": [
         {
-          "line_start": 817,
-          "line_end": 818
+          "line_start": 815,
+          "line_end": 816
         }
       ]
     },
@@ -225,8 +225,8 @@
       "value": "a qualifying Verifier dispatch for this spec hash returned a non-PASS/invalid result: %s",
       "source_spans": [
         {
-          "line_start": 822,
-          "line_end": 823
+          "line_start": 820,
+          "line_end": 821
         }
       ]
     },
@@ -234,8 +234,8 @@
       "value": "no prior successful paired Verifier result reviewed this spec hash",
       "source_spans": [
         {
-          "line_start": 843,
-          "line_end": 843
+          "line_start": 841,
+          "line_end": 841
         }
       ]
     },
@@ -243,8 +243,8 @@
       "value": "no session_id for flag lookup",
       "source_spans": [
         {
-          "line_start": 860,
-          "line_end": 861
+          "line_start": 891,
+          "line_end": 892
         }
       ]
     },
@@ -252,8 +252,8 @@
       "value": "no spec hash for flag lookup",
       "source_spans": [
         {
-          "line_start": 862,
-          "line_end": 863
+          "line_start": 893,
+          "line_end": 894
         }
       ]
     },
@@ -261,8 +261,8 @@
       "value": "no matching verifier_pass flag for this spec hash",
       "source_spans": [
         {
-          "line_start": 893,
-          "line_end": 893
+          "line_start": 924,
+          "line_end": 924
         }
       ]
     },
@@ -270,8 +270,8 @@
       "value": "transcript unreadable or malformed",
       "source_spans": [
         {
-          "line_start": 896,
-          "line_end": 899
+          "line_start": 927,
+          "line_end": 930
         }
       ]
     },
@@ -279,8 +279,8 @@
       "value": "missing spec info",
       "source_spans": [
         {
-          "line_start": 901,
-          "line_end": 903
+          "line_start": 932,
+          "line_end": 934
         }
       ]
     }

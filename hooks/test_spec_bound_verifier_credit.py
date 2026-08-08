@@ -635,17 +635,200 @@ class SubagentStopGateFourthResponsibilityUntouchedAC8(unittest.TestCase):
     flag-writing, H-COMMIT-VIOLATION-FLAG-MISATTRIBUTION-1). This is a pure
     non-regression lock -- both assertions below are expected to already
     pass BEFORE the Coder's fix lands (subagent_stop_gate.py is untouched by
-    this build's own scope), and must remain passing after."""
+    this build's own scope), and must remain passing after.
 
-    def test_subagent_stop_gate_source_has_no_credit_gate_coupling(self):
+    2026-08-08: the source-grep assertion was narrowed and a pinned-import-
+    surface assertion added alongside it (three tests now, not two) -- see the
+    block comment above `FORBIDDEN_CREDIT_DECISION_SURFACES` for what changed
+    and why. The Fourth responsibility itself is untouched by that narrowing;
+    `test_fourth_responsibility_existing_regression_classes_still_green` below
+    is the assertion that actually guards it, and it is unchanged.
+
+    2026-08-08-2 (4th evasion shape, closed by independent re-verify): the
+    module name split across constant pieces -- `importlib.import_module(
+    "spec_bound_" + "verifier_credit")` -- bound the whole module while no
+    ast.Constant anywhere equaled the name; `import spec_bound_verifier_credit.
+    foo` escaped the bare-name check the same way (dotted alias). Both are
+    now folded/prefix-checked inside `test_subagent_stop_gate_credit_import_
+    surface_is_pinned`. DOCUMENTED RESIDUAL, deliberately not chased: an
+    ALLOWED import's `__globals__` attribute exposes the module dict and with
+    it every decision function; no static import-surface pin can stop
+    deliberate runtime metaprogramming (a bare `exec(...)` does the same).
+    The pin's job is blocking accidental/naive coupling, and it does that."""
+
+
+    # 2026-08-08 narrowing (H-PLANCHECK-TIER1-HASH-CAPTURE-1). The original
+    # form of this test also banned the bare module name
+    # "spec_bound_verifier_credit". That was over-broad for what AC8 is
+    # actually for. Read this class's own docstring: AC8 locks the FOURTH
+    # responsibility (.commit_violation) against a build whose scope did not
+    # include subagent_stop_gate.py at all -- the module-name ban was a
+    # build-scope fence, expressed as a grep, and it outlived its build.
+    #
+    # What the ban genuinely protects is that this hook must not re-implement
+    # or short-circuit the credit DECISION: turn-slicing, dispatch
+    # classification, record flattening. Those four names stay banned.
+    #
+    # What it must NOT prevent is the two files agreeing on the FORMAT of the
+    # hash the flag carries. subagent_stop_gate.py's tier 1 writes the value
+    # that spec_bound_verifier_credit.check_verifier_pass_flags later compares
+    # against a Coder's cited spec hash; when tier 1 kept its own private copy
+    # of that rule, the copy drifted (no uniqueness rule -> a Verifier's prose
+    # recap of an earlier round's hash was captured instead of its verdict's;
+    # no trailing word boundary -> a 65-hex value silently truncated to 64) and
+    # both drifts produced wrong-but-well-formed hashes that denied credit for
+    # legitimately plan-checked specs. Sharing one function is the fix, and it
+    # is this file's established pattern besides -- subagent_stop_gate.py
+    # already imports commit_scope_scan / closure_touch_scan / fixplan_closure_
+    # lint for exactly this "same shared, importable function" reason.
+    #
+    # So: decision surfaces banned, format helpers allowed -- and the allowed
+    # surface is PINNED by name below, which is a tighter constraint than the
+    # substring ban it replaces (that ban permitted nothing, then everything,
+    # the moment anyone deleted it).
+    #
+    # 2026-08-08-2 (H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1): tier 1 now
+    # runs the module's OWN `classify_plan_result_for_hash` -- the whole
+    # point of the fix -- so the classifier, the PlanResultOutcome enum it
+    # returns, and the two hash-format helpers are the sanctioned import set.
+    # The DECISION-SURFACE names above (turn-slicing, dispatch
+    # classification, record flattening) remain banned.
+    FORBIDDEN_CREDIT_DECISION_SURFACES = (
+        "current_turn(", "is_verifier_dispatch", "VERIFIER_DETECT",
+        "flatten_records",
+    )
+    ALLOWED_CREDIT_IMPORT_NAMES = {
+        "PlanResultOutcome", "SHA256_RE",
+        "classify_plan_result_for_hash", "sole_reviewed_spec_hash",
+    }
+
+    def test_subagent_stop_gate_source_has_no_credit_decision_coupling(self):
         src = open(os.path.join(HOOKS_DIR, "subagent_stop_gate.py"), encoding="utf-8").read()
-        for forbidden in ("spec_bound_verifier_credit", "current_turn(",
-                          "is_verifier_dispatch", "VERIFIER_DETECT", "flatten_records"):
+        for forbidden in self.FORBIDDEN_CREDIT_DECISION_SURFACES:
             self.assertNotIn(
                 forbidden, src,
-                "subagent_stop_gate.py must remain fully independent of the "
-                "spec-bound credit gate machinery per spec.md's [CONFIRMED] "
+                "subagent_stop_gate.py must not re-implement or short-circuit "
+                "the spec-bound credit DECISION per spec.md's [CONFIRMED] "
                 "Files-to-read note -- found unexpected coupling: %r" % (forbidden,))
+
+    def test_subagent_stop_gate_credit_import_surface_is_pinned(self):
+        """The one sanctioned coupling is narrow and stays narrow.
+
+        Parsed with `ast` rather than grepped so this pins the real import
+        surface: a blanket `import spec_bound_verifier_credit` (which would
+        reach every decision function in the module by attribute access, past
+        the substring ban above) fails here even though it introduces none of
+        the forbidden substrings.
+
+        Dynamic and relative import forms are covered too. An independent
+        verifier demonstrated three shapes that reached non-banned credit-
+        decision functions while an early version of this test passed:
+        `importlib.import_module("spec_bound_verifier_credit")`,
+        `__import__("spec_bound_verifier_credit")`, and
+        `from . import spec_bound_verifier_credit`. The module name appearing
+        as a bare string CONSTANT anywhere in the file is therefore rejected
+        outright — the two legitimate mentions are an `ImportFrom` target and
+        prose in comments/docstrings, neither of which is an `ast.Constant`.
+        """
+        import ast
+        src = open(os.path.join(HOOKS_DIR, "subagent_stop_gate.py"), encoding="utf-8").read()
+        tree = ast.parse(src)
+        MODULE = "spec_bound_verifier_credit"
+
+        # 2026-08-08-2 (4th evasion shape, found by independent re-verify of the
+        # H-PLANCHECK-TIER1-HASH-CAPTURE-1 narrowing): the module name split
+        # across a runtime-constructed string — `importlib.import_module(
+        # "spec_bound_" + "verifier_credit")` or an equivalent JoinedStr/join —
+        # binds the whole module while no ast.Constant anywhere equals MODULE,
+        # so the exact-string checks below walked right past it (it reached
+        # every credit-decision function, proven at runtime). Also `import
+        # spec_bound_verifier_credit.anything` imports the PACKAGE and reaches
+        # every decision function by attribute access, yet its alias name is
+        # the DOTTED string, unequal to MODULE. Both are closed here:
+        # foldable strings are folded (constant addition in statements) before
+        # comparison, and dotted aliases are banned via startswith. The
+        # `__globals__` attribute walk from an ALLOWED name remains a
+        # documented residual (see class docstring) — no static import-surface
+        # pin can prevent deliberate runtime metaprogramming, and exec would
+        # do the same.
+        def _folded_string(node):
+            """Return the constant string a node evaluates to, or None."""
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                return node.value
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+                left = _folded_string(node.left)
+                right = _folded_string(node.right)
+                if left is not None and right is not None:
+                    return left + right
+            if isinstance(node, ast.JoinedStr):
+                parts = []
+                for v in node.values:
+                    if isinstance(v, ast.FormattedValue):
+                        return None
+                    s = _folded_string(v)
+                    if s is None:
+                        return None
+                    parts.append(s)
+                return "".join(parts)
+            return None
+
+        imported = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    self.assertNotEqual(
+                        alias.name, MODULE,
+                        "subagent_stop_gate.py must import only the specific "
+                        "shared hash-format helpers from the credit module, "
+                        "never the whole module (attribute access would reach "
+                        "the credit-decision functions this class bans).")
+                    self.assertFalse(
+                        alias.name.startswith(MODULE + "."),
+                        "subagent_stop_gate.py aliases %r from the credit "
+                        "module. `import %s.foo` imports the package and binds "
+                        "%s, reaching every credit-decision function by "
+                        "attribute access while the bare-name check above "
+                        "cannot see it."
+                        % (alias.name, MODULE, MODULE))
+            elif isinstance(node, ast.ImportFrom):
+                # `from . import X` / `from .pkg import X` carry level > 0 and
+                # may name the module as an ALIAS rather than as node.module.
+                if node.module == MODULE:
+                    imported.update(alias.name for alias in node.names)
+                elif node.level:
+                    for alias in node.names:
+                        self.assertNotEqual(
+                            alias.name, MODULE,
+                            "relative `from . import %s` reaches the whole "
+                            "module; import the allowlisted names directly."
+                            % MODULE)
+            elif isinstance(node, ast.Constant) and node.value == MODULE:
+                self.fail(
+                    "subagent_stop_gate.py names %r as a string literal at "
+                    "line %d. That is the shape a dynamic import takes "
+                    "(importlib.import_module / __import__), which would "
+                    "reach every credit-decision function while satisfying "
+                    "the static checks above. Import the allowlisted names "
+                    "with a plain `from ... import ...` instead."
+                    % (MODULE, getattr(node, "lineno", -1)))
+            folded = _folded_string(node)
+            if isinstance(node, ast.BinOp) and folded == MODULE:
+                self.fail(
+                    "subagent_stop_gate.py reconstructs %r from constant "
+                    "pieces at line %d (string concatenation in a dynamic "
+                    "import). No single ast.Constant equals the module name, "
+                    "so this walks past the literal-string check above while "
+                    "binding the whole module at runtime. Import the "
+                    "allowlisted names with a plain `from ... import ...`."
+                    % (MODULE, getattr(node, "lineno", -1)))
+        self.assertTrue(
+            imported <= self.ALLOWED_CREDIT_IMPORT_NAMES,
+            "subagent_stop_gate.py imports non-allowlisted name(s) from "
+            "spec_bound_verifier_credit: %r. Only the reviewed-spec-hash "
+            "FORMAT helpers %r are sanctioned; anything else is credit-"
+            "decision coupling AC8 exists to prevent."
+            % (sorted(imported - self.ALLOWED_CREDIT_IMPORT_NAMES),
+               sorted(self.ALLOWED_CREDIT_IMPORT_NAMES)))
 
     def test_fourth_responsibility_existing_regression_classes_still_green(self):
         code, out, err = _run_pytest_selection(

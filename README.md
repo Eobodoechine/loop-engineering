@@ -9,7 +9,7 @@ backed by a deterministic check that can say *no*.
 > **Propose → verify → feed back → repeat. The loop is only as good as its verifier,
 > and a rule only counts if a check enforces it.**
 
-_Status as of 2026-08-03._
+_Status as of 2026-08-08._
 
 ## What is built and verified (today, on this tree)
 
@@ -3324,3 +3324,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-03)
 
 - docs(loop-team): reconcile B2 trailer plan lineage
+
+## Recent changes (auto-published 2026-08-08)
+
+- fix(credit-gate): bind plan-check flag to the verdict's own spec hash

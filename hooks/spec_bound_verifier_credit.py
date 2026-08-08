@@ -672,17 +672,15 @@ def classify_plan_result_for_hash(tool_result, reviewed_hash, cwd=None):
                     "decoy LOOP_GATE token in agentId suffix")
 
     before_gate = lines[:gate_idx]
-    reviewed_hashes = []
-    support_lines = []
-    for ln in before_gate:
-        reviewed_hashes.extend(REVIEWED_HASH_RE.findall(ln))
-        if ln.startswith(PLAN_SUPPORT_PREFIX):
-            support_lines.append(ln)
+    support_lines = [ln for ln in before_gate if ln.startswith(PLAN_SUPPORT_PREFIX)]
 
-    if len(reviewed_hashes) != 1:
+    # Same rule, same function as subagent_stop_gate.py's tier-1 flag write --
+    # see sole_reviewed_spec_hash's docstring for why these two must not drift.
+    sole_hash = sole_reviewed_spec_hash(before_gate)
+    if sole_hash is None:
         return (PlanResultOutcome.OTHER_INVALID_OR_AMBIGUOUS,
                 "expected exactly one REVIEWED_SPEC_SHA256 before final gate")
-    if reviewed_hashes[0] != reviewed_hash:
+    if sole_hash != reviewed_hash:
         return PlanResultOutcome.OTHER_INVALID_OR_AMBIGUOUS, "reviewed spec hash mismatch"
     if not support_lines:
         return (PlanResultOutcome.SUPPORT_INVALID_DECLARED_PASS,
@@ -845,6 +843,39 @@ def prior_verifier_credit(records, coder_pos, coder_info, cwd=None, blocked_ids=
         reason += ("; %d support-invalid declared PLAN_PASS attempt(s) granted no credit"
                    % support_invalid_count)
     return False, reason
+
+
+def sole_reviewed_spec_hash(lines_before_gate):
+    """Return THE single `REVIEWED_SPEC_SHA256=` value in `lines_before_gate`.
+
+    Shared by BOTH credit paths so they can never drift apart:
+      * `classify_plan_result_for_hash` below (transcript path), and
+      * `subagent_stop_gate.py`'s tier-1 `.verifier_pass` flag write
+        (cross-turn flag path).
+    Those two paths are OR'd in `authorize_coder_from_transcript` — the flag
+    is consulted precisely when the transcript scan denied credit — so any
+    rule the flag path applies more loosely than this one becomes a side
+    door around it. Keeping the rule in one function is what prevents that.
+
+    Returns None on 0 matches AND on 2+ matches. 2+ is genuinely ambiguous:
+    a Verifier that recaps an earlier round's hash in prose before emitting
+    its own verdict yields two, and there is no sound way to tell the recap
+    from the verdict by position alone. Callers MUST fail closed on None
+    rather than pick one — a wrong-but-well-formed 64-hex hash is
+    indistinguishable from a right one at every downstream consumer.
+
+    `REVIEWED_HASH_RE`'s trailing `(?:\\b|(?=agentId:))` also makes a 65+
+    hex-char value a non-match rather than a silent truncation to its first
+    64 characters, while still tolerating the harness's glued `agentId:`
+    metadata. Case is deliberately not normalized: every hash surface in
+    this framework is lowercase-canonical (`HASH_RE`, `SPEC_HASH_LINE_RE`,
+    `SHA256_RE`, and `hashlib.sha256().hexdigest()` itself), so an uppercase
+    64-hex value is rejected here exactly as it is everywhere else.
+    """
+    hashes = []
+    for ln in lines_before_gate:
+        hashes.extend(REVIEWED_HASH_RE.findall(ln))
+    return hashes[0] if len(hashes) == 1 else None
 
 
 def check_verifier_pass_flags(session_id, coder_spec_hash, gate_dir=None):

@@ -7,6 +7,7 @@ Run with:
     python3 -m pytest hooks/test_subagent_stop_gate.py -q
 """
 import glob
+import hashlib
 import json
 import os
 import shutil
@@ -55,6 +56,48 @@ def flag_path(session_id, agent_id="*"):
 
 def unique_session():
     return f"test-session-{uuid.uuid4()}"
+
+
+def validated_review_lam(pre="Reviewed the spec end to end.\n",
+                         gate="LOOP_GATE: PLAN_PASS"):
+    """Build a `last_assistant_message` that tier 1 ACCEPTS, plus the on-disk
+    artifact it cites.
+
+    H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1 (2026-08-08): tier 1 writes
+    .verifier_pass ONLY when the FULL transcript classifier returns
+    VALID_PASS -- a bare trailing LOOP_GATE line no longer authorizes
+    anything. A VALID_PASS requires a genuinely valid PLAN_SUPPORT_JSON
+    line-span citation over a REAL file whose sha256-joined-lines digest
+    matches evidence_sha256, a unique REVIEWED_SPEC_SHA256 before the gate,
+    and exactly one canonical LOOP_AGTEL. The artifact path is absolute, so
+    validation succeeds with or without a usable payload `cwd`.
+
+    Legacy fixtures that exercise OTHER behaviors (agent-id fallbacks,
+    last-line filtering, debug/trace logging, precedence, exception
+    isolation) but still expect a flag to be written must drive the hook
+    through this lam.
+
+    Returns (lam, artifact_path)."""
+    artifact_dir = tempfile.mkdtemp(prefix="loop-gate-validated-")
+    artifact = os.path.join(artifact_dir, "evidence.md")
+    evidence = ["Evidence line one.", "Evidence line two."]
+    with open(artifact, "w", encoding="utf-8") as f:
+        f.write("\n".join(evidence) + "\n")
+    digest = hashlib.sha256("\n".join(evidence).encode("utf-8")).hexdigest()
+    reviewed = "e" * 64
+    support = "PLAN_SUPPORT_JSON=" + json.dumps({
+        "artifact_path": artifact,
+        "line_start": 1,
+        "line_end": 2,
+        "evidence_sha256": digest,
+        "claim": "reviewed",
+        "spec_sha256": reviewed,
+    })
+    lam = "%s\n%s\nREVIEWED_SPEC_SHA256=%s\n%s" % (
+        pre, support, reviewed, gate)
+    return lam, artifact
+
+VALIDATED_HASH = "e" * 64
 
 
 def unique_run_name(prefix="trace-test"):
@@ -204,10 +247,11 @@ class SubagentStopGateFlagWrite(unittest.TestCase):
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
-            "last_assistant_message": "Some preamble\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -240,9 +284,10 @@ class SubagentStopGateFlagWrite(unittest.TestCase):
     def test_missing_agent_id_uses_unknown(self):
         sid = unique_session()
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
-            "last_assistant_message": "All checks pass\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -256,10 +301,11 @@ class SubagentStopGateFlagWrite(unittest.TestCase):
     def test_empty_agent_id_uses_unknown(self):
         sid = unique_session()
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": "",
-            "last_assistant_message": "LOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -270,10 +316,11 @@ class SubagentStopGateFlagWrite(unittest.TestCase):
     def test_whitespace_agent_id_uses_unknown(self):
         sid = unique_session()
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": "   ",
-            "last_assistant_message": "LOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -427,10 +474,11 @@ class SubagentStopGateLastLineFiltering(unittest.TestCase):
         sid = unique_session()
         aid = "a1"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
-            "last_assistant_message": "Preamble text\nLOOP_GATE: PLAN_PASS\n",
+            "last_assistant_message": lam + "\n",
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -442,10 +490,12 @@ class SubagentStopGateLastLineFiltering(unittest.TestCase):
         sid = unique_session()
         aid = "a2"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
-            "last_assistant_message": "  LOOP_GATE: PLAN_PASS   ",
+            "last_assistant_message": lam.replace(
+                "LOOP_GATE: PLAN_PASS", "  LOOP_GATE: PLAN_PASS   "),
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -464,8 +514,12 @@ class SubagentStopGateLastLineFiltering(unittest.TestCase):
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
-        expected = os.path.join(GATE_DIR, f"{sid}_{aid}.verifier_pass")
-        self.assertTrue(os.path.exists(expected))
+        pattern = os.path.join(GATE_DIR, f"{sid}_*.verifier_pass")
+        self.assertEqual(
+            glob.glob(pattern), [],
+            "the classifier's gate contract is the canonical uppercase line; "
+            "since H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1 tier 1 runs "
+            "the full classifier, a lowercase gate must not write a flag")
 
     # [BEHAVIORAL] AC-11: all-whitespace message → no lines after strip → exit 0, no flag.
     def test_all_whitespace_message_no_flag(self):
@@ -547,10 +601,11 @@ class SubagentGateDebugLog(unittest.TestCase):
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
-            "last_assistant_message": "Some preamble\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -902,11 +957,12 @@ class TraceLoggingVerdictAndFlagCoexistence(unittest.TestCase):
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": tpath,
-            "last_assistant_message": "Spec reviewed, no gaps.\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -1028,11 +1084,12 @@ class TraceLoggingExceptionSafetyDoesNotBreakFlagWrite(unittest.TestCase):
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": self._tmpdir,  # a directory, not a file
-            "last_assistant_message": "Reviewed.\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, stderr = run_gate(payload)
         self.assertEqual(code, 0)
@@ -1059,11 +1116,12 @@ class TraceLoggingExceptionSafetyDoesNotBreakFlagWrite(unittest.TestCase):
             f"loop-team/runs/{hostile_name}/specs/spec.md\n"
         )
         tpath = write_transcript(self._tmpdir, transcript_body)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": tpath,
-            "last_assistant_message": "Done.\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, stderr = run_gate(payload)
         self.assertEqual(code, 0)
@@ -1099,11 +1157,12 @@ class TraceLoggingExceptionSafetyDoesNotBreakFlagWrite(unittest.TestCase):
             sid = unique_session()
             aid = f"agent-{uuid.uuid4()}"
             self._sessions_to_clean.append(sid)
+            lam, _ = validated_review_lam()
             payload = {
                 "session_id": sid,
                 "agent_id": aid,
                 "transcript_path": tpath,
-                "last_assistant_message": "Done.\nLOOP_GATE: PLAN_PASS",
+                "last_assistant_message": lam,
             }
             code, stderr = run_gate(payload)
             self.assertEqual(code, 0)
@@ -2202,11 +2261,12 @@ class PrecedenceRuleBetweenFreeTextAndStructuredOutput(unittest.TestCase):
         tpath = write_jsonl_transcript(self._tmpdir, [
             structured_output_event("run-x", "PLAN_PASS"),
         ])
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": tpath,
-            "last_assistant_message": "All good.\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -2257,11 +2317,12 @@ class PrecedenceRuleBetweenFreeTextAndStructuredOutput(unittest.TestCase):
         tpath = write_jsonl_transcript(self._tmpdir, [
             structured_output_event("run-x", "PLAN_FAIL"),
         ])
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": tpath,
-            "last_assistant_message": "No gaps found.\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
@@ -2864,23 +2925,27 @@ class FourthResponsibilityFlagWriteGuardExtension(unittest.TestCase):
                 except OSError:
                     pass
 
-    # [BEHAVIORAL] AC7b: tier-1 (free-text PLAN_PASS) call site still writes
-    # an EMPTY .verifier_pass file.
-    def test_tier1_still_writes_empty_verifier_pass_file(self):
+    # [BEHAVIORAL] AC7b: the tier-1 call site now writes the VALIDATED
+    # reviewed-spec hash (H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1) -- the
+    # write site is still additive; the payload it writes changed by rule,
+    # not by wiring.
+    def test_tier1_flag_carries_validated_hash(self):
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         self._sessions_to_clean.append(sid)
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
-            "last_assistant_message": "Some preamble\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, _ = run_gate(payload)
         self.assertEqual(code, 0)
         expected = os.path.join(GATE_DIR, f"{sid}_{aid}.verifier_pass")
         self.assertTrue(os.path.exists(expected))
         with open(expected, encoding="utf-8") as f:
-            self.assertEqual(f.read(), "", "tier-1 flag must still be EMPTY, byte-for-byte")
+            self.assertEqual(f.read(), VALIDATED_HASH,
+                             "tier-1 flag must carry the validated reviewed hash")
 
     # [BEHAVIORAL] AC7b: tier-3 (StructuredOutput fallback) call site still
     # writes an EMPTY .verifier_pass file.
@@ -2935,11 +3000,12 @@ class FourthResponsibilityExceptionSafety(unittest.TestCase):
         tmpdir = tempfile.mkdtemp()
         tpath = write_jsonl_transcript(
             tmpdir, ["not json at all {{{", "{ also not valid json"])
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": tpath,
-            "last_assistant_message": "Some preamble\nLOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, err = run_gate(payload)
         self.assertEqual(code, 0, err)
@@ -2957,11 +3023,12 @@ class FourthResponsibilityExceptionSafety(unittest.TestCase):
         aid = f"agent-{uuid.uuid4()}"
         self._sessions_to_clean.append(sid)
         bogus_path = tempfile.mkdtemp()  # a directory, not a file
+        lam, _ = validated_review_lam()
         payload = {
             "session_id": sid,
             "agent_id": aid,
             "transcript_path": bogus_path,
-            "last_assistant_message": "LOOP_GATE: PLAN_PASS",
+            "last_assistant_message": lam,
         }
         code, err = run_gate(payload)
         self.assertEqual(code, 0, err)
@@ -3010,8 +3077,9 @@ class FourthResponsibilityCwdFallback(unittest.TestCase):
         transcript_events = [commit_bash_tool_use_event("rcX", "git commit -m \"x\"")]
         tpath = write_transcript(
             tmpdir, "\n".join(json.dumps(e) for e in transcript_events) + "\n")
+        lam, _ = validated_review_lam()
         payload = {"session_id": sid, "agent_id": aid, "transcript_path": tpath,
-                  "last_assistant_message": "LOOP_GATE: PLAN_PASS"}
+                  "last_assistant_message": lam}
         if cwd_value is not _SENTINEL:
             payload["cwd"] = cwd_value
         code, err = run_gate(payload)
@@ -3350,15 +3418,17 @@ class WriteFlagIfGuardedSignatureExtensionIndependentTW1(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
-    def test_tier1_plan_pass_still_writes_empty_verifier_pass_file(self):
-        # Tier 1: explicit free-text "LOOP_GATE: PLAN_PASS" last line.
+    def test_tier1_plan_pass_carries_validated_hash(self):
+        # Tier 1: explicit free-text gate completion plus a genuinely valid
+        # citation (validated_review_lam): the flag must carry the hash.
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         try:
+            lam, _ = validated_review_lam()
             payload = {
                 "session_id": sid,
                 "agent_id": aid,
-                "last_assistant_message": "Reviewed, no gaps.\nLOOP_GATE: PLAN_PASS",
+                "last_assistant_message": lam,
             }
             code, err = run_gate(payload)
             self.assertEqual(code, 0, err)
@@ -3368,10 +3438,10 @@ class WriteFlagIfGuardedSignatureExtensionIndependentTW1(unittest.TestCase):
             # passes NO extra ext/content arguments, so the written file
             # must still be exactly empty (0 bytes), not carrying any
             # commit_violation-style JSON content.
-            self.assertEqual(os.path.getsize(expected), 0,
-                             "tier-1 .verifier_pass file must remain byte-for-byte "
-                             "empty after the _write_flag_if_guarded signature "
-                             "extension")
+            self.assertEqual(os.path.getsize(expected), 64,
+                             "tier-1 .verifier_pass must carry the validated "
+                             "reviewed-spec hash (64 hex) after the "
+                             "_write_flag_if_guarded signature extension")
         finally:
             _tw1_cleanup_verifier_pass(sid)
 
@@ -3414,15 +3484,16 @@ class WriteFlagIfGuardedSignatureExtensionIndependentTW1(unittest.TestCase):
         # (unrelated to ext/content) must still work unchanged too.
         sid = unique_session()
         try:
+            lam, _ = validated_review_lam()
             payload = {
                 "session_id": sid,
-                "last_assistant_message": "All good.\nLOOP_GATE: PLAN_PASS",
+                "last_assistant_message": lam,
             }
             code, err = run_gate(payload)
             self.assertEqual(code, 0, err)
             expected = os.path.join(GATE_DIR, f"{sid}_unknown.verifier_pass")
             self.assertTrue(os.path.exists(expected))
-            self.assertEqual(os.path.getsize(expected), 0)
+            self.assertEqual(os.path.getsize(expected), 64)
         finally:
             _tw1_cleanup_verifier_pass(sid)
 
@@ -3447,12 +3518,13 @@ class FourthResponsibilityExceptionIsolationIndependentTW1(unittest.TestCase):
         sid = unique_session()
         aid = f"agent-{uuid.uuid4()}"
         try:
+            lam, _ = validated_review_lam()
             payload = {
                 "session_id": sid,
                 "agent_id": aid,
                 "transcript_path": self.tmpdir,  # a directory, not a file
                 "cwd": self.tmpdir,
-                "last_assistant_message": "Reviewed.\nLOOP_GATE: PLAN_PASS",
+                "last_assistant_message": lam,
             }
             code, err = run_gate(payload)
             self.assertEqual(code, 0, err)
@@ -3479,12 +3551,13 @@ class FourthResponsibilityExceptionIsolationIndependentTW1(unittest.TestCase):
             with open(path, "w", encoding="utf-8") as f:
                 f.write("this is not valid JSON at all {{{\n")
                 f.write("neither is this [[[\n")
+            lam, _ = validated_review_lam()
             payload = {
                 "session_id": sid,
                 "agent_id": aid,
                 "transcript_path": path,
                 "cwd": "/nonexistent/hostile/cwd/path",
-                "last_assistant_message": "Reviewed.\nLOOP_GATE: PLAN_PASS",
+                "last_assistant_message": lam,
             }
             code, err = run_gate(payload)
             self.assertEqual(code, 0, err)
@@ -3659,11 +3732,12 @@ class CwdFallbackTargetResolutionIndependentTW1(unittest.TestCase):
         aid = f"agent-{uuid.uuid4()}"
         try:
             tpath = self._commit_and_transcript()
+            lam, _ = validated_review_lam()
             payload = {
                 "session_id": sid,
                 "agent_id": aid,
                 "transcript_path": tpath,
-                "last_assistant_message": "Reviewed.\nLOOP_GATE: PLAN_PASS",
+                "last_assistant_message": lam,
             }
             code, err = run_gate(payload)
             self.assertEqual(code, 0, err)
@@ -4260,6 +4334,364 @@ class LoopGateFormatFixTierPrecedenceRealScriptOutput(unittest.TestCase):
             f"script's FAIL output as the last_assistant_message tail: "
             f"{real_output!r}",
         )
+
+
+class ReviewedHashCaptureIsVerdictScopedAndUnique(unittest.TestCase):
+    """H-PLANCHECK-TIER1-HASH-CAPTURE-1: tier 1 must capture the hash its OWN
+    verdict reviewed, or nothing -- never a different well-formed hash.
+
+    Tier 1 used `re.search(r"\\bREVIEWED_SPEC_SHA256=([0-9a-f]{64})", lam)`,
+    which returns the FIRST match anywhere in `last_assistant_message`. The
+    flag content it writes is compared for exact equality against the Coder's
+    cited spec hash by `spec_bound_verifier_credit.check_verifier_pass_flags`,
+    so capturing the wrong 64-hex value is indistinguishable downstream from
+    capturing no value: credit is denied, with nothing in the flag to say why.
+    That is the "flaky gate" symptom this class pins.
+
+    Every case below asserts what the flag path DOES with the message --
+    flag CONTENT when it writes, or NO flag when it refuses. Existence-only
+    assertions cannot discriminate either bug (the old implementation wrote
+    a flag too -- just with the wrong bytes or for the wrong reasons).
+    Since H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1 (2026-08-08), tier 1
+    writes ONLY when the full transcript classifier returns VALID_PASS, so
+    the refusal cases below assert IsNone (no flag) rather than an empty
+    flag: an empty-content flag would also be non-authorizing at the
+    consumer, but writing nothing at all is the cleaner, and now actual,
+    contract.
+    """
+
+    RIGHT = "b" * 64   # the hash this verdict actually reviewed
+    STALE = "a" * 64   # an earlier round's hash, recapped in prose
+
+    def setUp(self):
+        self._sessions_to_clean = []
+        self._tmpdirs = []
+
+    def tearDown(self):
+        for sid in self._sessions_to_clean:
+            for path in glob.glob(os.path.join(GATE_DIR, f"{sid}_*")):
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+        for d in self._tmpdirs:
+            shutil.rmtree(d, ignore_errors=True)
+
+    def _fire_tier1(self, lam, cwd=None):
+        """Run the gate on a tier-1 (free-text PLAN_PASS) payload; return the
+        .verifier_pass flag's content, or None if no flag was written."""
+        sid = unique_session()
+        self._sessions_to_clean.append(sid)
+        payload = {
+            "session_id": sid,
+            "agent_id": f"agent-{uuid.uuid4()}",
+            "last_assistant_message": lam,
+        }
+        if cwd is not None:
+            payload["cwd"] = cwd
+        code, err = run_gate(payload)
+        self.assertEqual(code, 0, err)
+        found = glob.glob(os.path.join(GATE_DIR, f"{sid}_*.verifier_pass"))
+        if not found:
+            return None
+        with open(found[0], encoding="utf-8") as f:
+            return f.read()
+
+    def _make_artifact(self, prefix="t1-art-"):
+        """Create a real 2-line artifact file; return (dir, path)."""
+        tmpdir = tempfile.mkdtemp(prefix=prefix)
+        self._tmpdirs.append(tmpdir)
+        path = os.path.join(tmpdir, "artifact.md")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("evidence line one\nevidence line two\n")
+        return tmpdir, path
+
+    def _support_line(self, path, hashv, line_start=1, line_end=2):
+        """Build a genuinely-valid PLAN_SUPPORT_JSON citation. The digest is
+        the same sha256-of-joined-lines rule the transcript classifier applies
+        (`_support_span_digest`), computed here independently so the fixture
+        is truthful rather than borrowed from the module under test."""
+        with open(path, encoding="utf-8") as f:
+            lines = f.read().splitlines()
+        digest = hashlib.sha256(
+            "\n".join(lines[line_start - 1:line_end]).encode("utf-8")).hexdigest()
+        return "PLAN_SUPPORT_JSON=%s" % json.dumps({
+            "artifact_path": path, "line_start": line_start, "line_end": line_end,
+            "evidence_sha256": digest, "claim": "reviewed", "spec_sha256": hashv})
+
+    def _fire_tier3(self, reviewed_value):
+        """Run the gate on a tier-3 (StructuredOutput PLAN_PASS) payload with
+        the given `reviewed_spec_sha256` value; return the flag's content."""
+        sid = unique_session()
+        self._sessions_to_clean.append(sid)
+        tmpdir = tempfile.mkdtemp(prefix="t3-hash-")
+        self._tmpdirs.append(tmpdir)
+        transcript = write_jsonl_transcript(tmpdir, [
+            structured_output_event(
+                "tier3-hash", "PLAN_PASS",
+                extra_input={"reviewed_spec_sha256": reviewed_value}),
+        ])
+        code, err = run_gate({
+            "session_id": sid,
+            "agent_id": f"agent-{uuid.uuid4()}",
+            "transcript_path": transcript,
+            # No free-text verdict line -> tiers 1 and 2 both miss, tier 3 runs.
+            "last_assistant_message": "Verdict emitted via StructuredOutput.",
+        })
+        self.assertEqual(code, 0, err)
+        found = glob.glob(os.path.join(GATE_DIR, f"{sid}_*.verifier_pass"))
+        if not found:
+            return None
+        with open(found[0], encoding="utf-8") as f:
+            return f.read()
+
+    # ---- tier 1: the reported bug -------------------------------------
+
+    def test_prose_recap_of_earlier_hash_does_not_displace_the_verdict_hash(self):
+        """The reported failure, verbatim in shape: a round-2 Verifier recaps
+        round 1's hash in prose, THEN emits its own contract trailer. Two
+        distinct hashes before the gate is ambiguous; tier 1 runs the FULL
+        transcript classifier these days, so no flag is written at all -- the
+        flag is the OR-fallback the Coder's credit check consults when the
+        transcript path denied, and the transcript path classifies this exact
+        text as OTHER_INVALID_OR_AMBIGUOUS ('expected exactly one
+        REVIEWED_SPEC_SHA256 before final gate')."""
+        content = self._fire_tier1(
+            "Round 2 of this plan-check.\n"
+            "In round 1 I reviewed REVIEWED_SPEC_SHA256=%s and returned PLAN_FAIL.\n"
+            "The spec has since been edited; reviewing the new bytes now.\n"
+            "PLAN_SUPPORT_JSON={\"evidence_sha256\": \"deadbeef\"}\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_PASS" % (self.STALE, self.RIGHT))
+        self.assertIsNone(
+            content,
+            "two REVIEWED_SPEC_SHA256 values before the gate is ambiguous; "
+            "tier 1 must fail closed with NO flag, exactly as the transcript "
+            "path classifies the same text (OTHER_INVALID_OR_AMBIGUOUS, "
+            "'expected exactly one REVIEWED_SPEC_SHA256 before final gate')")
+
+    def test_single_hash_before_gate_is_captured_unchanged(self):
+        """The happy path stays green: one hash, a GENUINELY VALID on-disk
+        PLAN_SUPPORT_JSON citation (the classifier validates the artifact
+        file, so the fixture must be real), contract order, captured."""
+        tmpdir, path = self._make_artifact()
+        content = self._fire_tier1(
+            "Reviewed the spec end to end.\n"
+            "%s\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_PASS" % (self._support_line(path, self.RIGHT), self.RIGHT),
+            cwd=tmpdir)
+        self.assertEqual(content, self.RIGHT)
+
+    def test_hash_only_after_the_gate_line_is_not_captured(self):
+        """Scope is the lines BEFORE the gate, mirroring the transcript path's
+        `lines[:gate_idx]`. A hash trailing the verdict is not this verdict's
+        citation and must not become flag content."""
+        content = self._fire_tier1(
+            "REVIEWED_SPEC_SHA256 appears only after the verdict below.\n"
+            "LOOP_GATE: PLAN_PASS\n"
+            "REVIEWED_SPEC_SHA256=%s" % self.RIGHT)
+        # Trailing content moves the gate off the last line, so tier 1 never
+        # fires at all -- no flag, rather than a flag naming an uncited hash.
+        #
+        # HONEST LIMIT (verifier finding): this assertion is documentation,
+        # not a discriminator. An independent verifier mutated `_lam_lines[:-1]`
+        # back to `_lam_lines` and this test stayed GREEN -- the no-flag
+        # outcome here is guaranteed by the pre-existing "gate must be the
+        # last non-empty line" rule, not by the scope narrowing it appears to
+        # test. Kept because the PROPERTY is worth stating, but do not read it
+        # as coverage of the scope change. The scope change is provably
+        # behavior-equivalent anyway (the gate line cannot contain a 64-hex
+        # REVIEWED_SPEC_SHA256 marker and still equal 'loop_gate: plan_pass'),
+        # which is why no test can distinguish the two forms.
+        self.assertIsNone(
+            content,
+            "a hash after the gate line must not be captured as the reviewed "
+            "hash")
+
+    def test_sixty_five_hex_value_is_rejected_not_truncated_to_sixty_four(self):
+        """The old pattern had no trailing boundary, so a 65-hex value matched
+        its first 64 characters -- another wrong-but-well-formed hash. The
+        shared REVIEWED_HASH_RE's `(?:\\b|(?=agentId:))` makes it a non-match,
+        so the classifier sees zero hashes and tier 1 writes no flag."""
+        content = self._fire_tier1(
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_PASS" % ("c" * 65))
+        self.assertIsNone(
+            content,
+            "a 65-hex value must not be silently truncated to a valid-looking "
+            "64-hex hash")
+
+    def test_uppercase_hex_is_rejected(self):
+        """Explicit decision, not an accident of the pattern: every hash
+        surface in this framework is lowercase-canonical (HASH_RE,
+        SPEC_HASH_LINE_RE, SHA256_RE, and hashlib's own hexdigest()), so an
+        uppercase 64-hex value is not a valid reviewed-spec hash here."""
+        content = self._fire_tier1(
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_PASS" % ("A" * 64))
+        self.assertIsNone(content, "uppercase hex must not be accepted")
+
+    def test_glued_agentid_metadata_after_hash_still_captures_the_hash(self):
+        """The `(?=agentId:)` half of the shared pattern earns its keep: the
+        harness can glue its own `agentId:` metadata straight onto a line with
+        no separating newline. That is runtime metadata, not malformation.
+        A genuinely valid support citation is included so the classifier
+        reaches VALID_PASS and the flag carries the hash."""
+        tmpdir, path = self._make_artifact()
+        content = self._fire_tier1(
+            "REVIEWED_SPEC_SHA256=%sagentId: a6792fad616e56f8f (use SendMessage)\n"
+            "%s\n"
+            "LOOP_GATE: PLAN_PASS" % (self.RIGHT, self._support_line(path, self.RIGHT)),
+            cwd=tmpdir)
+        self.assertEqual(content, self.RIGHT)
+
+    # ---- H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1: flag = transcript
+    #      discipline, not a side door. These rows were demonstrated to grant
+    #      credit under the hash-only rule; the full-classifier rule must deny
+    #      each one. ------------------------------------------------------
+
+    def test_missing_plan_support_json_denies_the_flag(self):
+        """The transcript classifier requires at least one genuinely valid
+        PLAN_SUPPORT_JSON line-span citation after a unique reviewed hash;
+        the flag path must not be the door around that (the flexible check is
+        an OR-fallback consulted exactly when the transcript path denied)."""
+        content = self._fire_tier1(
+            "Reviewed.\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_PASS" % self.RIGHT)
+        self.assertIsNone(content, "no PLAN_SUPPORT_JSON -> no flag")
+
+    def test_fake_plan_support_evidence_hash_denies_the_flag(self):
+        """Even with a PLAN_SUPPORT_JSON line present, a non-real
+        evidence_sha256 (not a 64-hex of real file lines) is a malformed
+        citation; the classifier's SUPPORT_INVALID_DECLARED_PASS is not a
+        VALID_PASS and must not write."""
+        content = self._fire_tier1(
+            "Reviewed.\n"
+            "PLAN_SUPPORT_JSON={\"evidence_sha256\": \"deadbeef\"}\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_PASS" % self.RIGHT)
+        self.assertIsNone(content, "non-canonical evidence hash -> no flag")
+
+    def test_decoy_second_loop_gate_line_denies_the_flag(self):
+        """A decoy LOOP_GATE: line anywhere in the message is rejected by the
+        transcript classifier ('expected exactly one LOOP_GATE line'). The
+        flag path used to ignore it -- the hook took the LAST line at face
+        value. The classifier sees two gates and must deny."""
+        tmpdir, path = self._make_artifact()
+        content = self._fire_tier1(
+            "Reviewed.\n"
+            "%s\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "LOOP_GATE: PLAN_FAIL\n"
+            "LOOP_GATE: PLAN_PASS" % (self._support_line(path, self.RIGHT), self.RIGHT),
+            cwd=tmpdir)
+        self.assertIsNone(content, "decoy second LOOP_GATE line -> no flag")
+
+    def test_decoy_pass_gate_then_fail_gate_denies_the_flag(self):
+        """The textually-last-wins shape: a decoy PLAN_PASS followed by a
+        genuine PLAN_FAIL. Two gates -> ambiguous -> deny, from the same rule
+        the transcript path applies."""
+        tmpdir, path = self._make_artifact()
+        content = self._fire_tier1(
+            "Reviewed.\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "%s\n"
+            "LOOP_GATE: PLAN_PASS\n"
+            "LOOP_GATE: PLAN_FAIL" % (self.RIGHT, self._support_line(path, self.RIGHT)),
+            cwd=tmpdir)
+        self.assertIsNone(content, "PLAN_PASS then PLAN_FAIL -> no flag")
+
+    def test_lowercase_gate_line_denies_the_flag(self):
+        """Tier 1's entry condition lowercases the last line, so a literal
+        'loop_gate: plan_pass' fires the branch -- but the classifier's own
+        gate-line contract is the canonical uppercase form. The flag path
+        must be as strict as the transcript path on the verdict line itself."""
+        tmpdir, path = self._make_artifact()
+        content = self._fire_tier1(
+            "Reviewed.\n"
+            "%s\n"
+            "REVIEWED_SPEC_SHA256=%s\n"
+            "loop_gate: plan_pass" % (self._support_line(path, self.RIGHT), self.RIGHT),
+            cwd=tmpdir)
+        self.assertIsNone(content, "non-canonical (lowercase) gate line -> no flag")
+
+    # ---- tier 3: shape validation symmetry -----------------------------
+
+    def test_tier3_valid_hash_is_captured_unchanged(self):
+        self.assertEqual(self._fire_tier3(self.RIGHT), self.RIGHT)
+
+    def test_tier3_rejects_non_canonical_values(self):
+        """Tier 3 wrote model-authored JSON verbatim with no shape check at
+        all. Each value below is well-formed JSON and none can ever equal a
+        real spec hash, so writing it into an authorization flag is noise."""
+        for bad, label in (
+            ("A" * 64, "uppercase hex"),
+            ("c" * 65, "65 hex chars"),
+            ("d" * 63, "63 hex chars"),
+            ("z" * 64, "64 non-hex chars"),
+            ("<computed>", "placeholder text"),
+            ("REVIEWED_SPEC_SHA256=" + "b" * 64, "whole marker line"),
+        ):
+            with self.subTest(value=label):
+                self.assertEqual(
+                    self._fire_tier3(bad), "",
+                    "tier 3 must not write a non-canonical %s into the flag" % label)
+
+    def test_tier3_tolerates_surrounding_whitespace(self):
+        """The consumer strips on read, so stripping here only makes the two
+        tiers agree on what counts as valid."""
+        self.assertEqual(self._fire_tier3("  %s\n" % self.RIGHT), self.RIGHT)
+
+
+class ReviewedHashRuleIsSharedWithTheCreditPath(unittest.TestCase):
+    """The two credit paths must apply ONE rule, not two that resemble each
+    other. `authorize_coder_from_transcript` consults the flag precisely when
+    the transcript scan denied credit, so a flag path that is even slightly
+    more permissive is a side door around the transcript path's own
+    anti-ambiguity rule.
+
+    This is the drift guard: it fails if either path grows a private copy of
+    the rule, which is exactly how the first-match bug arose.
+    """
+
+    def test_both_paths_agree_on_ambiguous_and_unique_input(self):
+        sys.path.insert(0, HOOKS_DIR)
+        import spec_bound_verifier_credit as sb
+
+        right, stale = "b" * 64, "a" * 64
+        ambiguous = ["REVIEWED_SPEC_SHA256=%s recapped" % stale,
+                     "REVIEWED_SPEC_SHA256=%s" % right]
+        unique = ["REVIEWED_SPEC_SHA256=%s" % right]
+
+        self.assertIsNone(
+            sb.sole_reviewed_spec_hash(ambiguous),
+            "2+ hashes before the gate is ambiguous, never 'take one'")
+        self.assertEqual(sb.sole_reviewed_spec_hash(unique), right)
+        self.assertIsNone(sb.sole_reviewed_spec_hash([]))
+
+        # The transcript path must classify the SAME ambiguous text as
+        # invalid -- this is the property the flag path now mirrors.
+        result = {"content": "\n".join(ambiguous + ["LOOP_GATE: PLAN_PASS"])}
+        outcome, reason = sb.classify_plan_result_for_hash(result, right)
+        self.assertIs(outcome, sb.PlanResultOutcome.OTHER_INVALID_OR_AMBIGUOUS)
+        self.assertIn("expected exactly one REVIEWED_SPEC_SHA256", reason)
+
+    def test_tier1_consumes_the_shared_rule_rather_than_a_local_pattern(self):
+        """A private `REVIEWED_SPEC_SHA256=` regex in the hook is the drift
+        this fix removes; re-introducing one must fail loudly here. Tier 1
+        must consume the module's OWN full `classify_plan_result_for_hash`
+        (and the shared unique-hash helper it uses), never a local copy -- so
+        the flag path and the transcript path can never disagree."""
+        src = open(GATE, encoding="utf-8").read()
+        self.assertIn("classify_plan_result_for_hash", src)
+        self.assertNotIn(
+            "REVIEWED_SPEC_SHA256=([0-9a-f]", src,
+            "subagent_stop_gate.py must not carry its own copy of the "
+            "reviewed-hash pattern -- import spec_bound_verifier_credit's "
+            "classify_plan_result_for_hash instead, so the flag path and the "
+            "transcript path can never disagree")
 
 
 if __name__ == "__main__":

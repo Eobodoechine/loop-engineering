@@ -90,6 +90,31 @@ except Exception:
     def _capture_codex_stdin_once(_raw_stdin, _source_hook):
         return
 
+# Reviewed-spec-hash extraction is OWNED by spec_bound_verifier_credit.py and
+# imported, never re-implemented here — tiers 1 and 3 below write the hash that
+# that module's own `check_verifier_pass_flags` later compares against a Coder's
+# cited spec hash, so a second, subtly different local copy of the rule is a
+# credit-gate inconsistency waiting to happen (see the STALE-REF WARNING in
+# `_write_flag_if_guarded` for what that class of drift costs).
+#
+# The fallback DISABLES the full-classifier gate rather than duplicating the
+# pattern. That loses nothing real: `check_verifier_pass_flags` — the flag's
+# ONLY consumer — lives in this same module, so if it is unimportable here
+# the flag it would have written is unreadable there too. Fail closed, zero
+# drift surface.
+try:
+    from spec_bound_verifier_credit import (
+        PlanResultOutcome as _PlanResultOutcome,
+        SHA256_RE as _SHA256_RE,
+        classify_plan_result_for_hash as _classify_result_for_hash,
+        sole_reviewed_spec_hash as _sole_reviewed_spec_hash,
+    )
+except Exception:
+    _PlanResultOutcome = None
+    _SHA256_RE = None
+    _classify_result_for_hash = None
+    _sole_reviewed_spec_hash = None
+
 try:
     _RAW_STDIN = sys.stdin.read()
     _capture_codex_stdin_once(_RAW_STDIN, "subagent_stop_gate.py")
@@ -152,11 +177,92 @@ def _write_flag_if_guarded(session_id, agent_id, ext="verifier_pass", content=""
     was actually written.
 
     Signature extended (H-SUBAGENT-COMMIT-GATE-1, spec item 2, "Precision
-    correction"): `ext`/`content` are optional, additive parameters. The two
-    EXISTING call sites (tier 1, tier 3) pass NO extra arguments, so their
-    behavior (an EMPTY `.verifier_pass` file) is byte-for-byte unchanged —
-    see AC7b. The new 4th responsibility below calls this with
-    `ext="commit_violation"` and `content=json.dumps(violations)`."""
+    correction" — but see the STALE-REF WARNING below before following that
+    citation): `ext`/`content` are optional, additive parameters. The 4th
+    responsibility below calls this with `ext="commit_violation"` and
+    `content=json.dumps(violations)`.
+
+    Flag CONTENT is load-bearing — the `.verifier_pass` flag is NOT empty.
+    Both plan-check call sites pass the reviewed spec hash as `content`, and
+    both derive it under the SAME rules the transcript credit path uses:
+      * tier 1 (below): runs the FULL `classify_plan_result_for_hash` on
+        `last_assistant_message` (the same rule-function the transcript
+        path applies to the Verifier's result) and writes the sole
+        `REVIEWED_SPEC_SHA256=` value ONLY when the classifier returns
+        VALID_PASS — unique hash before the gate, single LOOP_GATE line,
+        well-formed and genuinely citable PLAN_SUPPORT_JSON. Any other
+        classifier outcome writes nothing (H-FLAGPATH-TRANSCRIPT-
+        PERMISSIVENESS-GAP-1: the flag is an OR-fallback consulted exactly
+        when the transcript path denied credit, so inputs that failed the
+        transcript side — missing support, decoy gate line, lowercase gate
+        — must fail here too);
+      * tier 3 (below): `so_input["reviewed_spec_sha256"]` from the last
+        StructuredOutput block, accepted only if it matches that same
+        module's `SHA256_RE` constant.
+    (An earlier revision of this passage withheld that module's name on the
+    premise that AC8 — H-COMMIT-VIOLATION-FLAG-MISATTRIBUTION-1's raw-
+    substring lock — was RED and unfixable inline. That premise no longer
+    holds as of 2026-08-08. The coupling is now SANCTIONED and pinned: AC8's
+    guard was narrowed to the credit-DECISION surfaces it actually protects,
+    and a companion `ast`-based assertion allows only `SHA256_RE` and
+    `sole_reviewed_spec_hash` to be imported from that module — a strictly
+    narrower rule than the old all-or-nothing substring ban. See fix_plan.md
+    H-PLANCHECK-TIER1-HASH-CAPTURE-1 and H-AC8-CREDIT-GATE-COUPLING-
+    CONFLICT-1. Naming the module here is correct; do not obfuscate it
+    again.)
+    Either site falls back to `""` — when no hash is present, when TIER 1
+    sees 2+ candidates (ambiguous; see that helper's own docstring), when the
+    value is not canonical-shaped, or when the import above fails (both
+    helpers become `None`, so both sites force `""` rather than skip
+    validation) — which writes an EMPTY flag. An empty flag is treated as a
+    LEGACY flag by the consumer and NEVER authorizes anything: see that
+    module's `check_verifier_pass_flags` function, which skips empty-content
+    flags outright and otherwise grants credit only on an exact `content ==
+    coder_spec_hash` match. That equality check is what makes a spec edit
+    after plan-check invalidate the plan-check credit — do not describe this
+    flag as carrying no spec identity.
+
+    STALE-REF WARNING — AC7b and its parent spec passage. The upstream spec
+    still CONTAINS the OLD empty-flag assertions, but as of 2026-08-08 they
+    are RECONCILED IN PLACE rather than left to mislead: the original text is
+    preserved (so that run's record stays honest) and each site now carries a
+    dated marker saying what is true today. Cited by MARKER, not line number
+    — this block's line numbers went stale once already when the spec was
+    annotated, and would again:
+      * search the spec for `SUPERSEDED 2026-08-08` — tags the "unlike
+        `.verifier_pass`, which only needs to exist" clause. That was the
+        single most misleading sentence in the set: it states outright that
+        the flag's mere existence suffices, the exact wrong conclusion this
+        docstring exists to prevent. The flag needs matching CONTENT.
+      * search for `CORRECTION (2026-08-08` — a block appended to the
+        "Precision correction" passage. That passage mandates "The two
+        EXISTING call sites (tier 1, tier 3) must be left passing NO extra
+        arguments", with a byte-for-byte consequence. That mandate is
+        deliberately no longer honored: both sites pass `content=`, which is
+        what binds the credit to a spec hash. The passage's DESIGN GUIDANCE
+        is otherwise still accurate — in particular the additive signature
+        itself — though its own parenthetical ("current lines 76-94") is
+        ALSO stale: this function has since moved further down in this file.
+      * the AC7b row — struck through, re-typed `SUPERSEDED`, and given a
+        replacement criterion naming the tests that now specify this
+        behavior.
+    `runs/` is gitignored (`.gitignore:40`), so gitignore-respecting search
+    tools (the `grep` shell function here, plain `rg`) return ZERO hits for
+    any of these — use `/usr/bin/grep -rn` (or `rg --no-ignore`).
+
+    One stale ENCODING remains, deliberately: `test_subagent_stop_gate.py`'s
+    `FourthResponsibilityFlagWriteGuardExtension` (:2847) and
+    `WriteFlagIfGuardedSignatureExtensionIndependentTW1` (:3339) still assert
+    a byte-for-byte EMPTY `.verifier_pass` file. They PASS, but only
+    incidentally: their fixtures carry no `REVIEWED_SPEC_SHA256` /
+    `reviewed_spec_sha256`, so both sites hit the `""` fallback. Inject a
+    hash into those fixtures and ALL 5 of those assertions fail. They are
+    left alone because what they actually lock — that extending this
+    signature did not disturb the `ext="commit_violation"` path — is still
+    true and still worth locking; only their incidental empty-file
+    assumption is obsolete. The flag CONTENT contract they predate is
+    specified by `ReviewedHashCaptureIsVerdictScopedAndUnique` and
+    `ReviewedHashRuleIsSharedWithTheCreditPath` in that same file."""
     if not (session_id and isinstance(session_id, str) and session_id.strip()):
         return False
     aid = agent_id if (agent_id and str(agent_id).strip()) else "unknown"
@@ -225,6 +331,11 @@ try:
     _dbg_agent_id = agent_id if isinstance(agent_id, str) else None
 
     last_line = None
+    # Built the SAME way classify_plan_result_for_hash builds its own `lines`
+    # (strip, drop empties) so "the lines before the gate" means the same thing
+    # in both credit paths. Hoisted out of the isinstance branch because tier 1
+    # reads it after that branch has run.
+    _lam_lines = []
     if isinstance(lam, str):
         _lam_lines = [x.strip() for x in lam.split('\n') if x.strip()]
         if _lam_lines:
@@ -240,14 +351,31 @@ try:
     #           StructuredOutput path's own verdict (last block, missing
     #           loop_gate key treated as NOT-PASS).
     if last_line == 'loop_gate: plan_pass':
-        # Tier 1 — extract spec hash from last_assistant_message and store in flag content.
+        # Tier 1 — write ONLY when the transcript path's own full classifier
+        # says VALID_PASS (H-FLAGPATH-TRANSCRIPT-PERMISSIVENESS-GAP-1). The
+        # earlier rule validated only the hash marker; the flag is the OR
+        # fallback consulted exactly when the transcript scan denied credit,
+        # so any input the transcript side refuses must refuse here too.
+        # Demonstrated inputs a hash-only check wrongly granted: a missing
+        # PLAN_SUPPORT_JSON citation, a decoy second LOOP_GATE: line, and a
+        # lowercase gate line — the classifier returns non-VALID_PASS for all
+        # three, so no flag. `reviewed_hash` for the classifier is the message's
+        # own sole REVIEWED_SPEC_SHA256 (the flag's content); if the message
+        # has 0 or 2+ candidates the classifier's own uniqueness rule denies,
+        # which also covers the first-match-anywhere bug fixed in
+        # H-PLANCHECK-TIER1-HASH-CAPTURE-1 (`sole_reviewed_spec_hash` scopes
+        # to the lines before the gate and demands exactly one).
         _t1_hash = ""
-        if isinstance(lam, str):
-            _t1_m = re.search(r"\bREVIEWED_SPEC_SHA256=([0-9a-f]{64})", lam)
-            if _t1_m:
-                _t1_hash = _t1_m.group(1)
-        if _write_flag_if_guarded(session_id, agent_id, content=_t1_hash):
-            _dbg_wrote_flag = True
+        if _classify_result_for_hash is not None and isinstance(lam, str):
+            _sole = "" if _sole_reviewed_spec_hash is None else (
+                _sole_reviewed_spec_hash(_lam_lines[:-1]) or "")
+            _tier_cwd = data.get("cwd") if isinstance(data.get("cwd"), str) else None
+            _t1_outcome, _t1_reason = _classify_result_for_hash(
+                {"content": lam}, _sole, cwd=_tier_cwd)
+            if _sole and _t1_outcome == _PlanResultOutcome.VALID_PASS:
+                _t1_hash = _sole
+                if _write_flag_if_guarded(session_id, agent_id, content=_t1_hash):
+                    _dbg_wrote_flag = True
     elif last_line == 'loop_gate: plan_fail':
         # Tier 2 — explicit free-text FAIL is authoritative; suppresses any
         # StructuredOutput signal. Not a fault; logged as a normal non-match.
@@ -256,7 +384,19 @@ try:
         # Tier 3 — StructuredOutput fallback.
         so_input = _last_structured_output_loop_gate(transcript_content)
         if isinstance(so_input, dict) and so_input.get("loop_gate") == "PLAN_PASS":
-            _t3_hash = str(so_input.get("reviewed_spec_sha256", "") or "")
+            # Shape-validated for symmetry with tier 1: a StructuredOutput
+            # `reviewed_spec_sha256` is model-authored JSON and arrives with no
+            # regex having vetted it, so this site used to write whatever was
+            # there verbatim. Anything that is not canonical 64-lowercase-hex
+            # could never equal a Coder's cited hash anyway (both sides
+            # ultimately compare against `hashlib.sha256().hexdigest()`), so
+            # normalizing it to "" costs no reachable credit and keeps the flag
+            # file's content to one well-defined shape. Surrounding whitespace
+            # is stripped first — the consumer strips on read, so tolerating it
+            # here only makes the two tiers agree on what a valid hash is.
+            _t3_hash = str(so_input.get("reviewed_spec_sha256", "") or "").strip()
+            if _SHA256_RE is None or not _SHA256_RE.match(_t3_hash):
+                _t3_hash = ""
             if _write_flag_if_guarded(session_id, agent_id, content=_t3_hash):
                 _dbg_wrote_flag = True
 except Exception:
