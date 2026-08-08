@@ -114,6 +114,36 @@ def has_python_tests(project):
     return False
 
 
+def python_test_dirs(project):
+    """Directories that actually contain unittest-style Python test files.
+
+    ``unittest discover -s .`` only recurses into directories that are
+    IMPORTABLE. Python 3.11 dropped namespace-package discovery, so a plain
+    ``scripts/`` with no ``__init__.py`` is skipped entirely -- discovery
+    reports "Ran 0 tests", which this harness then force-fails as a suspected
+    false-green. That reads as "your code is broken" when the truth is "we
+    looked in the wrong place." Observed on taxahead: 0 tests from the root,
+    13 passing from ``scripts/``.
+
+    Returns sorted relative dirs, so discovery can start where the tests are.
+    """
+    skip = (os.sep + "node_modules" + os.sep,
+            os.sep + ".git" + os.sep,
+            os.sep + ".claude" + os.sep,
+            os.sep + "venv" + os.sep,
+            os.sep + ".venv" + os.sep)
+    found = set()
+    for root, _, files in os.walk(project):
+        padded = root + os.sep
+        if any(s in padded for s in skip):
+            continue
+        for f in files:
+            if (f.startswith("test_") or f.endswith("_test.py")) and f.endswith(".py"):
+                found.add(os.path.relpath(root, project))
+                break
+    return sorted(found)
+
+
 def _load_package_json(project):
     path = os.path.join(project, "package.json")
     try:
@@ -217,6 +247,16 @@ def detect_and_run(project):
                 [sys.executable, "-m", "pytest", "-q", _confcutdir]
             python_candidates.append(("pytest", argv))
         else:
+            # Start discovery where the test files actually live. Rooting at "."
+            # silently collects 0 whenever the tests sit in a non-importable
+            # directory (no __init__.py), which this harness then reports as a
+            # forced fail -- indistinguishable from a genuine failure. Try the
+            # real dirs first, deepest-specific to most-general, and keep the
+            # historical root sweep last so nothing that worked before breaks.
+            for _d in python_test_dirs(project):
+                python_candidates.append(("unittest[%s]" % _d,
+                                          [sys.executable, "-m", "unittest", "discover",
+                                           "-s", _d, "-t", _d, "-p", "test_*.py", "-v"]))
             python_candidates.append(("unittest",
                                       [sys.executable, "-m", "unittest", "discover",
                                        "-s", ".", "-p", "test_*.py", "-v"]))

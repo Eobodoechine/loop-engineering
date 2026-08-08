@@ -3328,3 +3328,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-08)
 
 - fix(credit-gate): bind plan-check flag to the verdict's own spec hash
+
+## Recent changes (auto-published 2026-08-08)
+
+- fix(harness): discover Python tests where they actually live
