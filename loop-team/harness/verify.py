@@ -127,21 +127,46 @@ def python_test_dirs(project):
 
     Returns sorted relative dirs, so discovery can start where the tests are.
     """
-    skip = (os.sep + "node_modules" + os.sep,
-            os.sep + ".git" + os.sep,
-            os.sep + ".claude" + os.sep,
-            os.sep + "venv" + os.sep,
-            os.sep + ".venv" + os.sep)
+    # Pruned in place (dirnames[:]) rather than filtered per-file: descending
+    # into node_modules/worktrees/runs only to discard the results is O(repo)
+    # on every invocation, and worktrees/ in particular holds OTHER BRANCHES'
+    # tests plus deliberately-failing eval fixtures, which must never be
+    # collected as if they belonged to this project.
+    prune = {"node_modules", ".git", ".claude", "venv", ".venv", "__pycache__",
+             ".tox", ".mypy_cache", ".pytest_cache", "worktrees", "runs",
+             "site-packages", "dist", "build", ".next"}
     found = set()
-    for root, _, files in os.walk(project):
-        padded = root + os.sep
-        if any(s in padded for s in skip):
-            continue
+    for root, dirnames, files in os.walk(project):
+        dirnames[:] = [d for d in dirnames if d not in prune]
         for f in files:
             if (f.startswith("test_") or f.endswith("_test.py")) and f.endswith(".py"):
                 found.add(os.path.relpath(root, project))
                 break
     return sorted(found)
+
+
+def discovery_top_level(project, rel_dir):
+    """The `-t` (top-level) directory unittest discovery should use for a dir.
+
+    Using the test dir itself as top-level makes its modules import as
+    TOP-LEVEL names, which breaks intra-package relative imports
+    (`from .helper import X` -> "attempted relative import with no known
+    parent package"). When the directory is an importable package, walk up to
+    the highest ancestor that is still a package and use ITS parent, so the
+    package keeps its real dotted name.
+    """
+    if rel_dir == ".":
+        return rel_dir
+    parts = rel_dir.split(os.sep)
+    top = len(parts)  # index of the first component that is a package
+    while top > 0:
+        candidate = os.path.join(project, *parts[:top])
+        if not os.path.isfile(os.path.join(candidate, "__init__.py")):
+            break
+        top -= 1
+    if top == len(parts):
+        return rel_dir  # not a package at all -- the dir is its own top level
+    return os.sep.join(parts[:top]) if top else "."
 
 
 def _load_package_json(project):
@@ -233,7 +258,18 @@ def _run_python(candidates, aggregate, project, env, _attempt_log):
     for label, argv in candidates:
         res = _run_one(label, argv, project, env, _attempt_log)
         if res is None:
-            continue  # runner binary missing; try the next candidate
+            if not aggregate:
+                continue  # alternative runner missing; try the next one
+            # In aggregate mode every candidate is coverage, so a missing runner
+            # is a HOLE, not something to skip past. Dropping it silently would
+            # return green with a directory unexecuted -- the exact shape this
+            # split exists to prevent.
+            return label, {
+                "passed": False,
+                "zero": False,
+                "summary": "runner not found: %s — cannot verify that directory" % label,
+                "output": "",
+            }
         if not aggregate:
             return label, res
         results.append((label, res))
@@ -241,12 +277,18 @@ def _run_python(candidates, aggregate, project, env, _attempt_log):
         return None, None
     if len(results) == 1:
         return results[0]
+
+    def _dirname(lbl):
+        return lbl.split("[", 1)[1].rstrip("]") if "[" in lbl else lbl
+
     return (
-        "unittest[%s]" % ",".join(l.split("[", 1)[1].rstrip("]") for l, _ in results),
+        "unittest[%s]" % ",".join(_dirname(l) for l, _ in results),
         {
             "passed": all(r["passed"] for _, r in results),
-            # Only a total absence of tests is the false-green case; one empty
-            # directory among several real ones is not.
+            # `passed` already force-fails any single empty directory (each
+            # per-run passed is `code == 0 and not zero`). This aggregate flag
+            # is only the "the whole project collected nothing" signal used for
+            # the summary string, so it is True only when EVERY run was empty.
             "zero": all(r["zero"] for _, r in results),
             "summary": "; ".join("%s: %s" % (l, r["summary"]) for l, r in results),
             "output": "\n".join(r["output"] for _, r in results)[-8000:],
@@ -306,7 +348,8 @@ def detect_and_run(project):
                 for _d in _dirs:
                     python_candidates.append(("unittest[%s]" % _d,
                                               [sys.executable, "-m", "unittest", "discover",
-                                               "-s", _d, "-t", _d, "-p", "test_*.py", "-v"]))
+                                               "-s", _d, "-t", discovery_top_level(project, _d),
+                                               "-p", "test_*.py", "-v"]))
             else:
                 python_candidates.append(("unittest",
                                           [sys.executable, "-m", "unittest", "discover",

@@ -9,7 +9,7 @@ backed by a deterministic check that can say *no*.
 > **Propose → verify → feed back → repeat. The loop is only as good as its verifier,
 > and a rule only counts if a check enforces it.**
 
-_Status as of 2026-08-08._
+_Status as of 2026-08-09._
 
 ## What is built and verified (today, on this tree)
 
@@ -3336,3 +3336,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-08)
 
 - fix(harness): aggregate per-directory discovery instead of short-circuiting
+
+## Recent changes (auto-published 2026-08-09)
+
+- fix(harness): keep package import semantics, fail on missing runners, prune walk

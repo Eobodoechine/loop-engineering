@@ -378,9 +378,6 @@ class AC7FullSuiteCrossCheck(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
 
 class MultiDirDiscoveryMustNotShortCircuit(unittest.TestCase):
     """Per-directory Python discovery is COMPLEMENTARY, not a fallback chain.
@@ -426,3 +423,29 @@ class MultiDirDiscoveryMustNotShortCircuit(unittest.TestCase):
 
     def test_importable_packages_failing_dir_is_not_skipped(self):
         self._assert_failing_dir_surfaces(importable=True)
+
+    def test_importable_package_relative_imports_still_work(self):
+        """-t <testdir> makes modules import as TOP-LEVEL names, which breaks
+        `from .helper import X` inside a package. Discovery must keep the
+        package's real dotted name by rooting -t above it."""
+        d = tempfile.mkdtemp()
+        pkg = os.path.join(d, "pkg")
+        os.makedirs(pkg)
+        open(os.path.join(pkg, "__init__.py"), "w").close()
+        with open(os.path.join(pkg, "helper.py"), "w") as f:
+            f.write("VALUE = 7\n")
+        with open(os.path.join(pkg, "test_rel.py"), "w") as f:
+            f.write("import unittest\n\nfrom .helper import VALUE\n\n\n"
+                    "class T(unittest.TestCase):\n"
+                    "    def test_ok(self): self.assertEqual(VALUE, 7)\n")
+        result = _run_harness(d)
+        tests = result.get("tests", result)
+        self.assertTrue(
+            tests.get("passed"),
+            "a package using relative imports must still be discoverable; got %r"
+            % (tests.get("output") or tests.get("summary")),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
