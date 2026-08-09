@@ -3036,3 +3036,30 @@ contract lines. The dispatch prompt must specify:
 - Include spec_sha256 in PLAN_SUPPORT_JSON matching the SPEC_SHA256 in the dispatch
 - Emit all three lines as the LAST three non-empty lines, in order
 
+
+## 2026-08-09 — Convergence protocol after repeated verifier FAILs (Nnamdi)
+
+A taxahead CI/oracle run took three verifier rounds, each FAIL, each on **a guard present
+in the source that could not fire at runtime**: a test asserting a helper instead of the
+wiring; per-directory runners left in a short-circuiting fallback chain; `set -e` silently
+disabled inside a function invoked under `if !`. Reading the code confirms such a guard
+exists; only executing the failure proves it fires.
+
+Standing rules from that run:
+
+1. **Freeze-and-close after 2+ FAILs.** Only fixes to the last verdict's findings enter the
+   diff; everything else queues. One frozen diff → one verdict.
+2. **Plan-check gate/oracle-class work before implementation** — review the primitive
+   (compares what, against what baseline, failing which direction) before code exists.
+3. **Split test authorship from implementation.** Mutation-check that each new test fails on
+   pre-fix code, from a baseline asserted clean before and after every mutant.
+4. **Positive controls are mandatory.** Every block-reason needs a paired must-pass case, and
+   the suite must kill the "block everything" mutant.
+5. **Harden round plumbing.** Unique per-round sentinel (`ROUND-3-VERDICT:`) in dispatch and
+   wait logic; account for the stop-guard's SendMessage blind spot.
+6. **Pre-agree done in the verifier prompt:** enumerate accepted residuals ("do not
+   re-report these"), set a severity bar, make PASS WITH CAVEATS a legal terminal state.
+7. **A mechanism rewrite is a reset, not a fix** — do it once, at the primitive level, early.
+8. **Name the corrector-inherits-blind-spots pattern** in the verifier prompt, point it at
+   the NEW mechanism, and never let a claims-audit substitute for an adversarial
+   correctness check.

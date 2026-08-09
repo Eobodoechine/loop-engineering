@@ -3340,3 +3340,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-09)
 
 - fix(harness): keep package import semantics, fail on missing runners, prune walk
+
+## Recent changes (auto-published 2026-08-09)
+
+- docs(loop-team): convergence protocol after repeated verifier FAILs
