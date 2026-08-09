@@ -3344,3 +3344,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-09)
 
 - docs(loop-team): convergence protocol after repeated verifier FAILs
+
+## Recent changes (auto-published 2026-08-09)
+
+- gate: track the hardened reality_gate + its hollow-slice suite
