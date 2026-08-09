@@ -9,10 +9,10 @@ marked, not silently kept.
 
 | # | Original claim | Verdict | Evidence |
 |---|---|---|---|
-| 1 | "NEO-Venturez has GitHub Team and four private repositories" | **Contradicted as stated** | The connected GitHub integration sees no NEO-Venturez organization. Every visible repository lives under the personal account `Eobodoechine`. `NEO-Venturez/wf-fix-test` appears only as a fixture/config string in `closure-adapter/branches.conf` and its tests. |
-| 2 | `gate-defs`, `wf-fix-test`, `taxahead`, `pms-cockpit` exist as rollout targets | **Contradicted as named** | None exist under those names in the accessible account. Closest real repos: this repo (central tooling), `Eobodoechine/wf-scope-test-20260808`, `Eobodoechine/remix-of-taxahead.ai`, and `Eobodoechine/prove-rulesets-probe`. No PMS/PadSplit repo is visible at all; the PMS checkout in `control-plane/projects/padsplit-cockpit.json` is a local path. |
-| 3 | TaxAhead `main` unprotected; `Mission Slice main` runs post-push; `record-evidence` failed and was never retried; no recovery issue | **Unverifiable from this session** | `remix-of-taxahead.ai` is private and attaching it required an interactive approval that was not available. Treat as asserted; verify in Phase −1 below. |
-| 4 | The current shared gate uses `pull_request_target` and executes PR code with elevated permissions | **Unverifiable** | This repository contains no `.github/workflows` directory at all; wherever that shared gate lives, it is not here. The general risk is real and the replacement requirements stand regardless. |
+| 1 | "NEO-Venturez has GitHub Team and four private repositories" | **Org confirmed; tier still unverified** | An independent PMS Cockpit session (2026-08-09) inspected the live `NEO-Venturez/pms-cockpit` remote, so the org exists. It is invisible to *this* session's GitHub integration, which returns only personal `Eobodoechine` repos — an access-scoping gap, not an existence gap. The **Team-vs-Enterprise tier remains unverified** and still gates §4. |
+| 2 | `gate-defs`, `wf-fix-test`, `taxahead`, `pms-cockpit` exist as rollout targets | **Partly confirmed** | `NEO-Venturez/pms-cockpit` confirmed live. The other three are unconfirmed from any session so far; `NEO-Venturez/wf-fix-test` currently appears here only as a fixture string in `closure-adapter/branches.conf`. Confirm each by name in Phase −1 rather than assuming the set of four. |
+| 3 | TaxAhead `main` unprotected; `Mission Slice main` runs post-push; `record-evidence` failed and was never retried; no recovery issue | **Unverifiable from this session** | The TaxAhead repo is private and attaching it required an interactive approval that was not available. Treat as asserted; verify in Phase −1 below. |
+| 4 | The current shared gate uses `pull_request_target` and executes PR code with elevated permissions | **Corroborated** | The PMS session found an unmerged `gate/observe` adapter in `NEO-Venturez/pms-cockpit` using `pull_request_target`. It is unmerged and observe-only, so it is not yet enforcing anything — but it confirms the pattern is in play and must not be merged as-is. Phase 1's replacement requirements stand. |
 | 5 | An organization ruleset on GitHub Team can centrally require the gate | **Likely wrong — plan-gated** | "Require workflows to pass before merging" is a GitHub Enterprise Cloud ruleset rule (the issue's own citation is under `enterprise-cloud@latest`). Organization-level rulesets are also Enterprise-gated to the best available knowledge (docs.github.com was egress-blocked from this session; confirm with one click before Phase 4). The plan must not depend on either. |
 | 6 | Skipped jobs can satisfy required checks unless a final `always()` job rejects them | **Confirmed** | Documented GitHub behavior; also matches the fail-closed rule already implemented locally in `closure-adapter/recompute_verdict.sh` (every check-run with the required name must conclude `success`; missing → RED). |
 | 7 | Required checks must pass on the latest SHA | **Confirmed** | Standard GitHub behavior; "require branches to be up to date" or merge queue handles staleness. |
@@ -35,26 +35,38 @@ Two more constraints the original plan missed:
 
 | Planned name | What actually exists today | Action needed |
 |---|---|---|
-| `NEO-Venturez` (org, Team plan) | Not visible to the connected tooling | Create the org or install/authorize the GitHub integration on it; record the actual plan tier |
-| `gate-defs` | Does not exist; central gate logic lives locally in this repo (`closure-adapter/`, hooks) | Create it (or designate this repo) and port the gate as a reusable workflow |
-| `wf-fix-test` | Only a fixture string; `Eobodoechine/wf-scope-test-20260808` and `Eobodoechine/prove-rulesets-probe` are the real sandboxes | Pick one sandbox repo and update `closure-adapter/branches.conf` when it moves |
-| `taxahead` | `Eobodoechine/remix-of-taxahead.ai` (private, personal account) | Transfer into the org (org rules cannot cover a personal repo) |
-| `pms-cockpit` | No visible repo; local checkout only | Create/push the repo, then treat like TaxAhead |
+| `NEO-Venturez` (org, Team plan) | **Exists** (confirmed via the PMS session), but invisible to this session's integration | Authorize the GitHub integration on the org so automation can read it; record the actual plan tier |
+| `gate-defs` | Unconfirmed; central gate logic currently lives in this repo (`closure-adapter/`, hooks) | Confirm or create it, then port the gate as a reusable workflow |
+| `wf-fix-test` | Unconfirmed as a live repo; appears here as a fixture string. `Eobodoechine/wf-scope-test-20260808` and `Eobodoechine/prove-rulesets-probe` are known-real sandboxes | Confirm the sandbox repo and update `closure-adapter/branches.conf` if it moves |
+| `taxahead` | Unconfirmed under the org; `Eobodoechine/remix-of-taxahead.ai` (private, personal) is the known checkout | Determine which is canonical; if it is the personal repo, transfer it into the org (org rules cannot cover a personal repo) |
+| `pms-cockpit` | **`NEO-Venturez/pms-cockpit` exists and is live** | No creation needed. Already carries an unmerged `gate/observe` adapter and an unmerged named-test-debt ratchet branch |
 
 Current enforcement is **local-only**: the `closure-adapter` Hermes plugin
 blocks `kanban_complete` unless GitHub check-runs for the mapped repo/SHA are
-all green (`recompute_verdict.sh`, fail-closed). Nothing on GitHub itself
-prevents a merge today. The plan's core diagnosis — the lock is installed
-after the door — is correct and extends further than the issue stated: there
-is no GitHub-side lock anywhere yet.
+all green (`recompute_verdict.sh`, fail-closed). On PMS the `gate/observe`
+adapter is unmerged and observe-only, so it enforces nothing either. No
+configured required check on any product `main` has been demonstrated by any
+session to date. The plan's core diagnosis — the lock is installed after the
+door — is correct and extends further than the issue stated: there is no
+GitHub-side lock anywhere yet.
+
+Two pieces of work already exist on PMS and should be reused rather than
+rebuilt: the unmerged **named-test-debt ratchet branch** (which is exactly the
+Phase 2 ratchet, already started) and the unmerged **`gate/observe` adapter**
+(whose observe-only posture is the right rollout shape, but whose
+`pull_request_target` trigger must be replaced per Phase 1 before it merges).
 
 ## 3. Phase −1 — Preconditions and ground-truth audit (new)
 
 Nothing else starts until each row of the table in §2 is resolved and the
 following are read back through the API and recorded:
 
-1. Org existence, plan tier, and whether org rulesets / required workflows /
-   merge queue are actually offered on that tier (one docs check each).
+1. Plan tier of the (confirmed-to-exist) `NEO-Venturez` org, and whether org
+   rulesets / required workflows / merge queue are actually offered on that
+   tier (one docs check each). Also authorize the GitHub integration on the
+   org — automation that cannot see the org cannot verify or enforce anything
+   in it, which is precisely why this plan's first draft mis-read the ground
+   truth.
 2. Effective rulesets and branch protection on every product repo
    (`GET /repos/{owner}/{repo}/rules/branches/main`).
 3. The real workflow files on each product repo's default branch — confirm or
@@ -204,3 +216,32 @@ Same as the original prompt, with three amendments:
 
 PASS-ONLY-IF and all RULES lines are unchanged, including: never report
 partial work as PASS.
+
+## 8. Cross-session coordination (learned the hard way)
+
+A PMS Cockpit session stalled for 30 minutes and made no changes because it
+looked for the plan branch and `MERGE_GATE_PLAN.md` **inside
+`NEO-Venturez/pms-cockpit`**. The plan does not live there and never did:
+
+| Field | Value |
+|---|---|
+| Repo | `Eobodoechine/loop-engineering` |
+| Branch | `claude/merge-gate-architecture-plan-m012ag` |
+| Path | `MERGE_GATE_PLAN.md` |
+
+Rules that follow, so this does not recur:
+
+- **The plan is central; the adapters are local.** Any migration prompt sent
+  to a product repo must carry the plan's repo, branch, and commit SHA
+  explicitly. A bare branch name is ambiguous across repos and will be
+  resolved against the wrong remote.
+- **A missing artifact is a lookup failure until proven otherwise.** "Branch
+  does not exist in this remote" means check which remote before concluding
+  the artifact was never produced.
+- **Credentials are a precondition, not a discovery.** A session that cannot
+  authenticate to GitHub cannot read back rulesets, and reading back rulesets
+  is the only accepted proof of enforcement. Verify `gh auth status` at the
+  start of a rollout slice, not at the end.
+- The PMS session's refusal to change anything while blocked was the correct
+  behavior and should be preserved: no ruleset or gate change ships without
+  a read-back.
