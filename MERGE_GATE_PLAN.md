@@ -1,5 +1,11 @@
 # Merge-Gate Architecture Plan — Verified and Revised
 
+> **Implementers:** this file is the rationale and the verification record.
+> The binding implementation contract — exact check names, full workflow YAML,
+> the evidence receipt JSON Schema, the ruleset payload, and the acceptance
+> matrix — is in **`MERGE_GATE_SPEC.md`**, same repo and branch. Build from
+> the spec; read this for why.
+
 Revision of the original merge-gate issue, checked against this repository, the
 connected GitHub account, and GitHub feature gating. Verification session:
 2026-08-09. Claims that could not be checked from the available tooling are
