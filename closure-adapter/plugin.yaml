@@ -1,0 +1,6 @@
+name: closure-adapter
+version: "0.1.0"
+description: "Gates kanban_complete on a slice-closure verdict RECOMPUTED from live GitHub check runs at the head SHA (never a worker-written claim). GREEN -> allow; RED / missing / error -> block with a non-empty message (fail-closed)."
+author: "loop-team (P2.2)"
+hooks:
+  - pre_tool_call

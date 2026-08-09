@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Fake `gh` used by test_recompute_verdict.sh.
+#
+# Shadows the real gh (e.g. /opt/homebrew/bin/gh) purely by PATH ordering:
+# the test harness prepends this directory to PATH so `command -v gh`
+# resolves here and the real binary is never reached.
+#
+# It only understands the two endpoints recompute_verdict.sh is allowed to
+# use:
+#   gh api repos/{owner}/{repo}/commits/{ref}           (resolve head SHA)
+#   gh api repos/{owner}/{repo}/commits/{sha}/check-runs
+#   gh api repos/{owner}/{repo}/commits/{sha}/status
+#
+# Behavior is chosen by FAKE_GH_CASE:
+#   green-exact        one run  slice-closure-gate / slice-closure-gate
+#                      completed/success + sidecar success        -> GREEN
+#   mixed-same-context TWO runs same name, one success one failed -> RED
+#   missing-context    no run with required name                  -> RED
+#   pending            required run status=in_progress            -> RED
+#   sidecar-only       no green composite run, sidecar success    -> RED
+#   api-error          every gh api call exits 1 (auth/network)   -> RED
+#   hang               every gh api call sleeps 60 then answers   -> script
+#                      must timeout internally (~30s) and go RED
+#
+# If FAKE_GH_LOG is set, every invocation appends one line:
+#   CALL|api|repos/...|...   (raw argv joined with "|")
+# so the suite can assert the exact endpoint/ref the script sent (this is
+# how the shell-injection case proves the ref travelled as a SINGLE argv).
+
+set -u
+
+FAKE_GH_CASE="${FAKE_GH_CASE:-green-exact}"
+
+if [ -n "${FAKE_GH_LOG:-}" ]; then
+    printf 'CALL|%s\n' "$*" >> "$FAKE_GH_LOG"
+fi
+
+case "$FAKE_GH_CASE" in
+    api-error)
+        echo "gh: simulated API failure (HTTP 401 ... rate limited)" >&2
+        exit 1
+        ;;
+    hang)
+        sleep 60
+        echo "gh: simulated hang returned after 60s" >&2
+        exit 1
+        ;;
+esac
+
+ENDPOINT="${2:-}"
+
+emit_checkruns() {
+    # Arguments: literal JSON payload. Print without any shell mangling.
+    printf '%s' "$1"
+    exit 0
+}
+
+emit_status() { printf '%s' "$1"; exit 0; }
+
+emit_sha() { printf '%s' "$1"; exit 0; }
+
+case "$ENDPOINT" in
+    *check-runs*)
+        case "$FAKE_GH_CASE" in
+            green-exact)
+                emit_checkruns '{"total_count":1,"check_runs":[{"id":111,"name":"slice-closure-gate / slice-closure-gate","status":"completed","conclusion":"success","head_sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee"}]}'
+                ;;
+            mixed-same-context)
+                emit_checkruns '{"total_count":2,"check_runs":[{"id":111,"name":"slice-closure-gate / slice-closure-gate","status":"completed","conclusion":"success","head_sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee"},{"id":222,"name":"slice-closure-gate / slice-closure-gate","status":"completed","conclusion":"failure","head_sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee"}]}'
+                ;;
+            missing-context)
+                emit_checkruns '{"total_count":1,"check_runs":[{"id":333,"name":"some / other","status":"completed","conclusion":"success","head_sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee"}]}'
+                ;;
+            pending)
+                emit_checkruns '{"total_count":1,"check_runs":[{"id":444,"name":"slice-closure-gate / slice-closure-gate","status":"in_progress","conclusion":null,"head_sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee"}]}'
+                ;;
+            sidecar-only)
+                emit_checkruns '{"total_count":0,"check_runs":[]}'
+                ;;
+            *)
+                emit_checkruns '{"total_count":1,"check_runs":[{"id":555,"name":"slice-closure-gate / slice-closure-gate","status":"completed","conclusion":"success","head_sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee"}]}'
+                ;;
+        esac
+        ;;
+    *status)
+        case "$FAKE_GH_CASE" in
+            sidecar-only)
+                emit_status '{"state":"success","statuses":[{"context":"slice-gate-verdict","state":"success","description":"worker-written claim (forgeable data)"}]}'
+                ;;
+            *)
+                emit_status '{"state":"success","statuses":[{"context":"slice-gate-verdict","state":"success","description":"sidecar data only"}]}'
+                ;;
+        esac
+        ;;
+    *)
+        # commits/{ref} resolution.
+        if printf '%s' "$ENDPOINT" | grep -q 'does-not-exist'; then
+            echo '{"message":"Not Found","documentation_url":"..."}' >&2
+            exit 1
+        fi
+        emit_sha '{"sha":"1111aaaa2222bbbb3333cccc4444dddd5555eeee","commit":{}}'
+        ;;
+esac
+
+exit 0

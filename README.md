@@ -3348,3 +3348,7 @@ yet — run each with `--help` or read its module docstring for usage.
 ## Recent changes (auto-published 2026-08-09)
 
 - gate: track the hardened reality_gate + its hollow-slice suite
+
+## Recent changes (auto-published 2026-08-09)
+
+- closure-adapter: P2.2 Hermes closure adapter (verdict recompute CLI + pre_tool_call plugin + harness)
