@@ -43,6 +43,63 @@ def _api():
     return importlib.import_module("runner.codex_subscription_pilot")
 
 
+# ---------------------------------------------------------------------------
+# Environment-prerequisite skip guards.
+#
+# `runner/codex_subscription_pilot.py` hardcodes exact macOS Homebrew pins
+# (PINNED_BUN_PATH, PINNED_OPENSSL_PATH) and `runner/codex_exec_adapter.py`
+# hardcodes CODEX_BINARY = "/opt/homebrew/bin/codex". Those absolute paths
+# are the developer's machine install state, not repository code -- they do
+# not exist on a fresh clone, in a container, or in CI. Detected dynamically
+# (shutil.which first, falling back to the exact pinned path) so any test
+# guarded by these flips back to running the moment the real binary is
+# actually present, on any machine -- never a blanket/unconditional skip.
+# ---------------------------------------------------------------------------
+_PINNED_BUN_PATH = _api().PINNED_BUN_PATH
+_PINNED_OPENSSL_PATH = _api().PINNED_OPENSSL_PATH
+_RESOLVED_CODEX_PATH = shutil.which("codex")
+
+
+def _pinned_binary_available(name: str, pinned_path: Path) -> bool:
+    """True only if `name` resolves (via PATH) to the exact pinned path, or
+    the exact pinned path itself exists on disk. A same-named binary
+    installed at a different location (e.g. this container's generic
+    /usr/bin/openssl or /root/.bun/bin/bun) does NOT count as available --
+    runner/codex_subscription_pilot.py hardcodes and pins this exact
+    absolute path (checking its size/mode/nlink/sha256), so a different
+    install under the same command name would not make the pinned-path code
+    path actually succeed. shutil.which is tried first (it survives a
+    Homebrew patch-version bump on the real dev machine via the `/opt/
+    homebrew/bin/<tool>` symlink); the literal pinned path is the fallback.
+    """
+    resolved = shutil.which(name)
+    if resolved is not None and Path(resolved) == pinned_path:
+        return True
+    return pinned_path.is_file()
+
+
+_BUN_AVAILABLE = _pinned_binary_available("bun", _PINNED_BUN_PATH)
+_OPENSSL_AVAILABLE = _pinned_binary_available("openssl", _PINNED_OPENSSL_PATH)
+_CODEX_AT_PINNED_PATH = _RESOLVED_CODEX_PATH == "/opt/homebrew/bin/codex"
+
+_BUN_SKIP_REASON = (
+    "pinned Bun executable absent (%s); this is the developer's macOS "
+    "Homebrew install state, not repository code, so it is not applicable "
+    "on a fresh clone, in a container, or in CI." % _PINNED_BUN_PATH
+)
+_OPENSSL_SKIP_REASON = (
+    "pinned OpenSSL executable absent (%s); this is the developer's macOS "
+    "Homebrew install state, not repository code, so it is not applicable "
+    "on a fresh clone, in a container, or in CI." % _PINNED_OPENSSL_PATH
+)
+_CODEX_SKIP_REASON = (
+    "pinned codex binary absent at /opt/homebrew/bin/codex "
+    "(shutil.which('codex') resolved to %r); this is the developer's macOS "
+    "install state, not repository code, so it is not applicable on a fresh "
+    "clone, in a container, or in CI." % _RESOLVED_CODEX_PATH
+)
+
+
 def _materials():
     api = _api()
     call_plan = api.EXACT_CALL_PLAN
@@ -1021,6 +1078,7 @@ def test_production_execution_cli_rejects_unconfirmed_authority_before_preflight
     assert constructed == []
 
 
+@pytest.mark.skipif(not _OPENSSL_AVAILABLE, reason=_OPENSSL_SKIP_REASON)
 def test_production_execution_cli_constructs_real_adapter_identity_with_fake_process_seam(
         monkeypatch, capsys, tmp_path):
     """[RED][PRODUCTION-CLI] Confirmed production path uses CodexExecAdapter, never fake adapter."""
@@ -1110,6 +1168,7 @@ def test_planner_adapter_argv_is_read_only_like_smoke_without_smoke_git_flag():
     assert "--skip-git-repo-check" not in argv
 
 
+@pytest.mark.skipif(not _OPENSSL_AVAILABLE, reason=_OPENSSL_SKIP_REASON)
 def test_production_path_consumes_ten_distinct_slot_capabilities_and_rejects_eleventh(
         monkeypatch, tmp_path):
     """[RED][CAPABILITY-BROKER] Each scheduled call owns exactly one matching authority slot."""
@@ -1363,6 +1422,7 @@ def test_production_cap_ledger_is_durable_sqlite_and_recovers_crashed_attempt(tm
         assert connection.execute("SELECT COUNT(*) FROM reservations").fetchone()[0] == 10
 
 
+@pytest.mark.skipif(not _OPENSSL_AVAILABLE, reason=_OPENSSL_SKIP_REASON)
 def test_production_adapter_factory_never_receives_in_memory_cap_ledger(monkeypatch, tmp_path):
     """[RED][CAP-LEDGER] Production authority is backed by run-local caps.sqlite3."""
     api = _api()
@@ -3405,6 +3465,7 @@ const handleSend = async () => {
         id="import-only",
     ),
 ])
+@pytest.mark.skipif(not _BUN_AVAILABLE, reason=_BUN_SKIP_REASON)
 def test_product_mandatory_p2_oracle_rejects_dead_branch_comments_and_import_only(
         tmp_path, source):
     """[BEHAVIORAL][RED][PRODUCT-P2] Lexical decoys cannot satisfy the hidden oracle."""
@@ -3418,6 +3479,7 @@ def test_product_mandatory_p2_oracle_rejects_dead_branch_comments_and_import_onl
 
 
 @pytest.mark.product_mandatory
+@pytest.mark.skipif(not _BUN_AVAILABLE, reason=_BUN_SKIP_REASON)
 def test_product_mandatory_p2_oracle_executes_filing_unit_and_state_transitions(tmp_path):
     """[BEHAVIORAL][RED][PRODUCT-P2] The real factory handler runs hello in both arms."""
     api = _api()
@@ -3487,6 +3549,7 @@ export function FeedComposer() {
 
 
 @pytest.mark.product_mandatory
+@pytest.mark.skipif(not _BUN_AVAILABLE, reason=_BUN_SKIP_REASON)
 def test_product_mandatory_p2_oracle_rejects_object_argument_callback_false_pass(
         tmp_path):
     """[BEHAVIORAL][RED][PRODUCT-P2] The former context-object callback cannot pass."""
@@ -4086,6 +4149,7 @@ def test_product_mandatory_product_git_authority_is_clone_local_and_detects_cont
 
 
 @pytest.mark.product_mandatory
+@pytest.mark.skipif(not _BUN_AVAILABLE, reason=_BUN_SKIP_REASON)
 def test_product_mandatory_bun_and_typescript_snapshot_is_exact_and_mutation_aborts(tmp_path):
     """[BEHAVIORAL][RED][SECURITY-ORACLE] Fresh clones use sealed external TS 5.9.3."""
     api = _api()
@@ -4521,6 +4585,7 @@ def test_product_mandatory_final_report_requires_six_verified_signed_receipts(
     assert not (tmp_path / "final_report.md").exists()
 
 
+@pytest.mark.skipif(not _CODEX_AT_PINNED_PATH, reason=_CODEX_SKIP_REASON)
 def test_effective_codex_argv_complete_real_argv_is_accepted_by_the_installed_codex_binary(
         tmp_path):
     """[BEHAVIORAL] Regression test for the AC1/AC2 --ask-for-approval-after-exec bug.

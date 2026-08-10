@@ -159,7 +159,46 @@ Interim status: all three false passes MUST be downgraded to `NOT_RUN` — not t
 `FAIL`, because no run established failure either. `NOT_RUN` is the honest
 state for "we do not know."
 
-## 7. Preventing recurrence
+## 7. The same defect at the test layer: false coverage from the publish pipeline
+
+The claim-level false passes in §3–§5 have a structural twin, found while
+burning down this repository's own suite. Both are unverified transformations
+that leave something *looking* proven.
+
+`scripts/snapshot-publish.sh:245` (`redact_generated_home_paths`) rewrites
+`$HOME` to the literal string `<HOME>` across every non-binary file in the
+published tree — **including Python test source**. Where a test's fixture data
+was an absolute path, redaction silently turns it into a non-absolute string:
+
+`loop-team/runner/tests/test_codex_subscription_pilot.py:1242` parametrizes
+`test_packet_work_roots_cannot_equal_or_descend_from_canonical_protected_root`
+with `"<HOME>/Claude/Projects/taxahead"`. Because `os.path.isabs("<HOME>/…")`
+is `False`, the packet is rejected by an *earlier* guard ("frozen packet roots
+are incomplete") before the protected-root check is ever reached. The test
+still raises `PilotBlockedError`, so `pytest.raises` is satisfied on type and
+only the `match=` fails.
+
+The consequence: a test named and documented for `[PROTECTED-ROOTS] Product
+attempts cannot run inside canonical repositories` **does not exercise that
+protection at all**. Had the `match=` been looser, it would have passed while
+testing nothing — a green check over absent coverage, which is the §1 defect
+one layer down.
+
+A second publish-pipeline effect: the published history is squashed into
+`snapshot: publish tracked tree` commits, so tests pinning baseline SHAs
+(`98ecb27b…`, `e8ed8b8e…`, and one more) fail with "exists on disk, but not in
+`<sha>`". **The publish discards the history those tests depend on.** They can
+never pass anywhere except the original working repository.
+
+Both are fixes at the publish step, not the test:
+
+- Redaction MUST NOT rewrite executable source. Restrict it to generated
+  artifacts and documentation, or fail the publish when a substitution lands
+  inside a `.py`/`.ts` file.
+- Either preserve the referenced commits, or make pinned-SHA tests resolve the
+  baseline by tag/content rather than by a SHA the publish will discard.
+
+## 8. Preventing recurrence
 
 The mechanism, not the three claims, is the fix:
 

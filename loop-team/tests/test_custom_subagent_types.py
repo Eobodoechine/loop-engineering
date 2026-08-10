@@ -26,6 +26,7 @@ import os
 import re
 import unittest
 
+import pytest
 import yaml
 
 USER_AGENTS_DIR = os.path.expanduser("~/.claude/agents")
@@ -62,6 +63,36 @@ def _split_frontmatter(text):
     return m.group(1), m.group(2)
 
 
+# ---------------------------------------------------------------------------
+# Machine-global install-state guard.
+#
+# USER_AGENTS_DIR (~/.claude/agents) and PROJECT_AGENTS_DIR (~/Claude/loop/
+# .claude/agents) are the developer's Claude Code install state -- the
+# classes below assert facts about custom subagent-type .md files deployed
+# to those two machine-global directories, not about repository content.
+# They are absent on a fresh clone, in a container, or in CI, so those
+# classes must skip rather than fail here (matching the precedent in
+# loop-team/tests/test_session_enforcement.py::TestAC6_SettingsJsonSessionStart,
+# which skips on the developer's real ~/.claude/settings.json for the same
+# reason). Detected dynamically via Path.exists()-equivalent checks so the
+# classes self-activate the moment the real install state is actually
+# present, on any machine. OrchestratorDispatchSectionEdit (AC4) below is
+# NOT guarded -- it only reads the in-repo orchestrator.md, not this
+# machine-global state.
+# ---------------------------------------------------------------------------
+_ALL_TEN_AGENT_FILES_PRESENT = all(
+    os.path.isfile(p) for name in AGENT_NAMES for p in _paths_for(name)
+)
+_AGENT_INSTALL_STATE_SKIP_REASON = (
+    "machine-global Claude Code install state absent (custom subagent-type "
+    "files under %r and/or %r); these assert how this machine's Claude Code "
+    "is configured, not repository code, so they are not applicable on a "
+    "fresh clone, in a container, or in CI. They must therefore never be a "
+    "required merge-gate check." % (USER_AGENTS_DIR, PROJECT_AGENTS_DIR)
+)
+
+
+@pytest.mark.skipif(not _ALL_TEN_AGENT_FILES_PRESENT, reason=_AGENT_INSTALL_STATE_SKIP_REASON)
 class FileStructureExistsAndIdentical(unittest.TestCase):
     """AC1: both copies of all 5 files exist and are byte-identical."""
 
@@ -94,6 +125,7 @@ class FileStructureExistsAndIdentical(unittest.TestCase):
             )
 
 
+@pytest.mark.skipif(not _ALL_TEN_AGENT_FILES_PRESENT, reason=_AGENT_INSTALL_STATE_SKIP_REASON)
 class FrontmatterValidYaml(unittest.TestCase):
     """AC1: each of the 10 files parses as valid YAML frontmatter + Markdown body."""
 
@@ -118,6 +150,7 @@ class FrontmatterValidYaml(unittest.TestCase):
                 )
 
 
+@pytest.mark.skipif(not _ALL_TEN_AGENT_FILES_PRESENT, reason=_AGENT_INSTALL_STATE_SKIP_REASON)
 class FrontmatterRequiredKeys(unittest.TestCase):
     """AC1: each file's frontmatter has name, description, tools and/or
     disallowedTools, and model."""
@@ -156,6 +189,7 @@ class FrontmatterRequiredKeys(unittest.TestCase):
                 )
 
 
+@pytest.mark.skipif(not _ALL_TEN_AGENT_FILES_PRESENT, reason=_AGENT_INSTALL_STATE_SKIP_REASON)
 class AgentToolStructurallyExcluded(unittest.TestCase):
     """AC2: 'Agent' must appear in disallowedTools for every one of the 5 custom types
     (grep-checkable per the spec) -- this is what makes a dispatched sub-agent
@@ -188,6 +222,7 @@ class AgentToolStructurallyExcluded(unittest.TestCase):
                 )
 
 
+@pytest.mark.skipif(not _ALL_TEN_AGENT_FILES_PRESENT, reason=_AGENT_INSTALL_STATE_SKIP_REASON)
 class BodyIsPointerStubNotPastedRoleBrief(unittest.TestCase):
     """AC3: each file's body (after frontmatter) contains a '# Role:' header line AND is
     a SHORT pointer-stub, not the full multi-KB role-brief text pasted inline (Deviation

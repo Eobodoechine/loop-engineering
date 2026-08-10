@@ -48,6 +48,25 @@ def _run(args, timeout=30):
 
 
 # ---------------------------------------------------------------------------
+# Real-fix_plan.md environment-prerequisite guard (used by
+# TestRealFixPlanDoesNotCrash and TestPhase3AC7...'s two real-file tests,
+# both further down this file). Some tests below assert against this
+# project's actual, live, continuously-edited fix_plan.md at the repo root
+# -- that is the developer's live document, not a fixture this repository
+# ships, so it is not present in this published/squashed tree. Detected
+# dynamically via Path.exists()-equivalent so it self-activates the moment a
+# real fix_plan.md is actually present, on any checkout.
+# ---------------------------------------------------------------------------
+REAL_FIX_PLAN_PATH = os.path.join(os.path.normpath(os.path.join(HERE, "..", "..")), "fix_plan.md")
+_REAL_FIX_PLAN_PRESENT = os.path.isfile(REAL_FIX_PLAN_PATH)
+_REAL_FIX_PLAN_SKIP_REASON = (
+    "no real fix_plan.md at the repo root (%s); these assert against the "
+    "developer's live, continuously-edited fix_plan.md, not a fixture this "
+    "repository ships, so it is not present in this published tree." % REAL_FIX_PLAN_PATH
+)
+
+
+# ---------------------------------------------------------------------------
 # Clean case: no mismatch anywhere -> exit 0
 # ---------------------------------------------------------------------------
 
@@ -234,6 +253,7 @@ class TestUsageErrors:
 # Real-file smoke test: must not crash against this project's OWN fix_plan.md
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(not _REAL_FIX_PLAN_PRESENT, reason=_REAL_FIX_PLAN_SKIP_REASON)
 class TestRealFixPlanDoesNotCrash:
     """Running the linter against this project's real, current fix_plan.md
     must never crash -- finding real issues is the tool working correctly;
@@ -289,6 +309,41 @@ RUN_AND_RECORD = os.path.join(HERE, "run_and_record.py")
 V1_BASELINE_COMMIT = "98ecb27be0a18171fedf4a46f78e4816e2305dae"
 REPO_ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 LINT_REL_PATH = "loop-team/harness/fixplan_closure_lint.py"
+
+
+# ---------------------------------------------------------------------------
+# Pinned-baseline-commit / real-fix_plan.md environment-prerequisite guards.
+#
+# The sabotage-smoke-test classes below pin exact commit SHAs as a
+# known-content anchor for "stub the check off, confirm it wrongly passes".
+# Those SHAs are captured against this suite's own normal, additive-commit
+# development history -- a squashed/rebased/shallow clone (this published
+# tree) does not contain them at all ("exists on disk, but not in <sha>" from
+# `git show`/`git cat-file`). That is this clone's history shape, not
+# repository code, so tests pinned to an absent SHA must skip rather than
+# fail here. Detected dynamically via `git cat-file -e <sha>^{commit}` so
+# each guard self-activates the moment its pinned commit is actually present
+# in whatever clone is running the suite.
+# ---------------------------------------------------------------------------
+def _commit_exists(sha):
+    result = subprocess.run(
+        ["git", "-C", REPO_ROOT, "cat-file", "-e", "%s^{commit}" % sha],
+        capture_output=True, timeout=30,
+    )
+    return result.returncode == 0
+
+
+def _baseline_commit_skip_reason(sha, label):
+    return (
+        "pinned %s baseline commit %s is not present in this clone's git "
+        "history (git cat-file -e %s^{commit} failed); this is this clone's "
+        "history shape (e.g. a squashed or shallow clone), not repository "
+        "code, so it is not applicable here." % (label, sha, sha)
+    )
+
+
+_V1_BASELINE_COMMIT_PRESENT = _commit_exists(V1_BASELINE_COMMIT)
+_V1_BASELINE_SKIP_REASON = _baseline_commit_skip_reason(V1_BASELINE_COMMIT, "v1")
 
 
 def _cutover_date():
@@ -499,6 +554,7 @@ class TestAC8ExistingFixturesPredateCutover:
 # `git diff --stat`.
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(not _V1_BASELINE_COMMIT_PRESENT, reason=_V1_BASELINE_SKIP_REASON)
 class TestAC9SabotageSmokeTests:
     """DECISION-LOG NOTE (flagged explicitly, not silently picked): a Tier-1
     Test-writer runs BEFORE any v2 implementation exists, so it cannot
@@ -967,6 +1023,12 @@ class TestDateExtractionFormatAgnosticAcrossPunctuationForms:
 # additive-commit loop-team workflow (no history rewrite/rebase/squash of
 # this commit) -- flagged explicitly here too, not left implicit.
 PHASE2_BASELINE_COMMIT = "e8ed8b8ec5237d1af6adb66ceb03f2b4d6f36b83"
+
+# See the module-level environment-prerequisite guard block above (near
+# V1_BASELINE_COMMIT) for why this is checked dynamically via
+# `git cat-file -e <sha>^{commit}` rather than assumed present.
+_PHASE2_BASELINE_COMMIT_PRESENT = _commit_exists(PHASE2_BASELINE_COMMIT)
+_PHASE2_BASELINE_SKIP_REASON = _baseline_commit_skip_reason(PHASE2_BASELINE_COMMIT, "Phase-2")
 
 
 # ---------------------------------------------------------------------------
@@ -1513,6 +1575,7 @@ class TestPhase2AC12FrozenFixtureExplicitPathShowsZeroFlags:
 # freshness check has teeth.
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(not _PHASE2_BASELINE_COMMIT_PRESENT, reason=_PHASE2_BASELINE_SKIP_REASON)
 class TestPhase2AC13FreshnessCheckSabotageSmokeTest:
     """Reuses the exact byte-capture-before-mutation / byte-compare-after-
     restore mechanism Phase 1's TestAC9SabotageSmokeTests established (NOT
@@ -1552,6 +1615,7 @@ class TestPhase2AC13FreshnessCheckSabotageSmokeTest:
 # dirty-worktree check (per-cited-file variant, AC5) has teeth.
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(not _PHASE2_BASELINE_COMMIT_PRESENT, reason=_PHASE2_BASELINE_SKIP_REASON)
 class TestPhase2AC14DirtyWorktreeCheckSabotageSmokeTest:
     """Same sabotage mechanism as AC13, targeting the per-cited-file
     dirty-worktree check via AC5's fixture (reused verbatim, unstaged
@@ -1801,6 +1865,12 @@ class TestPhase2RegressionFreshnessOSErrorOnUnreadableCitedFile:
 # rewrite/rebase/squash of this commit).
 PHASE2B_BASELINE_COMMIT = "3804ec9e3eb4c2b8526bff09479b080db7e40f43"
 
+# See the module-level environment-prerequisite guard block above (near
+# V1_BASELINE_COMMIT) for why this is checked dynamically via
+# `git cat-file -e <sha>^{commit}` rather than assumed present.
+_PHASE2B_BASELINE_COMMIT_PRESENT = _commit_exists(PHASE2B_BASELINE_COMMIT)
+_PHASE2B_BASELINE_SKIP_REASON = _baseline_commit_skip_reason(PHASE2B_BASELINE_COMMIT, "Phase-2b")
+
 
 # ---------------------------------------------------------------------------
 # Shared Phase 2b fixture/helper builders.
@@ -2035,6 +2105,7 @@ class TestPhase2bAC5GitignoredAndStaleBothFlagged:
 # --stat`).
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(not _PHASE2B_BASELINE_COMMIT_PRESENT, reason=_PHASE2B_BASELINE_SKIP_REASON)
 class TestPhase2bAC6GitignoreVisibilityCheckSabotageSmokeTest:
     """Reuses the exact byte-capture-before-mutation / byte-compare-after-
     restore mechanism Phase 1's `TestAC9SabotageSmokeTests` established (NOT
@@ -2573,6 +2644,7 @@ class TestPhase3AC7RegressionGuardNonSelftestInvocationsUnchanged:
         assert "evidence file has uncommitted changes" in out
         assert str(evidence_file) in out
 
+    @pytest.mark.skipif(not _REAL_FIX_PLAN_PRESENT, reason=_REAL_FIX_PLAN_SKIP_REASON)
     def test_f_real_live_fix_plan_md_never_crashes(self):
         repo_root = os.path.normpath(os.path.join(HERE, "..", ".."))
         real_fix_plan = os.path.join(repo_root, "fix_plan.md")
@@ -2584,6 +2656,7 @@ class TestPhase3AC7RegressionGuardNonSelftestInvocationsUnchanged:
         assert code in (0, 1), f"unexpected exit code {code}; stdout={out!r} stderr={err!r}"
         assert err == "", f"expected no stderr on a normal run, got: {err!r}"
 
+    @pytest.mark.skipif(not _REAL_FIX_PLAN_PRESENT, reason=_REAL_FIX_PLAN_SKIP_REASON)
     def test_no_args_and_explicit_default_path_produce_identical_output(self):
         default_path = os.path.normpath(os.path.join(HERE, "..", "..", "fix_plan.md"))
         assert os.path.isfile(default_path), (
