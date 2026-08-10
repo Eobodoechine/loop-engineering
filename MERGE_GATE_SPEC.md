@@ -247,30 +247,50 @@ jobs:
     needs: [typecheck, unit, build, evidence-preflight]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with: { persist-credentials: false }
       - name: Assert the exact expected job set all succeeded
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
           # MUST equal the needs list above, space separated.
           EXPECTED: typecheck unit build evidence-preflight
+        run: python3 .gate/assert_required_jobs.py
+```
+
+### 3.2 Why the aggregator is a vendored script, not inline YAML
+
+`project-required-ci` must be a plain `steps:` job — a job that `uses:` a
+reusable workflow produces the nested context `project-required-ci / <inner>`
+(§1.1), which no ruleset can require. A plain job cannot call a reusable
+workflow, so the logic has to be present in the product repo.
+
+It is therefore **vendored**, not retyped: copy
+`gate-defs/scripts/assert_required_jobs.py` to `.gate/assert_required_jobs.py`
+in each product repo, unmodified. Inline heredocs are forbidden — the same
+logic hand-copied into N repos is the drift this architecture exists to
+prevent, and an inline copy is not covered by any test.
+
+Drift is detected centrally. `.gate/**` is already in `protected_paths` (§2),
+and the central gate additionally verifies the vendored copy is byte-identical
+to the canonical one:
+
+```yaml
+      - name: Verify vendored gate scripts are unmodified
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import json, os, sys
-          needs = json.loads(os.environ["NEEDS_JSON"])
-          expected = set(os.environ["EXPECTED"].split())
-          actual = set(needs)
-          missing, extra = expected - actual, actual - expected
-          # result is one of: success, failure, cancelled, skipped
-          bad = {j: v["result"] for j, v in needs.items() if v["result"] != "success"}
-          if missing:
-              print(f"::error::required jobs absent from needs (renamed or deleted?): {sorted(missing)}")
-          if extra:
-              print(f"::error::jobs in needs but not in EXPECTED (update EXPECTED): {sorted(extra)}")
-          if bad:
-              print(f"::error::required jobs not successful: {bad}")
-          sys.exit(1 if (missing or extra or bad) else 0)
-          PY
+          echo "${{ inputs.assert_script_sha256 }}  .gate/assert_required_jobs.py" \
+            | sha256sum --check --strict
 ```
+
+Publish the canonical digest with each `gate-defs` release:
+
+```sh
+sha256sum gate-defs/scripts/assert_required_jobs.py
+```
+
+A product repo whose vendored copy has been edited fails the central gate. That
+closes acceptance row 13 (a PR that rewrites its own adapter to fake a pass)
+mechanically rather than relying on review vigilance.
 
 Binding rules for the adapter:
 

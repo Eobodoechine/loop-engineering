@@ -249,7 +249,27 @@ class TestAC5_ConstraintsFileContent:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.skipif(
+    not SETTINGS_JSON.exists(),
+    reason=(
+        f"machine-global install state absent ({SETTINGS_JSON}); these assert how "
+        "this machine's Claude Code is configured, not repository code, so they "
+        "are not applicable on a fresh clone, in a container, or in CI. They must "
+        "therefore never be a required merge-gate check. Verify install state with "
+        "`python3 loop-guards/detect_install_state.py --tool claude_code`."
+    ),
+)
 class TestAC6_SettingsJsonSessionStart:
+    """Install-state checks for the real, machine-global ~/.claude/settings.json.
+
+    Note this class reads the developer's actual settings file, which is the one
+    thing loop-guards/tests/_install_test_helpers.py documents as off limits for
+    tests ("NEVER the real, machine-global ~/.claude/settings.json"). It is kept
+    as an install-state probe rather than rewritten against a fake $HOME because
+    its purpose *is* to report on the live machine — but it skips, rather than
+    fails, where that machine state does not exist.
+    """
+
     def test_settings_json_exists(self):
         assert SETTINGS_JSON.exists(), (
             f"~/.claude/settings.json not found at {SETTINGS_JSON}"
